@@ -1,0 +1,153 @@
+<!doctype html>
+<!--
+  motionforge style preview: tactics-board
+  © 2026 motionforge contributors, MIT
+  Signature scene "pressing trap" on a tilted matte pitch (SVG plane, CSS rotateX 28°, attack upward):
+  the ball goes to the grey full-back (pass draws 0.45 s power1.in, ball on the arrowhead), three cream
+  tokens converge in 0.8 s power2.inOut with dashed run trails, the cyan zone blooms from the ball in
+  0.4 s power3.out, the passing lanes turn dashed, uninvolved tokens drop to 60 %, "TRAP" label, push-in
+  1.0 -> 1.15 and freeze. Positions are a fictional example in metres on a 68 m wide pitch.
+  Saira Condensed + Saira.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Saira Condensed"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/saira-condensed-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Saira Condensed"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/saira-condensed-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Saira Condensed"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/saira-condensed-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Saira Condensed"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/saira-condensed-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Saira"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/saira-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Saira"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/saira-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Saira"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/saira-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Saira"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/saira-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      /* fonts:end */
+      :root { --mf-bg: #18221f; --mf-glow: #22302b; --ink: #e7efe9; --cream: #f3efe4; --grey: #6e7b76; --acc: #2ee6ff; --mf-grain-opacity: .04;
+        --sc: "Saira Condensed", "Arial Narrow", sans-serif; --s: "Saira", "Arial Narrow", sans-serif; }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 50%, rgba(0,0,0,.5) 100%); }
+      #title { position: absolute; left: 60px; top: 236px; font: 700 116px/1 var(--sc); letter-spacing: .02em; text-transform: uppercase; color: var(--ink); }
+      #lab { position: absolute; left: 64px; top: 360px; font: 600 28px/1 var(--sc); letter-spacing: .12em; color: var(--ink); opacity: .75; }
+      #lab b { color: var(--acc); font-weight: 600; }
+      #chip { position: absolute; left: 790px; top: 250px; width: 110px; height: 58px; border-radius: 8px; background: rgba(231,239,233,.1); border: 2px solid rgba(231,239,233,.3);
+        font: 700 34px/54px var(--s); text-align: center; color: var(--ink); }
+      #cam { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      #persp { position: absolute; left: 40px; top: 440px; width: 1000px; height: 1000px; perspective: 1500px; }
+      #pitch { position: absolute; left: 60px; top: 20px; width: 880px; height: 841px; transform-origin: 50% 60%; }
+      #pitch svg { position: absolute; left: 0; top: 0; overflow: visible; }
+      #trap { position: absolute; z-index: 2; font: 700 44px/1 var(--sc); letter-spacing: .12em; color: #0c1a1d; background: var(--acc); padding: 10px 18px 8px; border-radius: 6px; }
+      #cap { position: absolute; left: 60px; top: 1500px; width: 960px; font: 500 50px/1.2 var(--s); color: var(--ink); }
+      #cap b { color: var(--acc); font-weight: 500; }
+      #note { position: absolute; left: 60px; top: 1650px; font: 600 26px/1 var(--sc); letter-spacing: .12em; color: rgba(231,239,233,.55); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="cam" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <div id="trap">TRAP</div><div id="persp"><div id="pitch"><svg id="svg" width="880" height="841" viewBox="0 0 68 65"></svg></div></div>
+      </div>
+      <div id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="1">Tactics board</div>
+      <div id="lab" class="clip" data-start="0" data-duration="4.5" data-track-index="2">PHASE 2/3 · <b>PRESSING TRAP</b> · 4-3-3</div>
+      <div id="chip" class="clip" data-start="0" data-duration="4.5" data-track-index="3">34'</div>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="5">Ball to the full-back: <b>three close in</b>, every lane is shut.</div>
+      <div id="note" class="clip" data-start="0" data-duration="4.5" data-track-index="6">EXAMPLE · POSITIONS APPROXIMATE</div>
+    </div>
+
+    <script>
+      const DUR = 4.5, NS = "http://www.w3.org/2000/svg", svg = document.getElementById("svg");
+      const mk = (tag, at, parent = svg) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); parent.appendChild(e); return e; };
+      const g = (id) => mk("g", { id });
+      // turf: 9 mow bands, then markings at 70 % (pitch content, not a backdrop grid)
+      const turf = g("turf");
+      for (let i = 0; i < 9; i++) mk("rect", { x: 0, y: i * 65 / 9, width: 68, height: 65 / 9 + 0.02, fill: i % 2 ? "#22633f" : "#1f5a3b" }, turf);
+      const lines = g("lines"); lines.setAttribute("stroke", "rgba(231,239,233,.7)"); lines.setAttribute("stroke-width", 0.22); lines.setAttribute("fill", "none");
+      mk("path", { d: "M0.6 65 V0.6 H67.4 V65" }, lines);
+      mk("rect", { x: 13.84, y: 0.6, width: 40.32, height: 16.5 }, lines);
+      mk("rect", { x: 24.84, y: 0.6, width: 18.32, height: 5.5 }, lines);
+      mk("path", { d: "M26.7 17.1 A9.15 9.15 0 0 0 41.3 17.1" }, lines);
+      mk("circle", { cx: 34, cy: 11.6, r: 0.3, fill: "rgba(231,239,233,.7)" }, lines);
+      mk("line", { x1: 0.6, y1: 53.1, x2: 67.4, y2: 53.1 }, lines);
+      mk("path", { d: "M24.85 53.1 A9.15 9.15 0 0 0 43.15 53.1" }, lines);
+      mk("rect", { x: 30.34, y: -1.4, width: 7.32, height: 2, fill: "rgba(231,239,233,.15)" }, lines);
+      const zone = g("zone"), lanes = g("lanes"), runs = g("runs"), pass = g("pass"), toks = g("toks");
+      // tokens [team, number, x0, y0, x1, y1, involved]
+      const T = [
+        ["o", 1, 34, 4], ["o", 4, 27, 13], ["o", 5, 41, 13], ["o", 3, 8, 20], ["o", 2, 60, 22, 60, 22, 1], ["o", 6, 34, 27], ["o", 8, 44, 32], ["o", 7, 62, 40], ["o", 11, 10, 38],
+        ["c", 9, 38, 21, 50, 18, 1], ["c", 7, 50, 33, 56, 28, 1], ["c", 8, 55, 44, 62, 31, 1], ["c", 11, 14, 27], ["c", 10, 30, 35], ["c", 6, 36, 47],
+      ];
+      const tokEls = T.map(([tm, n, x, y, x1, y1, inv], i) => {
+        const t = mk("g", { id: "tk" + i, transform: `translate(${x} ${y})` }, toks);
+        mk("circle", { cx: 0.25, cy: 0.45, r: 1.84, fill: "rgba(0,0,0,.3)" }, t);
+        mk("circle", { r: 1.7, fill: tm === "c" ? "#f3efe4" : "#6e7b76", stroke: tm === "c" ? "#c9c3b3" : "#56625d", "stroke-width": 0.27 }, t);
+        const tx = mk("text", { y: 0.72, "text-anchor": "middle", "font-family": "Saira", "font-weight": 700, "font-size": 2.05, fill: tm === "c" ? "#18221f" : "#ffffff" }, t);
+        tx.textContent = n;
+        return { t, x, y, x1: x1 ?? x, y1: y1 ?? y, inv: !!inv };
+      });
+      const ball = mk("circle", { r: 0.62, fill: "#ffffff", stroke: "#18221f", "stroke-width": 0.12 });
+      // pass CB(5) -> FB(2): solid 6 px line with a 22 px head, ball rides the head
+      const P0 = [41, 13], P1 = [58.3, 21.2];
+      const pLine = mk("line", { x1: P0[0], y1: P0[1], x2: P0[0], y2: P0[1], stroke: "#e7efe9", "stroke-width": 0.41, "stroke-linecap": "round" }, pass);
+      const pHead = mk("path", { d: "M0 -0.8 L1.5 0 L0 0.8 Z", fill: "#e7efe9", opacity: 0 }, pass);
+      const ang = Math.atan2(P1[1] - P0[1], P1[0] - P0[0]) * 180 / Math.PI;
+      // pressing zone polygon and the three passing lanes from the full-back
+      const zonePoly = mk("polygon", { points: "50,18 56,28 62,31 67.4,30 67.4,15", fill: "rgba(46,230,255,.18)", stroke: "#2ee6ff", "stroke-width": 0.2, "stroke-linejoin": "round", opacity: 0 }, zone);
+      const LANES = [[41, 13], [34, 27], [62, 40]].map(([x, y]) => mk("line", { x1: 60, y1: 22, x2: x, y2: y, stroke: "#e7efe9", "stroke-width": 0.3, opacity: 0 }, lanes));
+      const runEls = tokEls.filter((k) => k.inv && (k.x !== k.x1)).map((k) => {
+        const l = mk("line", { x1: k.x, y1: k.y, x2: k.x, y2: k.y, stroke: "#f3efe4", "stroke-width": 0.34, "stroke-dasharray": "0.82 0.68", opacity: 0.8 }, runs);
+        return { l, k };
+      });
+
+      // camera push target: the zone centre on screen (measured once from the laid-out plane)
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      gsap.set("#pitch", { rotateX: 28 });
+      const sx = 880 / 68, sy = 841 / 65;
+      function screenOf(mx, my) {   // project a pitch point through the tilt (measured with a probe)
+        const probe = document.createElement("div");
+        Object.assign(probe.style, { position: "absolute", left: mx * sx + "px", top: my * sy + "px", width: "1px", height: "1px" });
+        document.getElementById("pitch").appendChild(probe);
+        const b = probe.getBoundingClientRect(); probe.remove(); return [b.left, b.top];
+      }
+      const Z = screenOf(59, 24), TR = screenOf(56, 13);
+      gsap.set("#cam", { transformOrigin: `${Z[0]}px ${Z[1]}px` });
+      gsap.set("#trap", { left: TR[0] - 70, top: TR[1] - 40 });
+
+      tl.fromTo("#title", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 0.05);
+      tl.fromTo(["#lab", "#chip"], { opacity: 0 }, { opacity: 1, duration: 0.3, stagger: 0.1 }, 0.2);
+      tl.fromTo("#pitch", { opacity: 0, rotateX: 40 }, { opacity: 1, rotateX: 28, duration: 0.6, ease: "power2.out" }, 0.1);
+      tl.fromTo(tokEls.map((k) => k.t), { opacity: 0 }, { opacity: 1, duration: 0.2, stagger: 0.02 }, 0.35);
+      tl.fromTo(ball, { opacity: 0 }, { opacity: 1, duration: 0.2 }, 0.5);
+      const bp = { v: 0 };
+      const setBall = (x, y) => { ball.setAttribute("cx", x); ball.setAttribute("cy", y); };
+      setBall(P0[0] + 0.8, P0[1] + 1);
+      tl.fromTo(bp, { v: 0 }, { v: 1, duration: 0.45, ease: "power1.in", onUpdate: () => {
+        const x = P0[0] + (P1[0] - P0[0]) * bp.v, y = P0[1] + (P1[1] - P0[1]) * bp.v;
+        pLine.setAttribute("x2", x); pLine.setAttribute("y2", y);
+        pHead.setAttribute("transform", `translate(${x} ${y}) rotate(${ang})`); pHead.setAttribute("opacity", bp.v > 0.02 ? 1 : 0);
+        setBall(bp.v > 0 ? x : P0[0] + 0.8, bp.v > 0 ? y : P0[1] + 1);
+      } }, 0.75);
+      tl.to(LANES, { opacity: 0.55, duration: 0.25 }, 1.15);
+      // pressers converge, run trails draw behind them
+      const mv = { v: 0 };
+      tl.fromTo(mv, { v: 0 }, { v: 1, duration: 0.8, ease: "power2.inOut", onUpdate: () => {
+        tokEls.forEach((k) => { if (k.x !== k.x1 || k.y !== k.y1) k.t.setAttribute("transform", `translate(${k.x + (k.x1 - k.x) * mv.v} ${k.y + (k.y1 - k.y) * mv.v})`); });
+        runEls.forEach(({ l, k }) => { l.setAttribute("x2", k.x + (k.x1 - k.x) * mv.v); l.setAttribute("y2", k.y + (k.y1 - k.y) * mv.v); });
+      } }, 1.25);
+      tl.fromTo(zonePoly, { opacity: 0, scale: 0.1, svgOrigin: "60 22" }, { opacity: 1, scale: 1, svgOrigin: "60 22", duration: 0.4, ease: "power3.out" }, 1.75);
+      tl.set(LANES, { attr: { "stroke-dasharray": "0.9 0.7" } }, 2.0);
+      tl.to(LANES, { opacity: 0.85, duration: 0.15 }, 2.0);
+      tl.to([pLine, pHead], { opacity: 0.25, duration: 0.3 }, 2.0);
+      tl.to(tokEls.filter((k) => !k.inv).map((k) => k.t), { opacity: 0.6, duration: 0.3 }, 2.0);
+      tl.fromTo("#cam", { scale: 1 }, { scale: 1.15, duration: 0.8, ease: "power2.inOut" }, 2.0);
+      tl.fromTo("#trap", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(2)" }, 2.35);
+      tl.fromTo("#cap", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 2.5);
+      tl.fromTo("#note", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 2.8);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

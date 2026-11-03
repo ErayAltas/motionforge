@@ -1,0 +1,120 @@
+<!doctype html>
+<!--
+  motionforge style preview: flash-sale
+  © 2026 motionforge contributors, MIT
+  Everything on a 128 BPM grid (0.469 s per beat): headline slam, a 16-point yellow burst, the product card
+  drop, then the signature price slash: the bar cuts the old price on a downbeat, the old price sinks to 50 %,
+  the new price lands at 2.2x one beat later with a seeded 6 px shake for 3 frames; code box and terms close.
+  Product, prices, code and dates are fictional sample values. Fonts: Anton, Archivo (Fontsource, OFL).
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Anton"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/anton-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Anton"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/anton-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Archivo"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/archivo-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Archivo"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/archivo-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Archivo"; font-style: normal; font-weight: 800; font-display: block; src: url("assets/fonts/archivo-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Archivo"; font-style: normal; font-weight: 800; font-display: block; src: url("assets/fonts/archivo-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      /* fonts:end */
+      :root { --red: #E8112D; --ink: #FFFFFF; --yel: #FFDD00; --deep: #5A0610; --sup: #1A0A0C; --mf-grain-opacity: .05; }
+      html, body { background: var(--red); }
+      #root { background: radial-gradient(900px 900px at 50% 45%, #F2283F 0%, var(--red) 70%); }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 60%, rgba(90,6,16,.35) 100%); }
+      #shake { position: absolute; inset: 0; }
+      .w { position: absolute; left: 70px; font: 400 200px/0.92 "Anton", sans-serif; text-transform: uppercase; color: var(--ink); transform-origin: 0 50%; }
+      #w1 { top: 240px; } #w2 { top: 420px; }
+      #lbl { position: absolute; left: 76px; top: 640px; font: 800 30px/1 "Archivo", sans-serif; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); opacity: .9; }
+      .burst { position: absolute; width: 330px; height: 330px; }
+      .burst .s, .burst .f { position: absolute; inset: 0; clip-path: var(--star); }
+      .burst .s { background: var(--deep); transform: translate(6px, 6px); }
+      .burst .f { background: var(--yel) radial-gradient(circle, rgba(26,10,12,.12) 3px, transparent 4px) 0 0 / 16px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--sup); }
+      .burst b { font: 400 90px/0.9 "Anton", sans-serif; }
+      .burst small { font: 800 26px/1 "Archivo", sans-serif; letter-spacing: .06em; text-transform: uppercase; }
+      #b1 { left: 680px; top: 250px; }
+      #card { position: absolute; left: 190px; top: 720px; width: 700px; height: 420px; border-radius: 24px; background: #fff; box-shadow: 6px 6px 0 var(--deep); }
+      #card svg { position: absolute; left: 30px; top: 20px; width: 380px; height: 380px; }
+      #pname { position: absolute; left: 420px; top: 120px; width: 260px; font: 700 46px/1.1 "Archivo", sans-serif; color: var(--sup); }
+      #pname small { display: block; margin-top: 14px; font: 800 24px/1 "Archivo", sans-serif; letter-spacing: .06em; color: #9a2a36; text-transform: uppercase; }
+      #oldg { position: absolute; left: 0; top: 1180px; width: 1080px; height: 200px; }
+      #old { position: absolute; left: 0; right: 0; top: 0; text-align: center; font: 400 180px/1 "Anton", sans-serif; color: var(--ink); }
+      #slash { position: absolute; left: 330px; top: 82px; width: 440px; height: 22px; background: var(--yel); transform: rotate(-14deg); transform-origin: left center; box-shadow: 4px 4px 0 var(--deep); }
+      #new { position: absolute; left: 0; right: 0; top: 1150px; text-align: center; font: 400 250px/1 "Anton", sans-serif; color: var(--yel); text-shadow: 6px 6px 0 var(--deep); opacity: 0; }
+      #ends { position: absolute; left: 90px; top: 1470px; font: 800 30px/1 "Archivo", sans-serif; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
+      #ends b { color: var(--yel); font-weight: 800; }
+      #code { position: absolute; left: 90px; top: 1520px; width: 900px; height: 130px; border: 4px dashed var(--ink); border-radius: 18px; display: flex; align-items: center; justify-content: space-between; padding: 0 34px; }
+      #code span { font: 800 30px/1 "Archivo", sans-serif; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
+      #code b { font: 400 96px/1 "Anton", sans-serif; color: var(--yel); letter-spacing: .02em; }
+      #terms { position: absolute; left: 90px; right: 90px; top: 1680px; font: 700 28px/1.3 "Archivo", sans-serif; color: rgba(255,255,255,.85); }
+      #flash { position: absolute; inset: 0; background: #fff; opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="shake" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <div id="w1" class="w">Flash</div>
+        <div id="w2" class="w">Sale</div>
+        <div id="lbl">48 hours · sample offer</div>
+        <div id="b1" class="burst"><div class="s"></div><div class="f"><b>−50%</b><small>backpacks</small></div></div>
+        <div id="card">
+          <svg viewBox="0 0 380 380" aria-hidden="true">
+            <defs><linearGradient id="bp" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1f5d57"/><stop offset=".5" stop-color="#2f8a7f"/><stop offset="1" stop-color="#1b4f4a"/></linearGradient></defs>
+            <ellipse cx="190" cy="352" rx="120" ry="14" fill="#000" opacity=".12"/>
+            <path d="M150 64 C 150 30 230 30 230 64" fill="none" stroke="#163c38" stroke-width="16" stroke-linecap="round"/>
+            <path d="M90 120 C 90 70 120 56 190 56 C 260 56 290 70 290 120 L 300 320 C 300 344 284 350 262 350 L 118 350 C 96 350 80 344 80 320Z" fill="url(#bp)"/>
+            <path d="M110 210 h160 v100 q0 20 -20 20 h-120 q-20 0 -20 -20Z" fill="#256f67" stroke="#163c38" stroke-width="4"/>
+            <path d="M110 238 h160" stroke="#e8e2d4" stroke-width="5" stroke-dasharray="10 8"/>
+            <rect x="170" y="250" width="40" height="18" rx="6" fill="#f2b630"/>
+            <path d="M100 130 Q 190 160 280 130" fill="none" stroke="#163c38" stroke-width="5"/>
+            <rect x="182" y="132" width="16" height="30" rx="6" fill="#d9d4c7"/>
+          </svg>
+          <div id="pname">Trail pack 22 L<small>example product</small></div>
+        </div>
+        <div id="oldg"><div id="old">€90</div><div id="slash"></div></div>
+        <div id="new">€45</div>
+        <div id="ends">Ends <b>Sun 23:59</b> · CET</div>
+        <div id="code"><span>Code</span><b>TRAIL45</b><span>copy at checkout</span></div>
+        <div id="terms">Sample offer for this preview. Reference price: lowest price of the last 30 days (€90).</div>
+      </div>
+      <div id="flash" class="clip" data-start="0" data-duration="4.5" data-track-index="1"></div>
+    </div>
+
+    <script>
+      // 16-point starburst outline
+      const pts = []; for (let i = 0; i < 32; i++) { const a = (i / 32) * Math.PI * 2 - Math.PI / 2, r = i % 2 ? 40 : 50; pts.push(`${(50 + r * Math.cos(a)).toFixed(2)}% ${(50 + r * Math.sin(a)).toFixed(2)}%`); }
+      document.documentElement.style.setProperty("--star", `polygon(${pts.join(",")})`);
+      const DUR = 4.5, B = 60 / 128;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      const slam = (sel, beat) => tl.fromTo(sel, { opacity: 0, scale: 1.4 }, { opacity: 1, scale: 1, duration: 0.12, ease: "power4.out" }, beat * B);
+      slam("#w1", 0); slam("#w2", 0.5);
+      tl.fromTo("#lbl", { opacity: 0 }, { opacity: 0.9, duration: 0.1 }, 1 * B);
+      tl.fromTo("#b1", { opacity: 0, scale: 0.4, rotation: 0 }, { opacity: 1, scale: 1, rotation: 8, duration: 0.3, ease: "back.out(3)" }, 1 * B);
+      tl.fromTo("#card", { opacity: 0, y: -80 }, { opacity: 1, y: 0, duration: 0.25, ease: "back.out(1.6)" }, 2 * B);
+      slam("#old", 3);
+      // the slash: corner to corner in 0.18 s on a downbeat, the old price sinks to 50 %
+      tl.fromTo("#slash", { scaleX: 0 }, { scaleX: 1, duration: 0.18, ease: "power4.out" }, 4 * B);
+      tl.to("#old", { opacity: 0.5, color: "#5A0610", duration: 0.15 }, 4 * B);
+      // new price one beat later: 2.2 -> 1 in 0.2 s + one white flash frame, slides the old price up
+      tl.to("#oldg", { x: -250, y: 20, scale: 0.6, duration: 0.2, ease: "power4.out", transformOrigin: "50% 50%" }, 5 * B);
+      tl.fromTo("#new", { opacity: 0, scale: 2.2, x: 130, y: 0 }, { opacity: 1, scale: 1, x: 130, y: 0, duration: 0.2, ease: "power4.out" }, 5 * B);
+      tl.set("#flash", { opacity: 0.6 }, 5 * B);
+      tl.set("#flash", { opacity: 0 }, 5 * B + 1 / 30);
+      const r = MF.rng("flash-sale");
+      for (let f = 0; f < 3; f++) tl.set("#shake", { x: r.range(-6, 6), y: r.range(-6, 6) }, 5 * B + 0.2 + f / 30);
+      tl.set("#shake", { x: 0, y: 0 }, 5 * B + 0.2 + 3 / 30);
+      tl.fromTo("#ends", { opacity: 0, scale: 1.4, transformOrigin: "0 50%" }, { opacity: 1, scale: 1, duration: 0.12, ease: "power4.out" }, 6 * B);
+      tl.fromTo("#code", { opacity: 0, y: 80 }, { opacity: 1, y: 0, duration: 0.25, ease: "back.out(1.6)" }, 7 * B);
+      tl.fromTo("#terms", { opacity: 0 }, { opacity: 1, duration: 0.15 }, 7 * B);
+      tl.to("#b1", { rotation: 14, duration: 0.3, ease: "back.out(3)" }, 8 * B);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

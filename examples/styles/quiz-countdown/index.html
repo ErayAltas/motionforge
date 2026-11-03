@@ -1,0 +1,114 @@
+<!doctype html>
+<!--
+  motionforge style preview: quiz-countdown
+  © 2026 motionforge contributors, MIT
+  Signature scenes "3-2-1 ring" + "tile reveal": question words rise (0.06 s stagger), four white tiles
+  slide in with back.out(1.4), the yellow ring drains in three exact one-second steps (0.9 s drain +
+  0.1 s hold, digit swaps on the second with scale 1.4 -> 1), then the wrong tiles fade to 40 %, the right
+  one lifts, turns green and gets a tick, and the source line fades in. Lilita One + Rubik.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Lilita One"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/lilita-one-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Lilita One"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/lilita-one-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Rubik"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/rubik-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Rubik"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/rubik-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Rubik"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/rubik-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Rubik"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/rubik-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Rubik"; font-style: normal; font-weight: 800; font-display: block; src: url("assets/fonts/rubik-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Rubik"; font-style: normal; font-weight: 800; font-display: block; src: url("assets/fonts/rubik-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Rubik"; font-style: normal; font-weight: 900; font-display: block; src: url("assets/fonts/rubik-latin-900-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Rubik"; font-style: normal; font-weight: 900; font-display: block; src: url("assets/fonts/rubik-latin-ext-900-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      /* fonts:end */
+      :root { --mf-bg: #1235c7; --mf-glow: #1e46e0; --ink: #ffffff; --tile: #ffffff; --tink: #0b1240; --acc: #ffe14a; --ok: #22d07a; --mf-grain-opacity: .04;
+        --q: "Lilita One", "Arial Black", sans-serif; --r: "Rubik", system-ui, sans-serif; }
+      #root { background: radial-gradient(1100px 800px at 50% 0%, #1e46e0 0%, transparent 70%), var(--mf-bg); }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 60%, rgba(5,15,70,.35) 100%); }
+      #prog { position: absolute; left: 80px; top: 232px; width: 920px; height: 10px; border-radius: 5px; background: rgba(255,255,255,.18); overflow: hidden; }
+      #prog i { position: absolute; left: 0; top: 0; bottom: 0; width: 30%; background: #fff; border-radius: 5px; }
+      #lab { position: absolute; left: 80px; top: 272px; width: 920px; display: flex; justify-content: space-between; align-items: baseline; }
+      #lab .name { font: 400 56px/1 var(--q); color: var(--ink); }
+      #lab .qn { font: 600 30px/1 var(--r); letter-spacing: .1em; color: var(--acc); }
+      #panel { position: absolute; left: 80px; top: 360px; width: 920px; height: 380px; border-radius: 36px; background: rgba(8,24,110,.42);
+        box-shadow: inset 0 0 0 3px rgba(255,255,255,.2); display: flex; align-items: center; justify-content: center; padding: 0 60px; }
+      #q { font: 400 96px/1.08 var(--q); color: var(--ink); text-align: center; }
+      #q .w { display: inline-block; }
+      #timer { position: absolute; left: 410px; top: 772px; width: 260px; height: 260px; }
+      #digit { position: absolute; left: 0; top: 0; width: 260px; height: 260px; display: flex; align-items: center; justify-content: center;
+        font: 900 170px/1 var(--r); color: var(--acc); font-variant-numeric: tabular-nums; }
+      .tile { position: absolute; left: 80px; width: 860px; height: 130px; border-radius: 26px; background: var(--tile); box-shadow: 0 6px 0 #c9cfe6;
+        display: flex; align-items: center; gap: 28px; padding-left: 30px; font: 700 52px/1 var(--r); color: var(--tink); }
+      .tile .b { width: 72px; height: 72px; border-radius: 50%; background: #e6e9f7; display: flex; align-items: center; justify-content: center; font: 800 40px/1 var(--r); color: var(--tink); }
+      .tile svg { position: absolute; right: 36px; top: 33px; }
+      #src { position: absolute; left: 80px; top: 1700px; font: 600 26px/1 var(--r); color: rgba(255,255,255,.75); letter-spacing: .02em; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="prog" class="clip" data-start="0" data-duration="4.5" data-track-index="0"><i></i></div>
+      <div id="lab" class="clip" data-start="0" data-duration="4.5" data-track-index="1"><span class="name">Quiz countdown</span><span class="qn">QUESTION 3 / 10</span></div>
+      <div id="panel" class="clip" data-start="0" data-duration="4.5" data-track-index="2"><div id="q">Which planet has the shortest day?</div></div>
+      <div id="timer" class="clip" data-start="0" data-duration="4.5" data-track-index="3">
+        <svg width="260" height="260" viewBox="0 0 260 260">
+          <circle cx="130" cy="130" r="112" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="22" />
+          <circle id="ring" cx="130" cy="130" r="112" fill="none" stroke="#ffe14a" stroke-width="22" stroke-linecap="round" transform="rotate(-90 130 130)" />
+        </svg>
+        <div id="digit">3</div>
+      </div>
+      <div id="tiles" class="clip" data-start="0" data-duration="4.5" data-track-index="4"></div>
+      <div id="src" class="clip" data-start="0" data-duration="4.5" data-track-index="5">A Jupiter day lasts about 10 hours · source: planetary fact sheets</div>
+    </div>
+
+    <script>
+      const DUR = 4.5, OK = 1;
+      const q = document.getElementById("q");
+      q.innerHTML = q.textContent.split(" ").map((w) => `<span class="w">${w}</span>`).join(" ");
+      const tiles = document.getElementById("tiles");
+      ["Mars", "Jupiter", "Venus", "Mercury"].forEach((a, i) => {
+        const d = document.createElement("div");
+        d.className = "tile"; d.id = "t" + i; d.style.top = (1080 + i * 154) + "px";
+        d.innerHTML = `<span class="b">${"ABCD"[i]}</span>${a}` + (i === OK ? `<svg width="64" height="64" viewBox="0 0 64 64"><path id="tick" d="M12 34 L26 48 L53 17" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" /></svg>` : "");
+        tiles.appendChild(d);
+      });
+      const ring = document.getElementById("ring"), C = 2 * Math.PI * 112;
+      ring.setAttribute("stroke-dasharray", `${C} ${C}`);
+      const tick = document.getElementById("tick"), TL = 70;
+      tick.setAttribute("stroke-dasharray", `${TL} ${TL}`); tick.setAttribute("stroke-dashoffset", TL);
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.fromTo("#prog i", { width: "20%" }, { width: "30%", duration: 0.5, ease: "power2.out" }, 0.05);
+      tl.fromTo("#lab", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out" }, 0.05);
+      tl.fromTo("#panel", { opacity: 0, scale: 0.96 }, { opacity: 1, scale: 1, duration: 0.3, ease: "power3.out" }, 0.1);
+      tl.fromTo("#q .w", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out", stagger: 0.06 }, 0.15);
+      tl.fromTo(".tile", { x: 1000 }, { x: 0, duration: 0.35, ease: "back.out(1.4)", stagger: 0.08 }, 0.4);
+      tl.fromTo("#timer", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(2)" }, 0.55);
+      // countdown: three exact seconds from T0; each drains 0.9 s then holds 0.1 s; the digit swaps on the second
+      const T0 = 0.8;
+      tl.set(ring, { attr: { "stroke-dashoffset": 0 } }, 0);
+      [3, 2, 1].forEach((n, k) => {
+        const at = T0 + k;
+        tl.set("#digit", { textContent: String(n) }, at);
+        tl.fromTo("#digit", { scale: 1.4 }, { scale: 1, duration: 0.2, ease: "back.out(3)", immediateRender: false }, at);
+        tl.fromTo(ring, { attr: { "stroke-dashoffset": C * k / 3 } }, { attr: { "stroke-dashoffset": C * (k + 1) / 3 }, duration: 0.9, ease: "power1.inOut", immediateRender: false }, at);
+      });
+      // reveal on the third second
+      const R = T0 + 3;
+      tl.to("#timer", { opacity: 0.35, duration: 0.2 }, R);
+      [0, 2, 3].forEach((i) => tl.to("#t" + i, { opacity: 0.4, duration: 0.2 }, R));
+      tl.to("#t" + OK, { scale: 1.06, backgroundColor: "#22d07a", color: "#ffffff", boxShadow: "0 6px 0 #149a58", duration: 0.25, ease: "back.out(2)" }, R);
+      tl.to("#t" + OK + " .b", { backgroundColor: "rgba(255,255,255,.25)", color: "#ffffff", duration: 0.25 }, R);
+      tl.to(tick, { attr: { "stroke-dashoffset": 0 }, duration: 0.25, ease: "power2.out" }, R + 0.15);
+      tl.fromTo("#src", { opacity: 0 }, { opacity: 1, duration: 0.3 }, R + 0.2);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

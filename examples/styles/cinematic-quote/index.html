@@ -1,0 +1,120 @@
+<!doctype html>
+<!--
+  motionforge style preview: cinematic-quote
+  © 2026 motionforge contributors, MIT
+  Letterbox close over an original drawn dusk coastline (stand-in for footage) with a slow 1.00 -> 1.08 push;
+  the first quote line waits in the lower bar from frame 0, the rest arrive with a tracking close, amber
+  light leaks pass across the band, the key phrase turns italic, then the attribution hairline draws.
+  The quote is original sample copy, labelled as such. Fonts: Playfair Display (+ italic), Jost.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Playfair Display"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/playfair-display-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Playfair Display"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/playfair-display-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Playfair Display"; font-style: italic; font-weight: 400; font-display: block; src: url("assets/fonts/playfair-display-latin-400-italic.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Playfair Display"; font-style: italic; font-weight: 400; font-display: block; src: url("assets/fonts/playfair-display-latin-ext-400-italic.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Jost"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/jost-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Jost"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/jost-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Jost"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/jost-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Jost"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/jost-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      /* fonts:end */
+      :root { --bg: #070707; --ink: #F3EEE4; --acc: #F2B46D; --sup: #8E8679; --edge: #C4562E; --mf-grain-opacity: .10; }
+      html, body { background: var(--bg); }
+      #root { background: var(--bg); }
+      #root::before { z-index: 30; mix-blend-mode: overlay; }
+      #root::after { display: none; }
+      #shot { position: absolute; inset: 0; overflow: hidden; }
+      #shot svg { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 540px 672px; filter: saturate(.85); }
+      #leak { position: absolute; left: 0; top: 380px; width: 1080px; height: 584px; overflow: hidden; mix-blend-mode: screen; z-index: 2; }
+      .lk { position: absolute; top: -200px; width: 900px; height: 1000px; border-radius: 50%; background: radial-gradient(closest-side, rgba(242,180,109,.95), rgba(242,180,109,.55) 40%, rgba(196,86,46,.45) 70%, rgba(196,86,46,0)); opacity: 0; }
+      #vig { position: absolute; left: 0; top: 380px; width: 1080px; height: 584px; background: radial-gradient(ellipse at 50% 50%, transparent 60%, rgba(0,0,0,.25) 100%); z-index: 3; }
+      .bar { position: absolute; left: 0; width: 1080px; background: var(--bg); z-index: 4; }
+      #top { top: 0; height: 380px; } #bot { top: 964px; height: 956px; }
+      #chap { position: absolute; left: 0; right: 0; top: 262px; text-align: center; font: 400 24px/1 "Jost", sans-serif; letter-spacing: .4em; text-transform: uppercase; color: var(--sup); z-index: 6; }
+      #q { position: absolute; left: 110px; width: 900px; top: 1060px; z-index: 6; }
+      .ql { font: 400 88px/1.15 "Playfair Display", serif; color: var(--ink); white-space: nowrap; }
+      .ql.first { text-shadow: 0 2px 20px rgba(0,0,0,.6); }
+      #qm { position: absolute; left: 30px; top: 1010px; font: 400 italic 150px/1 "Playfair Display", serif; color: var(--acc); z-index: 6; opacity: .9; }
+      #hl { position: absolute; left: 100px; top: 1585px; width: 160px; height: 2px; background: var(--acc); transform-origin: left; z-index: 6; }
+      #att { position: absolute; left: 100px; top: 1610px; font: 500 28px/1.5 "Jost", sans-serif; letter-spacing: .3em; text-transform: uppercase; color: var(--sup); z-index: 6; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="shot" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <svg viewBox="0 0 1080 1920" aria-hidden="true">
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#15131a"/><stop offset=".5" stop-color="#3d2a2a"/><stop offset=".72" stop-color="#8e5236"/><stop offset=".9" stop-color="#e09a5c"/><stop offset="1" stop-color="#ffd59a"/></linearGradient>
+            <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9b5a3c"/><stop offset=".2" stop-color="#4a3029"/><stop offset="1" stop-color="#0d0c0b"/></linearGradient>
+            <radialGradient id="sun" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff2d6"/><stop offset=".25" stop-color="#ffd38f" stop-opacity=".9"/><stop offset="1" stop-color="#f2b46d" stop-opacity="0"/></radialGradient>
+            <filter id="h"><feGaussianBlur stdDeviation="3"/></filter>
+            <filter id="h2"><feGaussianBlur stdDeviation="10"/></filter>
+          </defs>
+          <rect width="1080" height="810" fill="url(#sky)"/>
+          <circle cx="700" cy="790" r="200" fill="url(#sun)" opacity=".8"/>
+          <circle cx="700" cy="782" r="46" fill="#fff4dd" filter="url(#h)"/>
+          <rect y="800" width="1080" height="1120" fill="url(#sea)"/>
+          <g filter="url(#h)" fill="#ffd9a0" opacity=".7">
+            <rect x="640" y="815" width="120" height="4"/><rect x="610" y="836" width="170" height="3"/><rect x="660" y="860" width="80" height="3"/><rect x="590" y="890" width="210" height="3" opacity=".6"/><rect x="630" y="930" width="140" height="3" opacity=".5"/>
+          </g>
+          <path d="M0 760 C 120 700 240 690 340 740 C 400 770 440 790 480 806 L 0 806Z" fill="#2a1d1b" filter="url(#h)" opacity=".85"/>
+          <path d="M0 900 C 160 820 300 820 420 880 C 520 930 560 1000 600 1100 L 0 1100Z" fill="#120e0d"/>
+          <path d="M150 862 L 170 810 L 178 810 L 196 862Z" fill="#120e0d"/>
+          <rect x="170" y="760" width="8" height="54" fill="#120e0d"/>
+          <circle cx="174" cy="760" r="10" fill="#ffcf8a" filter="url(#h2)"/>
+          <circle cx="174" cy="760" r="4" fill="#fff0d0"/>
+        </svg>
+      </div>
+      <div id="leak" class="clip" data-start="0" data-duration="4.5" data-track-index="1"><div class="lk" id="lk1"></div><div class="lk" id="lk2"></div></div>
+      <div id="vig"></div>
+      <div id="top" class="bar clip" data-start="0" data-duration="4.5" data-track-index="2"></div>
+      <div id="bot" class="bar clip" data-start="0" data-duration="4.5" data-track-index="3"></div>
+      <div id="chap" class="clip" data-start="0" data-duration="4.5" data-track-index="4">Cinematic quote · I</div>
+      <div id="qm" class="clip" data-start="0" data-duration="4.5" data-track-index="5">“</div>
+      <div id="q" class="clip" data-start="0" data-duration="4.5" data-track-index="6">
+        <div class="ql first" id="l1">We left a light on</div>
+        <div class="ql" id="l2">for the ones still</div>
+        <div class="ql" id="l3"><span id="key">finding their way</span></div>
+        <div class="ql" id="l4"><span id="key2">home.</span></div>
+      </div>
+      <div id="hl" class="clip" data-start="0" data-duration="4.5" data-track-index="7"></div>
+      <div id="att" class="clip" data-start="0" data-duration="4.5" data-track-index="8">Sample line<br />motionforge, 2026</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      // letterbox close: bars slide in from top and bottom over 0.8 s
+      tl.fromTo("#top", { yPercent: -100 }, { yPercent: 0, duration: 0.8, ease: "power3.inOut" }, 0);
+      tl.fromTo("#bot", { y: 956 }, { y: 0, duration: 0.8, ease: "power3.inOut" }, 0);
+      tl.fromTo("#vig", { opacity: 0 }, { opacity: 1, duration: 0.8 }, 0);
+      tl.fromTo("#shot svg", { scale: 1.0 }, { scale: 1.08, duration: DUR, ease: "sine.inOut" }, 0);
+      tl.fromTo("#chap", { opacity: 0 }, { opacity: 1, duration: 0.8 }, 0.7);
+      tl.fromTo("#qm", { opacity: 0 }, { opacity: 0.9, duration: 0.6 }, 0.6);
+      tl.set("#l1", { textShadow: "0 2px 20px rgba(0,0,0,0)" }, 0.8);
+      // lines arrive with a tracking close 0.04 em -> 0
+      ["#l2", "#l3", "#l4"].forEach((id, i) => tl.fromTo(id, { opacity: 0, letterSpacing: "0.04em" }, { opacity: 1, letterSpacing: "0em", duration: 1.2, ease: "power2.out" }, 0.9 + i * 0.6));
+      // the key phrase switches to italic as it is spoken
+      tl.set(["#key", "#key2"], { fontStyle: "italic" }, 2.9);
+      tl.fromTo(["#key", "#key2"], { color: "#F3EEE4" }, { color: "#F3EEE4", duration: 0.01 }, 2.9);
+      // light leaks cross the band left to right (peak 0.55)
+      [["#lk1", 0.9], ["#lk2", 2.2]].forEach(([id, t]) => {
+        tl.fromTo(id, { x: -950 }, { x: 1100, duration: 1.5, ease: "sine.inOut" }, t);
+        tl.fromTo(id, { opacity: 0 }, { opacity: 0.55, duration: 0.75, ease: "sine.inOut", yoyo: true, repeat: 1 }, t);
+      });
+      // attribution: amber hairline 0 -> 160 px, then the source fades in
+      tl.fromTo("#hl", { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "power2.out" }, 3.0);
+      tl.fromTo("#att", { opacity: 0 }, { opacity: 1, duration: 0.6 }, 3.3);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,131 @@
+<!doctype html>
+<!--
+  motionforge style preview: food-macro-warm
+  © 2026 motionforge contributors, MIT
+  Signature scenes "word behind the dish" + "steam rise" + "name and price": a cut-out loaf sits in front
+  of the huge italic appetite word, which settles 1.08 -> 1 over 1.2 s while a slow slider move drifts the
+  shot; a rack focus lands on the crust, 4 seeded steam sprites rise 220 px (opacity 0 -> .3 -> 0), the
+  crust rule draws and the saffron price lands. The loaf is drawn with SVG lighting filters (no photo).
+  DM Serif Display Italic + DM Sans. Dish and price are sample content.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      @font-face { font-family: "DM Serif Display"; font-weight: 400; font-style: italic; font-display: block; src: url("assets/fonts/dm-serif-display-latin-400-italic.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "DM Serif Display"; font-weight: 400; font-style: italic; font-display: block; src: url("assets/fonts/dm-serif-display-latin-ext-400-italic.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "DM Sans"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/dm-sans-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "DM Sans"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/dm-sans-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "DM Sans"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/dm-sans-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "DM Sans"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/dm-sans-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "DM Sans"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/dm-sans-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "DM Sans"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/dm-sans-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #1a0f0a; --ink: #fff1dc; --acc: #f6b40e; --sup: #b8622e; --mut: #a68e78; --mf-grain-opacity: .05; }
+      html, body { background: var(--bg); }
+      #root { background: var(--bg); }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,.45) 100%); z-index: 5; }
+      #world { position: absolute; inset: -40px; }
+      #light { position: absolute; inset: 0; background: radial-gradient(800px 700px at 55% 52%, #5a2f15 0%, #2d170b 45%, transparent 75%); }
+      .bokeh { position: absolute; border-radius: 50%; filter: blur(14px); }
+      #label { position: absolute; left: 60px; top: 262px; font: 600 28px/1 "DM Sans", system-ui; letter-spacing: .16em; text-transform: uppercase; color: var(--mut); z-index: 3; }
+      #label b { color: var(--ink); font-weight: 600; }
+      #word { position: absolute; left: 0; right: 0; top: 560px; text-align: center; font: italic 400 280px/1 "DM Serif Display", Georgia; letter-spacing: -0.02em; color: var(--ink); transform-origin: 50% 70%; }
+      #shadow { position: absolute; left: 150px; top: 1290px; width: 860px; height: 120px; border-radius: 50%; background: rgba(0,0,0,.75); filter: blur(30px); }
+      #loaf { position: absolute; left: 80px; top: 790px; width: 1000px; height: 640px; overflow: visible; }
+      .steam { position: absolute; width: 260px; height: 380px; border-radius: 50%; background: radial-gradient(closest-side, rgba(255,241,220,.9), rgba(255,241,220,0)); filter: blur(18px); opacity: 0; z-index: 2; }
+      #rule { position: absolute; left: 60px; top: 1500px; width: 540px; height: 4px; background: var(--sup); transform-origin: left; z-index: 3; }
+      #name { position: absolute; left: 60px; top: 1530px; font: 500 48px/1.2 "DM Sans", system-ui; color: var(--ink); z-index: 3; }
+      #price { position: absolute; left: 60px; top: 1600px; font: 700 64px/1 "DM Sans", system-ui; color: var(--acc); z-index: 3; }
+      #price span { font: 600 28px/1 "DM Sans", system-ui; letter-spacing: .16em; color: var(--mut); margin-left: 18px; vertical-align: middle; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="world" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <div id="light"></div>
+        <div id="bokeh"></div>
+        <div id="word">crackle</div>
+        <div id="shadow"></div>
+        <svg id="loaf" viewBox="0 0 1000 640">
+          <defs>
+            <radialGradient id="crust" cx="46%" cy="34%" r="70%">
+              <stop offset="0" stop-color="#f0c27a" /><stop offset=".35" stop-color="#d48f45" /><stop offset=".7" stop-color="#9a5322" /><stop offset="1" stop-color="#4a220c" />
+            </radialGradient>
+            <linearGradient id="cut" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbe3b4" /><stop offset="1" stop-color="#e2a95e" /></linearGradient>
+            <filter id="tex" x="-5%" y="-5%" width="110%" height="110%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.018 0.03" numOctaves="4" seed="11" result="n" />
+              <feDiffuseLighting in="n" surfaceScale="6" lighting-color="#ffe2b8" result="l"><feDistantLight azimuth="235" elevation="48" /></feDiffuseLighting>
+              <feComposite in="SourceGraphic" in2="l" operator="arithmetic" k1="1.35" k2="0" k3="0" k4="0" result="m" />
+              <feComposite in="m" in2="SourceAlpha" operator="in" />
+            </filter>
+            <filter id="soft"><feGaussianBlur stdDeviation="2" /></filter>
+          </defs>
+          <g filter="url(#tex)">
+            <path d="M40 470 C40 250 230 110 500 110 C770 110 960 250 960 470 C960 560 820 600 500 600 C180 600 40 560 40 470 Z" fill="url(#crust)" />
+            <path d="M250 300 C330 230 420 205 520 210 C470 240 370 270 270 330 Z" fill="url(#cut)" />
+            <path d="M330 420 C450 330 600 300 760 320 C640 350 500 390 360 460 Z" fill="url(#cut)" />
+            <path d="M560 200 C650 200 740 230 800 270 C720 260 640 250 570 235 Z" fill="url(#cut)" />
+          </g>
+          <g id="flour" filter="url(#soft)"></g>
+        </svg>
+        <div id="steam"></div>
+      </div>
+      <div id="label" class="clip" data-start="0" data-duration="4.5" data-track-index="1"><b>Food macro warm</b> · from the oven, 7:00</div>
+      <div id="rule" class="clip" data-start="0" data-duration="4.5" data-track-index="2"></div>
+      <div id="name" class="clip" data-start="0" data-duration="4.5" data-track-index="3">Country sourdough, dark bake</div>
+      <div id="price" class="clip" data-start="0" data-duration="4.5" data-track-index="4">€6<span>sample price</span></div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this)
+      const r = MF.rng("crackle");
+      // warm out-of-focus highlights behind the dish
+      const bk = document.getElementById("bokeh");
+      for (let i = 0; i < 9; i++) {
+        const b = document.createElement("div"); b.className = "bokeh";
+        const s = r.range(60, 160);
+        Object.assign(b.style, { width: s + "px", height: s + "px", left: r.range(0, 1100) + "px", top: r.range(380, 820) + "px", background: `rgba(${Math.round(r.range(220, 255))},${Math.round(r.range(140, 190))},70,${r.range(0.08, 0.2).toFixed(2)})` });
+        bk.appendChild(b);
+      }
+      // flour dusting on the crown
+      const fl = document.getElementById("flour"), NS = "http://www.w3.org/2000/svg";
+      for (let i = 0; i < 70; i++) {
+        const c = document.createElementNS(NS, "circle");
+        const a = r.range(0, Math.PI * 2), d = Math.sqrt(r()) ;
+        c.setAttribute("cx", 470 + Math.cos(a) * d * 260); c.setAttribute("cy", 250 + Math.sin(a) * d * 90);
+        c.setAttribute("r", r.range(1.5, 4.5)); c.setAttribute("fill", `rgba(255,248,232,${r.range(0.3, 0.8).toFixed(2)})`);
+        fl.appendChild(c);
+      }
+      // steam sprites: seeded x, staggered starts, rise 220 px over 2.5 s, opacity 0 -> .3 -> 0
+      const st = document.getElementById("steam");
+      for (let i = 0; i < 4; i++) {
+        const s = document.createElement("div"); s.className = "steam";
+        const x = 240 + i * 170 + r.range(-40, 40), y = 640 + r.range(-30, 40);
+        Object.assign(s.style, { left: x + "px", top: y + "px" });
+        st.appendChild(s);
+        const t0 = 0.6 + i * 0.45;
+        tl.fromTo(s, { y: 0, scaleX: 0.8, opacity: 0 }, { y: -220, scaleX: 1.25, duration: 2.5, ease: "none" }, t0);
+        tl.to(s, { opacity: 0.3, duration: 1.0, ease: "sine.out" }, t0);
+        tl.to(s, { opacity: 0, duration: 1.5, ease: "sine.in" }, t0 + 1.0);
+      }
+      // slow slider move across the whole shot (about 3 % per second)
+      tl.fromTo("#world", { x: 30, scale: 1.02 }, { x: -30, scale: 1.05, duration: 2.6, ease: "sine.out" }, 0);   // slider move, settles before the name card (keeps the GIF light)
+      tl.fromTo("#label", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 0.1);
+      tl.fromTo("#word", { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 1.2, ease: "power2.out" }, 0.15);
+      // rack focus onto the crust
+      tl.fromTo(["#loaf", "#shadow"], { filter: "blur(14px)" }, { filter: "blur(0px)", duration: 0.6, ease: "power2.inOut" }, 0.4);
+      tl.fromTo("#bokeh", { opacity: 0.4 }, { opacity: 1, duration: 0.6 }, 0.4);
+      tl.fromTo("#rule", { scaleX: 0 }, { scaleX: 1, duration: 0.4, ease: "power2.out" }, 2.2);
+      tl.fromTo("#name", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 2.4);
+      tl.fromTo("#price", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 2.6);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,108 @@
+<!doctype html>
+<!--
+  motionforge style preview: lyric-kinetic
+  © 2026 motionforge contributors, MIT
+  Signature scenes "syllable land" + "held note": ghosted upcoming words wait at 60 %, each word lands on
+  its onset (scale 0.82 -> 1, y +24 -> 0, 0.09 s power3.out, started 2 frames early) and takes the accent;
+  the held word's tracking stretches linearly 0 -> 0.35 em for the note's length with a glow growing to
+  24 px, then snaps back in 0.06 s; the line lifts 40 px and fades on the bar, and a percussive line in
+  Syne follows. DM Serif Display + Syne + Space Mono. The lyric and artist are original placeholders.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      @font-face { font-family: "DM Serif Display"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/dm-serif-display-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "DM Serif Display"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/dm-serif-display-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Syne"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/syne-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Syne"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/syne-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Space Mono"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/space-mono-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Space Mono"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/space-mono-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #1c0a10; --ink: #fff4ec; --acc: #ff8a5b; --sup: #6b3a44; --glow: #ffd1ba; --mf-grain-opacity: .09; }
+      html, body { background: var(--bg); }
+      #root { background: var(--bg); }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 58%, rgba(0,0,0,.5) 100%); }
+      #breath { position: absolute; inset: 0; background: radial-gradient(800px 800px at 50% 50%, #2c1018 0%, transparent 70%); }
+      #label { position: absolute; left: 0; right: 0; top: 262px; text-align: center; font: 400 26px/1 "Space Mono", monospace; letter-spacing: .18em; text-transform: uppercase; color: #b98f95; }
+      #stage { position: absolute; left: 0; right: 0; top: 0; height: 1920px; transform-origin: 50% 960px; }
+      .line { position: absolute; left: 0; right: 0; text-align: center; white-space: nowrap; }
+      .serif { font: 400 190px/1 "DM Serif Display", Georgia; letter-spacing: -0.02em; }
+      .syne { font: 800 150px/1 "Syne", system-ui; letter-spacing: -0.01em; text-transform: lowercase; }
+      .w { display: inline-block; position: relative; margin: 0 0.12em; }
+      .w .g { color: var(--sup); opacity: .6; }
+      .w .s { position: absolute; top: 0; color: var(--acc); opacity: 0; white-space: nowrap; transform-origin: 50% 80%; }
+      #bar { position: absolute; left: 140px; right: 140px; top: 1700px; height: 2px; background: rgba(255,244,236,.18); }
+      #barf { position: absolute; left: 0; top: 0; height: 2px; width: 100%; background: var(--ink); transform-origin: left; }
+      #tc { position: absolute; left: 140px; right: 140px; top: 1724px; display: flex; justify-content: space-between; font: 400 26px/1 "Space Mono", monospace; letter-spacing: .18em; color: #b98f95; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="breath" class="clip" data-start="0" data-duration="4.5" data-track-index="0"></div>
+      <div id="label" class="clip" data-start="0" data-duration="4.5" data-track-index="1">Lyric kinetic · sample lyric</div>
+      <div id="stage" class="clip" data-start="0" data-duration="4.5" data-track-index="2"></div>
+      <div id="bar" class="clip" data-start="0" data-duration="4.5" data-track-index="3"><div id="barf"></div></div>
+      <div id="tc" class="clip" data-start="0" data-duration="4.5" data-track-index="4"><span id="tcn">0:41</span><span>3:12</span></div>
+    </div>
+
+    <script>
+      const DUR = 4.5, FR = 1 / 30;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this)
+      // [word, onset s, end s] per row; original lyric
+      const L1 = { cls: "serif", rows: [[["hold", 0.35, 0.7], ["on", 0.7, 0.95]], [["to", 0.95, 1.1], ["the", 1.1, 1.3]], [["light", 1.3, 2.6]]], top: 690, lh: 200 };
+      const L2 = { cls: "syne", rows: [[["a", 3.05, 3.2], ["little", 3.2, 3.5]], [["longer", 3.55, 4.4]]], top: 790, lh: 170 };
+      const stage = document.getElementById("stage");
+      const build = (Ln, id) => {
+        const box = document.createElement("div"); box.id = id; stage.appendChild(box);
+        const words = [];
+        Ln.rows.forEach((row, ri) => {
+          const d = document.createElement("div"); d.className = "line " + Ln.cls; d.style.top = (Ln.top + ri * Ln.lh) + "px";
+          row.forEach(([w, on, off]) => {
+            const s = document.createElement("span"); s.className = "w";
+            s.innerHTML = `<span class="g">${w}</span><span class="s">${w}</span>`;
+            d.appendChild(s); words.push({ el: s, on, off });
+          });
+          box.appendChild(d);
+        });
+        return words;
+      };
+      const W1 = build(L1, "l1"), W2 = build(L2, "l2");
+      const land = (w, prevOff) => {
+        const s = w.el.querySelector(".s"), g = w.el.querySelector(".g");
+        const t = w.on - 2 * FR;                                         // 2 frames early reads as on time
+        tl.fromTo(s, { opacity: 0, scale: 0.82, y: 24 }, { opacity: 1, scale: 1, y: 0, duration: 0.09, ease: "power3.out" }, t);
+        tl.set(g, { opacity: 0 }, t + 0.09);
+        tl.to(s, { color: "#fff4ec", duration: 0.08 }, w.off);           // accent passes on
+      };
+      tl.fromTo("#label", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0);
+      tl.fromTo("#l1 .g", { opacity: 0 }, { opacity: 0.6, duration: 0.25 }, 0.05);
+      W1.forEach((w) => land(w));
+      // held note on "light": tracking 0 -> 0.35 em, glow 0 -> 24 px, linear over the note, snap back in 0.06 s
+      const held = W1[W1.length - 1].el.querySelector(".s");
+      const hd = { k: 0 };
+      const setHeld = () => { held.style.letterSpacing = (0.35 * hd.k).toFixed(3) + "em"; held.style.textShadow = `0 0 ${(24 * hd.k).toFixed(1)}px rgba(255,209,186,${(0.85 * hd.k).toFixed(2)})`; };
+      tl.to(hd, { k: 1, duration: 1.25, ease: "none", onUpdate: setHeld }, 1.33);
+      tl.to(hd, { k: 0, duration: 0.06, ease: "power2.out", onUpdate: setHeld }, 2.6);
+      // the sung copy is centred on its ghost, so the stretch grows to both sides
+      gsap.set(".w .s", { left: "50%", xPercent: -50 });
+      // line lifts 40 px and fades on the bar line
+      tl.to("#l1", { y: -40, opacity: 0, duration: 0.25, ease: "power2.in" }, 2.8);
+      tl.fromTo("#l2 .g", { opacity: 0 }, { opacity: 0.6, duration: 0.2 }, 2.9);
+      W2.forEach((w) => land(w));
+      // slow 2 % push per line; breathing light (deterministic)
+      tl.fromTo("#stage", { scale: 1 }, { scale: 1.02, duration: 2.8, ease: "none" }, 0);
+      tl.fromTo("#stage", { scale: 1 }, { scale: 1.02, duration: 1.6, ease: "none", immediateRender: false }, 2.9);
+      // the radial light breathes 4 % over 8 bars: within a 4.5 s preview that swing is not visible, so it is held still
+      tl.fromTo("#barf", { scaleX: 41 / 192 }, { scaleX: 45.5 / 192, duration: DUR, ease: "none" }, 0);
+      const tcn = document.getElementById("tcn"), tc = { s: 41 };
+      tl.fromTo(tc, { s: 41 }, { s: 45.5, duration: DUR, ease: "none", onUpdate: () => { const s = Math.floor(tc.s); tcn.textContent = Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); } }, 0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

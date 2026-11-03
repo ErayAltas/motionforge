@@ -1,0 +1,127 @@
+<!doctype html>
+<!--
+  motionforge style preview: case-study
+  © 2026 motionforge contributors, MIT
+  Signature scene: the colour return. Chapter card (numeral 260 px, italic name slides in 0.4 s, 2 px rule
+  draws 0.5 s), the capture slides in 80 px from the right at 20 % saturation, then a left-to-right wipe
+  (0.8 s power2.inOut) restores its colour, a teal box marks the changed detail and the "from -> to"
+  metric lands (arrow 0.3 s, value counts 1.0 s). The client, page and numbers are fictional examples.
+  Newsreader + Hanken Grotesk.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts: @fontsource/newsreader, @fontsource/hanken-grotesk (copied from node_modules/@fontsource/<family>/files/) */
+      @font-face { font-family: "Newsreader"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/newsreader-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Newsreader"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/newsreader-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Newsreader"; font-weight: 600; font-style: italic; font-display: block; src: url("assets/fonts/newsreader-latin-600-italic.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Newsreader"; font-weight: 600; font-style: italic; font-display: block; src: url("assets/fonts/newsreader-latin-ext-600-italic.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Hanken Grotesk"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/hanken-grotesk-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Hanken Grotesk"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/hanken-grotesk-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Hanken Grotesk"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/hanken-grotesk-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Hanken Grotesk"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/hanken-grotesk-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Hanken Grotesk"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/hanken-grotesk-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Hanken Grotesk"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/hanken-grotesk-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #E8E6E1; --ink: #121212; --acc: #00A88F; --sup: #8A857C; --card: #FAF9F6; --mf-grain-opacity: 0.04; }
+      html, body { background: var(--bg); }
+      #root { background: var(--bg); color: var(--ink); font-family: "Hanken Grotesk", sans-serif; }
+      #root::before { mix-blend-mode: multiply; }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 70%, rgba(60,50,30,.08) 100%); }
+      .lab { font: 700 27px/1 "Hanken Grotesk"; letter-spacing: .14em; text-transform: uppercase; color: var(--sup); }
+      #clab { position: absolute; left: 90px; top: 262px; }
+      #num { position: absolute; left: 80px; top: 300px; font: 600 260px/0.9 "Newsreader", Georgia; letter-spacing: -0.03em; }
+      #cname { position: absolute; left: 470px; top: 330px; font: italic 600 120px/1 "Newsreader", Georgia; letter-spacing: -0.02em; }
+      #client { position: absolute; left: 472px; top: 470px; font: 500 40px/1.2 "Hanken Grotesk"; color: var(--sup); }
+      #rule { position: absolute; left: 90px; right: 90px; top: 560px; height: 2px; background: var(--acc); transform-origin: left; }
+      #ev { position: absolute; left: 90px; top: 610px; width: 900px; height: 632px; }
+      .cap { position: absolute; inset: 0; border-radius: 22px; overflow: hidden; background: #fff; box-shadow: 0 18px 50px rgba(40,30,10,.14); }
+      .cap.grey { filter: saturate(0.2); }
+      .bar { height: 64px; background: #EEECE8; display: flex; align-items: center; gap: 12px; padding: 0 26px; }
+      .bar i { width: 16px; height: 16px; border-radius: 50%; background: #D3CFC7; }
+      .bar span { margin-left: 18px; flex: 1; height: 38px; border-radius: 19px; background: #fff; font: 500 22px/38px "Hanken Grotesk"; color: #7c776e; padding-left: 20px; }
+      .pg { padding: 30px 40px; }
+      .it { display: flex; align-items: center; gap: 24px; padding: 16px 0; border-bottom: 2px solid #F0EEEA; font: 700 32px/1 "Hanken Grotesk"; }
+      .th { width: 74px; height: 74px; border-radius: 16px; }
+      .it em { font-style: normal; margin-left: auto; color: #444; }
+      .tot { display: flex; justify-content: space-between; margin: 22px 0 22px; font: 800 36px/1 "Hanken Grotesk"; }
+      .pay { height: 92px; border-radius: 46px; background: #E0602E; color: #fff; display: flex; align-items: center; justify-content: center; font: 800 38px/1 "Hanken Grotesk"; }
+      .pay small { font-weight: 500; font-size: 26px; margin-left: 14px; opacity: .9; }
+      #col { clip-path: inset(0 100% 0 0); }
+      #box { position: absolute; left: 22px; top: 490px; width: 856px; height: 108px; border: 5px solid var(--acc); border-radius: 56px; }
+      #met { position: absolute; left: 90px; right: 90px; top: 1290px; display: flex; align-items: baseline; gap: 26px; white-space: nowrap; }
+      #from { font: 800 104px/1 "Hanken Grotesk"; color: var(--sup); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+      #arr { width: 120px; height: 60px; align-self: center; }
+      #arr path { fill: none; stroke: var(--ink); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+      #to { font: 800 176px/1 "Hanken Grotesk"; color: var(--acc); font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+      #to small { font-size: 100px; }
+      #per { position: absolute; left: 90px; top: 1490px; }
+      #quote { position: absolute; left: 90px; right: 90px; top: 1556px; font: 500 46px/1.3 "Hanken Grotesk"; }
+      #quote b { font-weight: 800; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage light" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="clab" class="lab clip" data-start="0" data-duration="4.5" data-track-index="0">Case study · Chapter 03</div>
+      <div id="num" class="clip" data-start="0" data-duration="4.5" data-track-index="1">03</div>
+      <div id="cname" class="clip" data-start="0" data-duration="4.5" data-track-index="2">Result</div>
+      <div id="client" class="clip" data-start="0" data-duration="4.5" data-track-index="3">Fernhill Bakery, example client</div>
+      <div id="rule" class="clip" data-start="0" data-duration="4.5" data-track-index="4"></div>
+      <div id="ev" class="clip" data-start="0" data-duration="4.5" data-track-index="5">
+        <div class="cap grey" id="gr"></div>
+        <div class="cap" id="col"></div>
+        <div id="box"></div>
+      </div>
+      <div id="met" class="clip" data-start="0" data-duration="4.5" data-track-index="6">
+        <span id="from">2.1%</span>
+        <svg id="arr" viewBox="0 0 120 60"><path d="M6 30h100M84 10l22 20-22 20" pathLength="1" /></svg>
+        <span id="to"><span id="tv">2.1</span><small>%</small></span>
+      </div>
+      <div id="per" class="lab clip" data-start="0" data-duration="4.5" data-track-index="7">Checkout conversion · Q3 → Q4 · example data</div>
+      <div id="quote" class="clip" data-start="0" data-duration="4.5" data-track-index="8">One page instead of three, and the pay button where the thumb already is. <b>After</b> four weeks:</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      // the same capture twice: a desaturated "before" and a full-colour copy revealed by the wipe
+      const page = `<div class="bar"><i></i><i></i><i></i><span>fernhill.example/checkout</span></div>
+        <div class="pg">
+          <div class="it"><div class="th" style="background:#D98E3F"></div>Sourdough loaf<em>€6.20</em></div>
+          <div class="it"><div class="th" style="background:#C2553A"></div>Cherry galette<em>€8.40</em></div>
+          <div class="it"><div class="th" style="background:#8FA65B"></div>Herb focaccia<em>€3.80</em></div>
+          <div class="tot"><span>Total</span><span>€18.40</span></div>
+          <div class="pay">Pay €18.40<small>in one step</small></div>
+        </div>`;
+      document.getElementById("gr").innerHTML = page;
+      document.getElementById("col").innerHTML = page;
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo("#clab", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.05);
+      tl.fromTo("#num", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.12);
+      tl.fromTo("#cname", { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.4, ease: "power3.out" }, 0.3);
+      tl.fromTo("#client", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.42);
+      tl.fromTo("#rule", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.inOut" }, 0.5);
+      // evidence: slides in 80 px from the right, still desaturated
+      tl.fromTo("#ev", { opacity: 0, x: 80 }, { opacity: 1, x: 0, duration: 0.6, ease: "power3.out" }, 0.8);
+      tl.fromTo("#quote", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 1.1);
+      // on "after": colour returns left to right, teal box on the changed detail
+      tl.to("#col", { clipPath: "inset(0 0% 0 0)", duration: 0.8, ease: "power2.inOut" }, 1.75);
+      tl.fromTo("#box", { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 0.3, ease: "power3.out" }, 2.45);
+      tl.to("#ev", { scale: 1.03, duration: 1.8, ease: "power1.inOut", transformOrigin: "50% 80%" }, 2.4);
+      // metric delta: grey "from", arrow draws 0.3 s, teal "to" counts 1.0 s, period line after
+      tl.fromTo("#met", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 2.55);
+      tl.fromTo("#arr path", { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.3, ease: "power2.out" }, 2.65);
+      tl.fromTo("#to", { opacity: 0 }, { opacity: 1, duration: 0.15 }, 2.9);
+      const o = { v: 2.1 }, tv = document.getElementById("tv");
+      tl.to(o, { v: 3.4, duration: 1.0, ease: "power2.out", onUpdate: () => { tv.textContent = o.v.toFixed(1); } }, 2.9);
+      tl.fromTo("#per", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 3.6);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

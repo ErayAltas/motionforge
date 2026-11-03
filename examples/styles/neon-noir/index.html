@@ -1,0 +1,126 @@
+<!doctype html>
+<!--
+  motionforge style preview: neon-noir
+  © 2026 motionforge contributors, MIT
+  Signature scene: the sign strike. The magenta tube sits unlit (15 %), flickers on with a seeded
+  off-on pattern over 0.5 s, then hums ±3 % at 2 Hz; its reflection appears 0.1 s later, rippling in the
+  puddle below; a small cyan sign strikes after it. Glow = a tight 4 px layer + a 28 px layer at 45 %.
+  Magenta and cyan exist only as light sources and their reflections; the field stays deep navy (no
+  gradient backgrounds). The venue, street and hours are fictional. Tilt Neon + Chakra Petch.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts: @fontsource/tilt-neon, @fontsource/chakra-petch (copied from node_modules/@fontsource/<family>/files/) */
+      @font-face { font-family: "Tilt Neon"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/tilt-neon-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Tilt Neon"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/tilt-neon-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Chakra Petch"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/chakra-petch-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Chakra Petch"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/chakra-petch-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Chakra Petch"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/chakra-petch-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Chakra Petch"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/chakra-petch-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #070B18; --ink: #E8F1FF; --mag: #FF2D95; --cyan: #2BB8FF; --wet: #1A2440; --mf-grain-opacity: 0.06; }
+      html, body { background: var(--bg); }
+      #root { background: var(--bg); color: var(--ink); }
+      #wall { position: absolute; inset: 0; width: 1080px; height: 1920px; }
+      #cam { position: absolute; inset: 0; transform-origin: 50% 40%; }
+      .lab { font: 600 28px/1 "Chakra Petch"; letter-spacing: .22em; text-transform: uppercase; color: #9fb0cc; }
+      #addr { position: absolute; left: 0; right: 0; top: 262px; text-align: center; }
+      #glowwall { position: absolute; left: -100px; top: 300px; width: 1280px; height: 700px; background: radial-gradient(closest-side, rgba(255,45,149,.22), rgba(255,45,149,0)); }
+      .sign { position: absolute; left: 0; right: 0; text-align: center; font: 400 200px/1 "Tilt Neon"; letter-spacing: .02em; white-space: nowrap; }
+      #s-un { top: 440px; color: #2a1424; -webkit-text-stroke: 2px #3d1d33; }
+      #s-lit { top: 440px; color: #FFB3D9; -webkit-text-stroke: 3px #FF2D95;
+               text-shadow: 0 0 4px #FF2D95, 0 0 4px #FF2D95, 0 0 28px rgba(255,45,149,.45), 0 0 70px rgba(255,45,149,.35); }
+      #frame { position: absolute; left: 110px; width: 860px; top: 410px; height: 280px; border-radius: 30px; border: 3px solid #1d2742; }
+      #cy-un, #cy-lit { position: absolute; left: 640px; top: 760px; font: 400 64px/1 "Tilt Neon"; letter-spacing: .06em; white-space: nowrap; }
+      #cy-un { color: #0f2232; -webkit-text-stroke: 1px #17344a; }
+      #cy-lit { color: #BDEBFF; -webkit-text-stroke: 2px #2BB8FF; text-shadow: 0 0 4px #2BB8FF, 0 0 28px rgba(43,184,255,.45), 0 0 50px rgba(43,184,255,.3); }
+      #cap { position: absolute; left: 140px; right: 140px; top: 1090px; padding: 22px 28px; text-align: center; font: 500 48px/1.25 "Chakra Petch"; color: var(--ink);
+             background: rgba(7,11,24,.4); backdrop-filter: blur(20px); border-radius: 12px; }
+      #ground { position: absolute; left: 0; right: 0; top: 1260px; bottom: 0; background: linear-gradient(#0a1022, #0d1428 40%, #090e1d); }
+      #curb { position: absolute; left: 0; right: 0; top: 1252px; height: 10px; background: #141c33; }
+      #refl { position: absolute; left: 0; top: 1300px; width: 1080px; height: 520px; overflow: hidden; filter: url(#ripple) blur(2px); }
+      #refl .sign { top: 30px; transform: scaleY(-1.15); transform-origin: 50% 50%; }
+      #refl #r-cy { position: absolute; left: 640px; top: -10px; font: 400 64px/1 "Tilt Neon"; color: #BDEBFF; text-shadow: 0 0 28px rgba(43,184,255,.6); transform: scaleY(-1.2); }
+      #streaks { position: absolute; left: 0; top: 1270px; width: 1080px; height: 650px; }
+      #pud { position: absolute; left: 0; top: 1270px; width: 1080px; height: 650px; pointer-events: none; }
+      #name { position: absolute; left: 0; right: 0; top: 1760px; text-align: center; font: 600 26px/1 "Chakra Petch"; letter-spacing: .22em; color: #6f7f9c; text-transform: uppercase; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <svg id="wall" viewBox="0 0 1080 1920">
+        <defs>
+          <filter id="wt" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.02 0.05" numOctaves="4" seed="31" />
+            <feColorMatrix values="0 0 0 0 .1  0 0 0 0 .14  0 0 0 0 .25  0 0 0 .7 -.1" /></filter>
+          <filter id="ripple" x="0" y="0" width="100%" height="100%"><feTurbulence id="rt" type="turbulence" baseFrequency="0.004 0.06" numOctaves="2" seed="5" result="n" />
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="34" xChannelSelector="R" yChannelSelector="G" /></filter>
+        </defs>
+        <rect width="1080" height="1260" filter="url(#wt)" opacity=".12" />
+      </svg>
+      <div id="cam" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <div id="glowwall"></div>
+        <div id="addr" class="lab">14 Harbor St · fictional venue</div>
+        <div id="frame"></div>
+        <div id="s-un" class="sign">night owl</div>
+        <div id="s-lit" class="sign">night owl</div>
+        <div id="cy-un">open til 4</div>
+        <div id="cy-lit">open til 4</div>
+        <div id="ground"></div>
+        <div id="curb"></div>
+        <div id="refl"><div id="r-mag" class="sign" style="color:#FF7DBE; text-shadow: 0 0 30px rgba(255,45,149,.7)">night owl</div><div id="r-cy">open til 4</div></div>
+        <svg id="streaks" viewBox="0 0 1080 650"></svg>
+        <svg id="pud" viewBox="0 0 1080 650"><path d="M0 120 C 200 90, 380 150, 560 110 C 760 70, 900 140, 1080 100" stroke="#070B18" stroke-width="40" fill="none" opacity=".55" />
+          <path d="M0 470 C 260 430, 520 520, 1080 450 L1080 650 L0 650 Z" fill="#070B18" opacity=".55" /></svg>
+      </div>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="1">Late kitchen until the last train home.</div>
+      <div id="name" class="clip" data-start="0" data-duration="4.5" data-track-index="2">Neon noir</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const r = MF.rng("neon-noir");
+      // cyan smears on the wet asphalt (static strokes, brightness follows the cyan sign)
+      const st = document.getElementById("streaks");
+      for (let i = 0; i < 26; i++) {
+        const x = r.range(560, 1000), y = r.range(40, 420), w = r.range(30, 140);
+        st.innerHTML += `<rect x="${x.toFixed(0)}" y="${y.toFixed(0)}" width="${w.toFixed(0)}" height="${r.range(2, 5).toFixed(1)}" rx="2" fill="#2BB8FF" opacity="${r.range(0.15, 0.5).toFixed(2)}"/>`;
+      }
+      for (let i = 0; i < 26; i++) {
+        const x = r.range(80, 1000), y = r.range(80, 520), w = r.range(40, 180);
+        st.innerHTML += `<rect x="${x.toFixed(0)}" y="${y.toFixed(0)}" width="${w.toFixed(0)}" height="${r.range(2, 5).toFixed(1)}" rx="2" fill="#FF2D95" opacity="${r.range(0.1, 0.35).toFixed(2)}" class="ms"/>`;
+      }
+      // seeded flicker tables (off-on-off-on over 0.5 s, 1/30 s steps), then a ±3 % hum at 2 Hz
+      function table(seed) { const q = MF.rng(seed), T = []; for (let i = 0; i < 15; i++) T.push(i > 11 ? 1 : i < 2 ? 0 : q() < 0.5 ? 1 : 0.15); T[4] = 1; T[5] = 0.15; T[9] = 1; return T; }
+      const TM = table("mag"), TC = table("cyan");
+      const level = (t, t0, T) => t < t0 ? 0 : t < t0 + 0.5 ? T[Math.min(14, Math.floor((t - t0) * 30))] : 1 + 0.03 * Math.sin((t - t0) * Math.PI * 4);
+      const E = (id) => document.getElementById(id);
+      const sl = E("s-lit"), gw = E("glowwall"), rm = E("r-mag"), cl = E("cy-lit"), rc = E("r-cy"), rt = E("rt"), st2 = E("streaks"), cam = E("cam");
+      const ms = [...document.querySelectorAll(".ms")];
+      function frame(t) {
+        const m = level(t, 0.35, TM), mr = level(t - 0.1, 0.35, TM), c = level(t, 1.35, TC);
+        const lit = (v) => (v <= 0 ? 0 : v < 0.2 ? 0.0 : Math.min(1, v));
+        sl.style.opacity = lit(m); sl.style.filter = `brightness(${m > 0.2 ? m : 1})`;
+        gw.style.opacity = lit(m) * 0.9;
+        rm.style.opacity = (lit(mr) * 0.6).toFixed(3);
+        ms.forEach((e) => (e.style.display = mr > 0.2 ? "" : "none"));
+        cl.style.opacity = lit(c); rc.style.opacity = (lit(c) * 0.55).toFixed(3); st2.style.opacity = lit(c) * 0.9 + (mr > 0.2 ? 0.1 : 0);
+        rt.setAttribute("baseFrequency", `${(0.004 + 0.0015 * Math.sin(t * 2.2)).toFixed(5)} ${(0.06 + 0.01 * Math.sin(t * 1.7 + 1)).toFixed(4)}`);
+      }
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      const P = { t: 0 };
+      tl.fromTo(P, { t: 0 }, { t: DUR, duration: DUR, ease: "none", onUpdate: () => frame(P.t) }, 0);
+      tl.fromTo("#addr", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.1);
+      tl.fromTo("#cap", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 2.0);
+      tl.fromTo("#name", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 2.4);
+      frame(0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

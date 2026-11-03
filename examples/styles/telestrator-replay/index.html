@@ -1,0 +1,193 @@
+<!doctype html>
+<!--
+  motionforge style preview: telestrator-replay
+  © 2026 motionforge contributors, MIT
+  Signature scenes "freeze and ring" + "two options": the play runs, ramps 100 -> 0 % over 0.3 s and
+  freezes; the frame outside an elliptical spotlight (120 px feather) drops to 45 %, a yellow ring draws
+  round the ball carrier's feet in the pitch's perspective (330° then closing with a 10° overshoot),
+  a digital push 1.0 -> 1.15, then a yellow arrow to the better pass and a red-orange arrow with a cross
+  to the chosen one, both tapered (4 -> 9 -> 6 px) and pinned to the pitch through the projection.
+  No footage is used: the match frame is an illustration drawn in SVG from a simple camera model,
+  standing in for the user's own footage (labelled on screen). Teko + Atkinson Hyperlegible.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Teko"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/teko-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Teko"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/teko-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Teko"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/teko-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Teko"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/teko-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Atkinson Hyperlegible"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/atkinson-hyperlegible-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Atkinson Hyperlegible"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/atkinson-hyperlegible-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      /* fonts:end */
+      :root { --mf-bg: #0f1113; --acc: #ffe11a; --ink: #ffffff; --panel: rgba(15,17,19,.85); --sup: #ff5a36; --mf-grain-opacity: 0;
+        --t: "Teko", "Arial Narrow", sans-serif; --a: "Atkinson Hyperlegible", system-ui, sans-serif; }
+      #root { background: #0f1113; }
+      #root::after { display: none; }
+      #cam { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      #field { position: absolute; left: 0; top: 0; }
+      #spot { position: absolute; inset: 0; opacity: 0; }
+      #ink { position: absolute; left: 0; top: 0; overflow: visible; }
+      #scrim { position: absolute; left: 0; right: 0; top: 0; height: 560px; background: linear-gradient(180deg, rgba(10,12,14,.92) 0%, rgba(10,12,14,.75) 55%, transparent 100%); }
+      #title { position: absolute; left: 60px; top: 236px; white-space: nowrap; font: 600 116px/0.8 var(--t); text-transform: uppercase; letter-spacing: .02em; color: var(--ink); }
+      #title span { color: var(--acc); }
+      #lab { position: absolute; left: 64px; top: 346px; font: 500 40px/1 var(--t); letter-spacing: .04em; color: var(--ink); text-transform: uppercase; opacity: .85; }
+      #tc { position: absolute; left: 740px; top: 336px; height: 52px; padding: 0 16px; border-radius: 6px; background: var(--panel); display: flex; align-items: center; gap: 12px;
+        font: 700 26px/1 var(--a); color: var(--ink); font-variant-numeric: tabular-nums; }
+      #tc i { width: 14px; height: 14px; border-radius: 50%; background: #ff3b30; }
+      #frz { position: absolute; left: 740px; top: 400px; height: 44px; padding: 0 14px; border-radius: 6px; background: var(--acc); color: #0f1113; font: 600 34px/46px var(--t); letter-spacing: .06em; }
+      .plate { position: absolute; padding: 8px 16px 2px; border-radius: 4px; background: var(--panel); font: 500 40px/1 var(--t); letter-spacing: .04em; text-transform: uppercase; color: var(--ink); white-space: nowrap; }
+      .plate b { color: var(--acc); font-weight: 500; }
+      #cap { position: absolute; left: 60px; top: 1470px; width: 960px; padding: 22px 28px; border-radius: 10px; background: var(--panel); font: 700 46px/1.25 var(--a); color: var(--ink); }
+      #note { position: absolute; left: 60px; top: 1690px; font: 700 24px/1 var(--a); color: rgba(255,255,255,.6); letter-spacing: .04em; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="cam" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <svg id="field" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+        <div id="spot"></div>
+        <svg id="ink" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+        <div class="plate" id="p1">Watch <b>number 8</b></div>
+        <div class="plate" id="p2"><b>Open</b> · 4.2 m free</div>
+      </div>
+      <div id="scrim" class="clip" data-start="0" data-duration="4.5" data-track-index="1"></div>
+      <div id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="2">Telestrator <span>replay</span></div>
+      <div id="lab" class="clip" data-start="0" data-duration="4.5" data-track-index="3">The switch he did not see</div>
+      <div id="tc" class="clip" data-start="0" data-duration="4.5" data-track-index="4"><i></i><span id="tct">61:58</span></div>
+      <div id="frz" class="clip" data-start="0" data-duration="4.5" data-track-index="5">FREEZE</div>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="6">The far side was open. He played into two markers.</div>
+      <div id="note" class="clip" data-start="0" data-duration="4.5" data-track-index="7">ILLUSTRATED FRAME IN PLACE OF FOOTAGE · DISTANCES APPROX.</div>
+    </div>
+
+    <script>
+      const DUR = 4.5, NS = "http://www.w3.org/2000/svg";
+      const field = document.getElementById("field"), ink = document.getElementById("ink");
+      const mk = (p, tag, at) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); p.appendChild(e); return e; };
+      // ---- camera model: high side camera, pitch X along the touchline, Z across, Y up (metres) ----
+      const CAM = { x: 6, h: 13, z: -14, F: 2700, cy: 1010 };
+      const TH = Math.atan2(CAM.h, 27 - CAM.z), sT = Math.sin(TH), cT = Math.cos(TH);
+      function P(X, Y, Z) {
+        const dx = X - CAM.x, dy = Y - CAM.h, dz = Z - CAM.z;
+        const zc = -dy * sT + dz * cT, yc = dy * cT + dz * sT;
+        return [540 + CAM.F * dx / zc, CAM.cy - CAM.F * yc / zc, zc];
+      }
+      const poly = (pts) => pts.map((p) => p[0].toFixed(1) + "," + p[1].toFixed(1)).join(" ");
+      // play clock with a speed ramp 100 -> 0 % over 0.3 s, then a freeze
+      const R0 = 1.1, RD = 0.3, TF = R0 + RD / 2;
+      const playT = (t) => (t < R0 ? t : t < R0 + RD ? R0 + (t - R0) - (t - R0) * (t - R0) / (2 * RD) : TF);
+      // players: team, number, final position (at the freeze), velocity (m/s)
+      const PL = [
+        ["r", 8, 11, 24, 3.2, 0.4], ["r", 11, 17.5, 42, 2.6, 1.2], ["r", 9, 19, 16, 2.4, -0.6], ["r", 4, 5, 15, 2.0, 0.2], ["r", 6, 7, 34, 2.2, 0.6],
+        ["w", 5, 18, 14.2, 1.8, -0.3], ["w", 3, 20.6, 17.6, 2.0, -0.8], ["w", 8, 12.8, 26.4, 1.6, -1.6], ["w", 2, 21, 30, 2.6, 0.2], ["w", 4, 24, 22, 1.2, 0.5], ["w", 7, 9, 41, 2.4, 0.4],
+      ];
+      const KIT = { r: ["#b3283a", "#202a44"], w: ["#eeeeea", "#202a44"] };
+      const gTurf = mk(field, "g", {}), gLines = mk(field, "g", { fill: "none", stroke: "rgba(255,255,255,.8)" }), gStand = mk(field, "g", {}), gPl = mk(field, "g", {});
+      const rng = MF.rng("telestrator-replay");
+      const crowd = []; for (let i = 0; i < 520; i++) crowd.push([rng.range(-40, 80), rng.range(0, 9), rng.pick(["#3a3f4a", "#585c66", "#2a2e36", "#6b4a4a", "#43506a", "#7a7f88"])]);
+      const playerEls = PL.map(() => {
+        const g = mk(gPl, "g", {});
+        return { g, sh: mk(g, "ellipse", { fill: "rgba(0,0,0,.35)" }), l1: mk(g, "line", { "stroke-linecap": "round" }), l2: mk(g, "line", { "stroke-linecap": "round" }),
+          sh2: mk(g, "line", { "stroke-linecap": "round" }), body: mk(g, "line", { "stroke-linecap": "round" }), head: mk(g, "circle", { fill: "#c99b7a" }) };
+      });
+      const ball = mk(gPl, "circle", { fill: "#ffffff", stroke: "#222", "stroke-width": 1 });
+      function posAt(p, pt) { return [p[2] - p[4] * (TF - pt), p[3] - p[5] * (TF - pt)]; }
+      function drawField(t) {
+        const pt = playT(t);
+        CAM.x = 14 - 2.6 * (TF - pt);                // the camera follows the ball
+        gTurf.innerHTML = ""; gLines.innerHTML = ""; gStand.innerHTML = "";
+        mk(gTurf, "rect", { x: 0, y: 0, width: 1080, height: 1920, fill: "#2c6b3a" });
+        for (let i = -6; i < 14; i++) {              // mow stripes across the length
+          const x0 = i * 5.5, x1 = x0 + 5.5;
+          mk(gTurf, "polygon", { points: poly([P(x0, 0, -6), P(x1, 0, -6), P(x1, 0, 72), P(x0, 0, 72)]), fill: i % 2 ? "#2f7440" : "#2a6738" });
+        }
+        // far stand and boards
+        mk(gStand, "polygon", { points: poly([P(-60, 0, 71), P(100, 0, 71), P(100, 14, 80), P(-60, 14, 80)]), fill: "#1b1f26" });
+        mk(gStand, "polygon", { points: poly([P(-60, 0, 70), P(100, 0, 70), P(100, 1, 70), P(-60, 1, 70)]), fill: "#30343c" });
+        for (const [x, h, c] of crowd) { const q = P(x, 1.6 + h, 72 + h * 0.9); if (q[0] > -20 && q[0] < 1100) mk(gStand, "rect", { x: q[0], y: q[1], width: 7, height: 6, fill: c }); }
+        // markings: touchlines, halfway, centre circle, penalty area (left goal at X = -52.5 + 52.5 = 0 shift)
+        const L = (pts) => mk(gLines, "polyline", { points: poly(pts), "stroke-width": 3 });
+        L([P(-40, 0, 0), P(80, 0, 0)]); L([P(-40, 0, 68), P(80, 0, 68)]);
+        L([P(40, 0, 0), P(40, 0, 68)]);
+        const cc = []; for (let a = 0; a <= 64; a++) cc.push(P(40 + 9.15 * Math.cos(a / 64 * 2 * Math.PI), 0, 34 + 9.15 * Math.sin(a / 64 * 2 * Math.PI))); L(cc);
+        L([P(-12.5, 0, 13.84), P(4, 0, 13.84), P(4, 0, 54.16), P(-12.5, 0, 54.16)]);
+        // players, far to near
+        const order = PL.map((p, i) => [i, posAt(p, pt)]).sort((a, b) => b[1][1] - a[1][1]);
+        order.forEach(([i, [x, z]], k) => {
+          const p = PL[i], e = playerEls[i]; gPl.appendChild(e.g);
+          const ft = P(x, 0, z), hip = P(x, 0.95, z), sh = P(x, 1.5, z), hd = P(x, 1.72, z), s = CAM.F / ft[2];
+          const ph = pt * 9 + i * 1.7, sw = Math.sin(ph) * 0.32 * Math.min(1, Math.hypot(p[4], p[5]) / 2) * (pt < TF ? 1 : 1);
+          const f1 = P(x + sw, 0, z), f2 = P(x - sw, 0, z);
+          const [shirt, shorts] = KIT[p[0]];
+          e.sh.setAttribute("cx", ft[0] + 0.3 * s); e.sh.setAttribute("cy", ft[1]); e.sh.setAttribute("rx", 0.55 * s); e.sh.setAttribute("ry", 0.2 * s);
+          for (const [el, f] of [[e.l1, f1], [e.l2, f2]]) { el.setAttribute("x1", hip[0]); el.setAttribute("y1", hip[1]); el.setAttribute("x2", f[0]); el.setAttribute("y2", f[1]); el.setAttribute("stroke", "#d8b08f"); el.setAttribute("stroke-width", 0.16 * s); }
+          e.sh2.setAttribute("x1", hip[0]); e.sh2.setAttribute("y1", hip[1] - 0.05 * s); e.sh2.setAttribute("x2", hip[0]); e.sh2.setAttribute("y2", hip[1] + 0.12 * s); e.sh2.setAttribute("stroke", shorts); e.sh2.setAttribute("stroke-width", 0.42 * s);
+          e.body.setAttribute("x1", hip[0]); e.body.setAttribute("y1", hip[1] - 0.12 * s); e.body.setAttribute("x2", sh[0]); e.body.setAttribute("y2", sh[1]); e.body.setAttribute("stroke", shirt); e.body.setAttribute("stroke-width", 0.46 * s);
+          e.head.setAttribute("cx", hd[0]); e.head.setAttribute("cy", hd[1]); e.head.setAttribute("r", 0.13 * s);
+          if (i === 0) { const b = P(x + 0.5, 0.11, z - 0.3); ball.setAttribute("cx", b[0]); ball.setAttribute("cy", b[1]); ball.setAttribute("r", 0.11 * s); gPl.appendChild(ball); }
+        });
+        document.getElementById("tct").textContent = "61:" + String(58 + Math.floor(pt / 2.0)).padStart(2, "0");
+      }
+      // ---- telestrator strokes (pinned to the pitch: built from pitch coordinates once the frame is frozen) ----
+      drawField(DUR);
+      const C8 = PL[0], [cx8, cz8] = [C8[2], C8[3]];
+      const ringPts = (deg) => { const out = []; for (let a = 0; a <= deg; a += 6) { const r = a * Math.PI / 180 + 2.2; out.push(P(cx8 + 1.5 * Math.cos(r), 0, cz8 + 1.5 * Math.sin(r))); } return out; };
+      const ringSh = mk(ink, "polyline", { fill: "none", stroke: "rgba(0,0,0,.35)", "stroke-width": 9, "stroke-linecap": "round", "stroke-linejoin": "round" });
+      const ring = mk(ink, "polyline", { fill: "none", stroke: "#ffe11a", "stroke-width": 7, "stroke-linecap": "round", "stroke-linejoin": "round" });
+      // tapered arrow along a pitch-space quadratic: width 4 -> 9 -> 6 px
+      function arrow(from, ctrl, to, color, cross) {
+        const g = mk(ink, "g", {}), N = 30, segs = [];
+        const pts = []; for (let i = 0; i <= N; i++) { const u = i / N, x = (1 - u) * (1 - u) * from[0] + 2 * u * (1 - u) * ctrl[0] + u * u * to[0], z = (1 - u) * (1 - u) * from[1] + 2 * u * (1 - u) * ctrl[1] + u * u * to[1]; pts.push(P(x, 0, z)); }
+        for (let i = 0; i < N; i++) {
+          const u = i / N, w = u < 0.5 ? 4 + 10 * u : 9 - 6 * (u - 0.5);
+          const sh = mk(g, "line", { x1: pts[i][0] + 2, y1: pts[i][1] + 2, x2: pts[i + 1][0] + 2, y2: pts[i + 1][1] + 2, stroke: "rgba(0,0,0,.35)", "stroke-width": w + 2, "stroke-linecap": "round", opacity: 0 });
+          const l = mk(g, "line", { x1: pts[i][0], y1: pts[i][1], x2: pts[i + 1][0], y2: pts[i + 1][1], stroke: color, "stroke-width": w, "stroke-linecap": "round", opacity: 0 });
+          segs.push(sh, l);
+        }
+        const a = pts[N], b = pts[N - 2], ang = Math.atan2(a[1] - b[1], a[0] - b[0]) * 180 / Math.PI;
+        const head = mk(g, "path", { d: "M-22 -15 L4 0 L-22 15 Z", fill: color, stroke: "rgba(0,0,0,.35)", "stroke-width": 2, transform: `translate(${a[0]} ${a[1]}) rotate(${ang}) scale(0)` });
+        let x = null;
+        if (cross) { const c = pts[Math.round(N * 0.7)]; x = mk(g, "path", { d: "M-16 -16 L16 16 M16 -16 L-16 16", stroke: color, "stroke-width": 8, "stroke-linecap": "round", transform: `translate(${c[0]} ${c[1]}) scale(0)` }); }
+        return { segs, head, x, a, ang, end: pts[N] };
+      }
+      const good = arrow([cx8 + 0.6, cz8 + 1.4], [12.5, 37], [PL[1][2] - 0.8, PL[1][3] - 1.0], "#ffe11a", false);
+      const bad = arrow([cx8 + 1.2, cz8 - 0.8], [16.5, 21], [PL[2][2] - 0.9, PL[2][3] + 0.6], "#ff5a36", true);
+      // spotlight centred on the ball carrier (elliptical, 120 px feather)
+      const S8 = P(cx8, 0.9, cz8);
+      document.getElementById("spot").style.background = `radial-gradient(ellipse 330px 380px at ${S8[0]}px ${S8[1]}px, transparent 64%, rgba(0,0,0,.55) 100%)`;
+      gsap.set("#p1", { left: S8[0] - 150, top: S8[1] + 120 });
+      gsap.set("#p2", { left: Math.min(good.end[0] - 140, 760), top: good.end[1] - 130 });
+      gsap.set("#cam", { transformOrigin: `${S8[0] + 40}px ${S8[1] - 40}px` });
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      const clock = { t: 0 };
+      tl.fromTo(clock, { t: 0 }, { t: DUR, duration: DUR, ease: "none", onUpdate: () => drawField(clock.t) }, 0);
+      tl.fromTo(["#title", "#lab", "#tc"], { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, stagger: 0.08, ease: "power3.out" }, 0.05);
+      tl.fromTo("#frz", { opacity: 0, x: 30 }, { opacity: 1, x: 0, duration: 0.2, ease: "power3.out" }, R0 + RD);
+      tl.to("#spot", { opacity: 1, duration: 0.25 }, R0 + RD + 0.05);
+      tl.fromTo("#cam", { scale: 1 }, { scale: 1.15, duration: 0.6, ease: "power3.inOut" }, R0 + RD + 0.1);
+      // ring: 330° in 0.4 s, then closes with a 10° overshoot
+      const rg = { d: 0 };
+      tl.fromTo(rg, { d: 0 }, { d: 370, duration: 0.45, ease: "power1.out", onUpdate: () => { const s = poly(ringPts(rg.d)); ring.setAttribute("points", s); ringSh.setAttribute("points", s.split(" ").map((q) => q.split(",").map((v) => +v + 2).join(",")).join(" ")); } }, 1.65);
+      tl.fromTo("#p1", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.25, ease: "power3.out" }, 2.05);
+      // two options: yellow first, red-orange 0.15 s later; each 0.35 s, head pops in 0.1 s
+      [[good, 2.45], [bad, 2.95]].forEach(([ar, at]) => {
+        tl.to(ar.segs, { opacity: 1, duration: 0.01, stagger: 0.35 / ar.segs.length }, at);
+        tl.to(ar.head, { attr: { transform: `translate(${ar.a[0]} ${ar.a[1]}) rotate(${ar.ang}) scale(1)` }, duration: 0.1, ease: "back.out(2)" }, at + 0.35);
+        if (ar.x) { const c = ar.x.getAttribute("transform").replace("scale(0)", "scale(1)"); tl.to(ar.x, { attr: { transform: c }, duration: 0.15, ease: "back.out(2)" }, at + 0.45); }
+      });
+      tl.fromTo("#p2", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.25, ease: "power3.out" }, 2.85);
+      tl.fromTo("#cap", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out" }, 3.45);
+      tl.fromTo("#note", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.4);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

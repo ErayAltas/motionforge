@@ -1,0 +1,153 @@
+<!doctype html>
+<!--
+  motionforge style preview: y2k-chrome
+  © 2026 motionforge contributors, MIT
+  Signature scene: the chrome word. A chrome title (SVG: sky reflection gradient inside the glyphs,
+  stacked extrusion, 2 px white top highlight) rotates in from rotateY 25° and scale 0.8 with
+  elastic.out(1, 0.6) in 0.9 s, the reflection slides across it and a 4-point glint pops on one letter.
+  Gel bubbles rise 120 px with a seeded sway; the pink cursor clicks and a bevelled window pops open
+  from that point (back.out(1.7), 0.35 s) with a stepped aqua progress bar. SVG chrome is the style's
+  2D option; the three.js extrusion is for longer pieces. File names are fictional.
+  Unbounded + Lexend + VT323.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts: @fontsource/unbounded, @fontsource/lexend, @fontsource/vt323 (copied from node_modules/@fontsource/<family>/files/) */
+      @font-face { font-family: "Unbounded"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/unbounded-latin-900-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Unbounded"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/unbounded-latin-ext-900-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Lexend"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/lexend-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Lexend"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/lexend-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "VT323"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/vt323-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "VT323"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/vt323-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --sky: #CFE3F2; --ink: #0B1E3F; --pink: #FF5FCF; --sup: #A9B4C2; --aqua: #7FE7F2; --mf-grain-opacity: 0.03; }
+      html, body { background: var(--sky); }
+      #root { background: radial-gradient(900px 900px at 50% 40%, #F4FAFF 0%, transparent 70%), var(--sky); color: var(--ink); }
+      #root::before { mix-blend-mode: multiply; }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 65%, rgba(40,80,130,.12) 100%); }
+      #clouds { position: absolute; inset: 0; filter: blur(30px); }
+      .cl { position: absolute; border-radius: 50%; background: #fff; opacity: .75; }
+      #ttlwrap { position: absolute; left: 0; top: 260px; width: 1080px; height: 480px; perspective: 1400px; }
+      #ttl { position: absolute; left: 0; top: 0; width: 1080px; height: 480px; transform-origin: 50% 55%; }
+      #glint { position: absolute; left: 0; top: 0; width: 120px; height: 120px; }
+      #bub { position: absolute; inset: 0; }
+      .bb { position: absolute; border-radius: 50%; background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.95) 0 9%, rgba(255,255,255,.25) 18%, rgba(127,231,242,.28) 55%, rgba(94,127,166,.35) 100%);
+            box-shadow: inset -6px -10px 18px rgba(255,255,255,.55), inset 4px 6px 14px rgba(11,30,63,.12), 0 10px 24px rgba(11,30,63,.10); }
+      #win { position: absolute; left: 100px; top: 790px; width: 880px; height: 560px; border-radius: 14px; background: linear-gradient(#EEF3F9, #D9E2EC);
+             border: 3px solid #fff; box-shadow: 0 0 0 2px #7f8ea2, 0 30px 60px rgba(11,30,63,.22); transform-origin: 700px 0px; }
+      #bar { height: 70px; margin: 8px; border-radius: 9px; background: linear-gradient(#B9C7D8, #8FA2BB 55%, #7B8FAA); display: flex; align-items: center; padding: 0 16px 0 22px;
+             box-shadow: inset 0 2px 0 rgba(255,255,255,.7); font: 400 46px/1 "VT323"; color: #fff; text-shadow: 0 2px 0 rgba(11,30,63,.35); }
+      #bar span { flex: 1; }
+      .wb { width: 46px; height: 46px; border-radius: 50%; margin-left: 12px; background: radial-gradient(circle at 35% 30%, #fff 0 12%, #D5DEE8 30%, #8FA2BB 100%); border: 2px solid #6d7f97; }
+      .wb.x { background: radial-gradient(circle at 35% 30%, #fff 0 12%, #9FF3FA 30%, #2FB8C9 100%); border-color: #1d8796; }
+      #body { position: absolute; left: 40px; right: 40px; top: 120px; bottom: 30px; }
+      #file { display: flex; align-items: center; gap: 30px; }
+      #disk { width: 150px; height: 150px; border-radius: 26px; background: linear-gradient(135deg, #fff, #A9B4C2 60%, #7f8ea2); box-shadow: inset 0 3px 0 #fff, 0 8px 16px rgba(11,30,63,.18); position: relative; }
+      #disk::after { content: ""; position: absolute; left: 35px; top: 35px; width: 80px; height: 80px; border-radius: 50%; background: radial-gradient(circle, #0B1E3F 0 14%, #9FF3FA 16% 40%, #E9F7FA 42%); }
+      #fname { font: 400 54px/1 "VT323"; color: var(--ink); }
+      #fname small { display: block; font: 500 30px/1.4 "Lexend"; color: #50627d; }
+      #track { margin-top: 56px; height: 64px; border-radius: 32px; background: #fff; box-shadow: inset 0 3px 8px rgba(11,30,63,.25); padding: 6px; position: relative; }
+      #fill { height: 52px; border-radius: 26px; background: linear-gradient(#D6FBFE, #7FE7F2 45%, #2FB8C9); box-shadow: inset 0 3px 0 rgba(255,255,255,.8); width: 0; }
+      #load { margin-top: 26px; display: flex; justify-content: space-between; font: 400 46px/1 "VT323"; color: var(--ink); }
+      #caret { display: inline-block; width: 18px; height: 40px; background: var(--pink); vertical-align: -6px; margin-left: 6px; }
+      #cursor { position: absolute; left: 0; top: 0; width: 56px; height: 72px; }
+      #pill { position: absolute; left: 140px; right: 140px; top: 1500px; height: 96px; border-radius: 48px; background: linear-gradient(#ffffff, #DCEAF5 60%, #C3D6E8);
+              box-shadow: inset 0 3px 0 #fff, 0 0 0 2px #9fb2c8, 0 12px 26px rgba(11,30,63,.15); display: flex; align-items: center; justify-content: center; font: 500 44px/1 "Lexend"; color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage light" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="clouds">
+        <div class="cl" style="left:-120px; top:180px; width:520px; height:220px"></div>
+        <div class="cl" style="left:640px; top:120px; width:560px; height:240px"></div>
+        <div class="cl" style="left:500px; top:1560px; width:680px; height:260px"></div>
+        <div class="cl" style="left:-160px; top:1650px; width:600px; height:240px"></div>
+      </div>
+      <div id="bub" class="clip" data-start="0" data-duration="4.5" data-track-index="0"></div>
+      <div id="ttlwrap" class="clip" data-start="0" data-duration="4.5" data-track-index="1">
+        <svg id="ttl" viewBox="0 0 1080 480">
+          <defs>
+            <linearGradient id="chr" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="480">
+              <stop offset="0" stop-color="#FFFFFF" /><stop offset=".2" stop-color="#E6F1FA" /><stop offset=".36" stop-color="#9DB6D2" /><stop offset=".44" stop-color="#5E7FA6" />
+              <stop offset=".46" stop-color="#1D3358" /><stop offset=".5" stop-color="#5E7FA6" /><stop offset=".62" stop-color="#CFE3F2" /><stop offset=".74" stop-color="#FFFFFF" />
+              <stop offset=".82" stop-color="#A9B4C2" /><stop offset=".86" stop-color="#32507a" /><stop offset=".9" stop-color="#9DB6D2" /><stop offset="1" stop-color="#FFFFFF" />
+            </linearGradient>
+            <linearGradient id="hi" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".95" /><stop offset=".12" stop-color="#fff" stop-opacity="0" /></linearGradient>
+          </defs>
+          <g id="ext"></g>
+          <g id="face" font-family="Unbounded" font-weight="900" text-anchor="middle" letter-spacing="-6">
+            <text x="540" y="205" font-size="212" fill="url(#chr)">y2k</text>
+            <text x="540" y="425" font-size="178" fill="url(#chr)">chrome</text>
+          </g>
+        </svg>
+        <svg id="glint" viewBox="0 0 120 120"><path d="M60 0 C 64 44, 76 56, 120 60 C 76 64, 64 76, 60 120 C 56 76, 44 64, 0 60 C 44 56, 56 44, 60 0 Z" fill="#fff" /><circle cx="60" cy="60" r="10" fill="#fff" /></svg>
+      </div>
+      <div id="win" class="clip" data-start="0" data-duration="4.5" data-track-index="2">
+        <div id="bar"><span>mixtape_02.zip</span><i class="wb"></i><i class="wb"></i><i class="wb x"></i></div>
+        <div id="body">
+          <div id="file"><div id="disk"></div><div id="fname">summer_mix.mp3<small>4.2 MB · example file</small></div></div>
+          <div id="track"><div id="fill"></div></div>
+          <div id="load"><span id="lt">loading…<i id="caret"></i></span><span id="pc">0%</span></div>
+        </div>
+      </div>
+      <svg id="cursor" class="clip" viewBox="0 0 56 72" data-start="0" data-duration="4.5" data-track-index="3"><path d="M4 4 L4 58 L18 46 L28 68 L38 63 L28 42 L48 42 Z" fill="#FF5FCF" stroke="#0B1E3F" stroke-width="4" stroke-linejoin="round" /></svg>
+      <div id="pill" class="clip" data-start="0" data-duration="4.5" data-track-index="4">optimism, with a reflection map</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      // stacked extrusion behind the chrome face
+      const face = document.getElementById("face"), ext = document.getElementById("ext");
+      for (let i = 12; i >= 0; i--) {
+        const g = face.cloneNode(true); g.removeAttribute("id");
+        [...g.querySelectorAll("text")].forEach((t, k) => { if (k > 1) t.remove(); else { t.setAttribute("fill", i > 10 ? "#0B1E3F" : `rgb(${60 + i * 6},${85 + i * 6},${120 + i * 5})`); t.setAttribute("stroke", i > 10 ? "#0B1E3F" : "none"); t.setAttribute("stroke-width", "6"); } });
+        if (i === 0) [...g.querySelectorAll("text")].forEach((t) => t.setAttribute("fill", "#ffffff"));
+        g.setAttribute("transform", `translate(0 ${i === 0 ? -2.5 : i * 1.6})`); ext.appendChild(g);
+      }
+      // gel bubbles: seeded sizes, rise 120 px over 3 s with a sideways sway
+      const r = MF.rng("y2k-chrome"), bub = document.getElementById("bub"), B = [];
+      [[40, 760, 110], [930, 720, 90], [60, 1240, 150], [910, 1320, 120], [830, 1060, 64], [170, 1010, 54], [960, 560, 70], [20, 560, 60]].forEach(([x, y, s], i) => {
+        const d = document.createElement("div"); d.className = "bb";
+        Object.assign(d.style, { left: x + "px", top: y + "px", width: s + "px", height: s + "px" }); bub.appendChild(d);
+        B.push({ d, ph: r.range(0, 6.28), sp: r.range(0.8, 1.4) });
+      });
+      const BP = { t: 0 };
+      function bubbles() { B.forEach((b) => { const k = BP.t / 3; b.d.style.transform = `translate(${(Math.sin(BP.t * b.sp * 2 + b.ph) * 18).toFixed(1)}px, ${(-120 * k).toFixed(1)}px)`; }); }
+      // reflection slides through the glyphs
+      const chr = document.getElementById("chr"), RF = { y: -60 };
+      const refl = () => chr.setAttribute("gradientTransform", `translate(0 ${RF.y.toFixed(1)})`);
+      refl(); bubbles();
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.to(BP, { t: 4.5, duration: 4.5, ease: "none", onUpdate: bubbles }, 0);
+      tl.fromTo("#bub", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 0.3);
+      // chrome word: rotateY 25° + scale 0.8 -> rest, elastic.out(1, 0.6), 0.9 s
+      tl.fromTo("#ttl", { rotationY: 25, scale: 0.8, opacity: 0 }, { rotationY: 0, scale: 1, opacity: 1, duration: 0.9, ease: "elastic.out(1, 0.6)" }, 0.05);
+      tl.fromTo(RF, { y: -60 }, { y: 70, duration: 2.2, ease: "power1.inOut", onUpdate: refl }, 0.1);
+      tl.to(RF, { y: 0, duration: 1.6, ease: "power1.inOut", onUpdate: refl }, 2.3);
+      // glint on the "k"
+      tl.set("#glint", { x: 668, y: 30 }, 0);
+      tl.fromTo("#glint", { scale: 0, rotation: -30, opacity: 1 }, { scale: 1, rotation: 0, duration: 0.15, ease: "power2.out" }, 1.0);
+      tl.to("#glint", { scale: 0, rotation: 30, duration: 0.15, ease: "power2.in" }, 1.15);
+      // pink cursor glides in, clicks; the window pops open from the click point
+      tl.fromTo("#cursor", { x: 1100, y: 1500, opacity: 1 }, { x: 790, y: 800, duration: 0.6, ease: "power2.inOut" }, 0.9);
+      tl.to("#cursor", { scale: 0.85, duration: 0.05 }, 1.5); tl.to("#cursor", { scale: 1, duration: 0.05 }, 1.55);
+      tl.fromTo("#win", { scale: 0.2, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: "back.out(1.7)" }, 1.55);
+      tl.to("#cursor", { opacity: 0, duration: 0.1 }, 1.75);
+      // stepped progress, blinking pink caret (a function of t)
+      const fill = document.getElementById("fill"), pc = document.getElementById("pc"), caret = document.getElementById("caret"), P = { k: 0 };
+      tl.to(P, { k: 1, duration: 2.2, ease: "steps(7)", onUpdate: () => { fill.style.width = (P.k * 100) + "%"; pc.textContent = Math.round(P.k * 100) + "%"; } }, 2.0);
+      const BL = { t: 0 };
+      tl.to(BL, { t: 4.5, duration: 4.5, ease: "none", onUpdate: () => { caret.style.opacity = Math.floor(BL.t * 2.5) % 2 ? 0 : 1; } }, 0);
+      tl.fromTo("#pill", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(1.7)" }, 2.4);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

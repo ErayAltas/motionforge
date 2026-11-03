@@ -1,0 +1,122 @@
+<!doctype html>
+<!--
+  motionforge style preview: now-hiring
+  © 2026 motionforge contributors, MIT
+  Signature scene: the card deal. Three role cards deal from a stack (0.35 s power3.out, 0.12 s stagger,
+  rotations -4°, 2°, -1°); the chosen card lifts 60 px and flips to location, type and salary band;
+  perk icons pop 0.5 -> 1 with back.out(2); the orange Apply button is pressed at the end.
+  The employer, roles, perks and salary are fictional examples. Bricolage Grotesque + Figtree.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts: @fontsource/bricolage-grotesque, @fontsource/figtree (copied from node_modules/@fontsource/<family>/files/) */
+      @font-face { font-family: "Bricolage Grotesque"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/bricolage-grotesque-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Bricolage Grotesque"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/bricolage-grotesque-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Figtree"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/figtree-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Figtree"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/figtree-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Figtree"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/figtree-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Figtree"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/figtree-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Figtree"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/figtree-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Figtree"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/figtree-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #FFF4D6; --card: #FFFFFF; --ink: #14161A; --acc: #FF5C39; --mut: #6B6457; --mf-grain-opacity: 0.03; }
+      html, body { background: var(--bg); }
+      #root { background: radial-gradient(900px 900px at 50% 48%, #FFFDF5 0%, transparent 70%), var(--bg); color: var(--ink); font-family: "Figtree", sans-serif; }
+      #root::before { mix-blend-mode: multiply; }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 65%, rgba(120,90,20,.10) 100%); }
+      .lab { font: 700 28px/1 "Figtree"; letter-spacing: .1em; text-transform: uppercase; color: var(--mut); }
+      #kick { position: absolute; left: 0; right: 0; top: 262px; text-align: center; }
+      #head { position: absolute; left: 0; right: 0; top: 306px; text-align: center; font: 800 140px/0.95 "Bricolage Grotesque"; letter-spacing: -0.035em; }
+      #deck { position: absolute; left: 160px; top: 520px; width: 760px; height: 520px; perspective: 2400px; }
+      .rc { position: absolute; inset: 0; transform-style: preserve-3d; }
+      .face { position: absolute; inset: 0; background: var(--card); border-radius: 36px; padding: 52px 56px; backface-visibility: hidden;
+              box-shadow: 0 24px 60px rgba(80,60,10,.16), 0 2px 0 rgba(0,0,0,.04); }
+      .back { transform: rotateY(180deg); }
+      .tag { display: inline-block; padding: 14px 24px; border-radius: 40px; background: #F2EEE4; font: 700 28px/1 "Figtree"; letter-spacing: .1em; text-transform: uppercase; }
+      .tag.hot { background: var(--acc); color: #fff; }
+      .role { margin-top: 44px; font: 800 72px/1.02 "Figtree"; letter-spacing: -0.02em; }
+      .team { margin-top: 22px; font: 500 44px/1.2 "Figtree"; color: var(--mut); }
+      .row { display: flex; justify-content: space-between; align-items: baseline; padding: 22px 0; border-bottom: 2px solid #EFE9DC; font: 700 46px/1.1 "Figtree"; }
+      .row .lab { font-size: 26px; }
+      #band { margin-top: 34px; height: 18px; border-radius: 9px; background: #F2EEE4; position: relative; }
+      #bandf { position: absolute; left: 22%; width: 52%; top: 0; bottom: 0; border-radius: 9px; background: var(--ink); transform-origin: left; }
+      #bandl { margin-top: 18px; display: flex; justify-content: space-between; font: 700 34px/1 "Figtree"; }
+      #bandl span { font: 500 28px/1 "Figtree"; color: var(--mut); }
+      #perks { position: absolute; left: 80px; right: 80px; top: 1180px; display: flex; justify-content: space-between; }
+      .pk { width: 210px; text-align: center; }
+      .ic { width: 124px; height: 124px; margin: 0 auto 18px; border-radius: 32px; background: var(--card); display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 12px 30px rgba(80,60,10,.12); }
+      .ic svg { width: 64px; height: 64px; fill: none; stroke: var(--ink); stroke-width: 4.5; stroke-linecap: round; stroke-linejoin: round; }
+      .pk.hot .ic { background: var(--acc); } .pk.hot .ic svg { stroke: #fff; }
+      .pk div:last-child { font: 700 32px/1.15 "Figtree"; }
+      #apply { position: absolute; left: 120px; width: 780px; top: 1440px; height: 120px; border-radius: 60px; background: var(--acc); color: #fff;
+               display: flex; align-items: center; justify-content: center; font: 800 54px/1 "Figtree"; letter-spacing: -0.01em; box-shadow: 0 18px 40px rgba(255,92,57,.35); }
+      #tap { position: absolute; left: 640px; top: 1470px; width: 60px; height: 60px; border-radius: 50%; background: rgba(20,22,26,.25); border: 4px solid rgba(255,255,255,.9); }
+      #url { position: absolute; left: 0; right: 0; top: 1600px; text-align: center; font: 500 34px/1 "Figtree"; color: var(--mut); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage light" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="kick" class="lab clip" data-start="0" data-duration="4.5" data-track-index="0">Larkfield Studio · example</div>
+      <h1 id="head" class="clip" data-start="0" data-duration="4.5" data-track-index="1">Now hiring</h1>
+      <div id="deck" class="clip" data-start="0" data-duration="4.5" data-track-index="2">
+        <div class="rc" id="r1"><div class="face"><span class="tag">Full-time</span><div class="role">Backend engineer</div><div class="team">Platform team</div></div></div>
+        <div class="rc" id="r2"><div class="face"><span class="tag">Part-time</span><div class="role">Support lead</div><div class="team">Customer team</div></div></div>
+        <div class="rc" id="r3">
+          <div class="face"><span class="tag hot">New role</span><div class="role">Product designer</div><div class="team">Design team · 6 people</div></div>
+          <div class="face back">
+            <div class="row"><span class="lab">Location</span>Lisbon or remote</div>
+            <div class="row"><span class="lab">Type</span>Full-time</div>
+            <div class="row"><span class="lab">Start</span>January</div>
+            <div id="band"><div id="bandf"></div></div>
+            <div id="bandl"><b>€52k – €64k</b><span>per year, gross</span></div>
+          </div>
+        </div>
+      </div>
+      <div id="perks" class="clip" data-start="0" data-duration="4.5" data-track-index="3">
+        <div class="pk hot"><div class="ic"><svg viewBox="0 0 64 64"><rect x="8" y="12" width="48" height="44" rx="8"/><path d="M8 26h48M20 6v12M44 6v12M22 40l7 7 13-14"/></svg></div><div>4-day week</div></div>
+        <div class="pk"><div class="ic"><svg viewBox="0 0 64 64"><path d="M8 14c8-4 16-4 24 2v38c-8-6-16-6-24-2zM56 14c-8-4-16-4-24 2v38c8-6 16-6 24-2z"/></svg></div><div>Learning budget</div></div>
+        <div class="pk"><div class="ic"><svg viewBox="0 0 64 64"><path d="M8 30L32 10l24 20M14 26v28h36V26M27 54V40h10v14"/></svg></div><div>Remote days</div></div>
+        <div class="pk"><div class="ic"><svg viewBox="0 0 64 64"><path d="M32 54S8 40 8 24a12 12 0 0124-4 12 12 0 0124 4c0 16-24 30-24 30z"/></svg></div><div>Health cover</div></div>
+      </div>
+      <div id="apply" class="clip" data-start="0" data-duration="4.5" data-track-index="4">Apply now</div>
+      <div id="tap" class="clip" data-start="0" data-duration="4.5" data-track-index="5"></div>
+      <div id="url" class="clip" data-start="0" data-duration="4.5" data-track-index="6">larkfield.example/jobs</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo("#kick", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.05);
+      tl.fromTo("#head", { opacity: 0, y: 40, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.6)" }, 0.1);
+      // deal: from a stack below the frame, each card lands with its own rotation
+      [["#r1", -4, -26], ["#r2", 2, 22], ["#r3", -1, 0]].forEach(([id, rot, x], i) => {
+        tl.fromTo(id, { y: 1500, x: 0, rotation: 10 }, { y: 0, x, rotation: rot, duration: 0.35, ease: "power3.out" }, 0.35 + i * 0.12);
+      });
+      // the chosen card lifts 60 px, straightens and flips to its details
+      tl.to("#r3", { y: -60, rotation: 0, duration: 0.3, ease: "power3.out" }, 1.45);
+      tl.to(["#r1", "#r2"], { y: 30, duration: 0.3, ease: "power2.out" }, 1.45);
+      tl.to("#r3", { rotationY: 180, duration: 0.55, ease: "power3.inOut" }, 1.7);
+      tl.fromTo("#bandf", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, 2.2);
+      // perks pop 0.5 -> 1, back.out(2), 0.1 s stagger
+      tl.fromTo(".pk", { opacity: 0, scale: 0.5 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)", stagger: 0.1 }, 2.35);
+      // Apply button rises, a finger taps it (0.94 -> 1 in 0.1 s), the URL types
+      tl.fromTo("#apply", { opacity: 0, y: 80 }, { opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.6)" }, 2.9);
+      tl.fromTo("#tap", { opacity: 0, scale: 1.6 }, { opacity: 1, scale: 1, duration: 0.2, ease: "power2.out" }, 3.4);
+      tl.to("#apply", { scale: 0.94, duration: 0.06 }, 3.58);
+      tl.to("#apply", { scale: 1, duration: 0.1, ease: "power2.out" }, 3.64);
+      tl.to("#tap", { opacity: 0, scale: 1.8, duration: 0.3 }, 3.7);
+      const url = document.getElementById("url"), U = url.textContent, ty = { n: 0 };
+      url.textContent = "";
+      tl.to(ty, { n: U.length, duration: U.length / 24, ease: "none", onUpdate: () => { url.textContent = U.slice(0, Math.round(ty.n)); } }, 3.7);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

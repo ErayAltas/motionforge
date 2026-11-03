@@ -1,0 +1,119 @@
+<!doctype html>
+<!--
+  motionforge style preview: runway-flash
+  © 2026 motionforge contributors, MIT
+  Signature scene: the flash freeze. A figure walks the lit catwalk column (slow 2 % push per look); at the
+  turn a 2-frame flash (ink at 85 %), the frame freezes for 0.5 s and the look number stamps in red from
+  scale 1.3 -> 1 in 4 frames (power4.out) while the previous number slides down 60 px and fades to grey;
+  the 2 px progress bar fills per look. Figures are original flat silhouettes standing in for show footage;
+  designer, collection and looks are fictional. Jost + Azeret Mono.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts: @fontsource/jost, @fontsource/azeret-mono (copied from node_modules/@fontsource/<family>/files/) */
+      @font-face { font-family: "Jost"; font-weight: 300; font-style: normal; font-display: block; src: url("assets/fonts/jost-latin-300-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Jost"; font-weight: 300; font-style: normal; font-display: block; src: url("assets/fonts/jost-latin-ext-300-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Jost"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/jost-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Jost"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/jost-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Azeret Mono"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/azeret-mono-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Azeret Mono"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/azeret-mono-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #09090B; --ink: #F2F2F2; --acc: #FF1F3D; --sup: #5A5A5A; --mf-grain-opacity: 0.06; }
+      html, body { background: var(--bg); }
+      #root { background: radial-gradient(260px 1500px at 50% 30%, rgba(255,255,255,.085), transparent 100%), var(--bg); color: var(--ink); }
+      .lab { font: 400 32px/1 "Jost"; letter-spacing: .3em; text-transform: uppercase; color: var(--ink); }
+      #des { position: absolute; left: 0; right: 0; top: 230px; text-align: center; font: 300 76px/1 "Jost"; letter-spacing: .42em; text-transform: uppercase; padding-left: .42em; }
+      #col { position: absolute; left: 0; right: 0; top: 330px; text-align: center; color: #bdbdbd; }
+      #floor { position: absolute; left: 340px; width: 400px; top: 1640px; height: 120px; background: radial-gradient(closest-side, rgba(255,255,255,.14), transparent); }
+      .fig { position: absolute; left: 290px; top: 420px; width: 500px; height: 1360px; transform-origin: 50% 100%; }
+      .num { position: absolute; left: 640px; top: 1300px; width: 300px; text-align: right; font: 600 260px/1 "Azeret Mono"; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; color: var(--acc); }
+      #fab { position: absolute; right: 140px; top: 1580px; text-align: right; font-size: 28px; color: #bdbdbd; }
+      #bar { position: absolute; left: 0; right: 0; top: 1820px; height: 2px; background: #1c1c1f; }
+      #barf { position: absolute; left: 0; top: 0; height: 2px; width: 1080px; background: var(--acc); transform-origin: left; }
+      #flash { position: absolute; inset: 0; background: rgba(242,242,242,.85); }
+      #note { position: absolute; left: 60px; top: 1760px; font-size: 22px; color: var(--sup); letter-spacing: .3em; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="floor" class="clip" data-start="0" data-duration="4.5" data-track-index="0"></div>
+      <div id="figs" class="clip" data-start="0" data-duration="4.5" data-track-index="1"></div>
+      <div id="des" class="clip" data-start="0" data-duration="4.5" data-track-index="2">Arden Vale</div>
+      <div id="col" class="lab clip" data-start="0" data-duration="4.5" data-track-index="3">Spring 27 · runway flash</div>
+      <div id="nums" class="clip" data-start="0" data-duration="4.5" data-track-index="4"></div>
+      <div id="fab" class="lab clip" data-start="0" data-duration="4.5" data-track-index="5">Wool gabardine</div>
+      <div id="note" class="lab clip" data-start="0" data-duration="4.5" data-track-index="6">Fictional show</div>
+      <div id="bar" class="clip" data-start="0" data-duration="4.5" data-track-index="7"><div id="barf"></div></div>
+      <div id="flash" class="clip" data-start="0" data-duration="4.5" data-track-index="8"></div>
+    </div>
+
+    <script>
+      const DUR = 4.5, TOTAL = 24;
+      // three looks: coat, column dress, suit (original flat silhouettes, lit from the top spot)
+      const LOOKS = [
+        { n: "06", fab: "Wool gabardine", body: "#1a1a1d", trim: "#2c2c31", hem: 1150, coat: "M170 300 C 140 330, 110 420, 100 600 L 70 1150 L 430 1150 L 400 600 C 390 420, 360 330, 330 300 Z" },
+        { n: "07", fab: "Silk crepe", body: "#d9d2c7", trim: "#efe9df", hem: 1220, coat: "M185 300 C 160 330, 150 420, 160 560 C 150 760, 120 1000, 100 1220 L 400 1220 C 380 1000, 350 760, 340 560 C 350 420, 340 330, 315 300 Z" },
+        { n: "08", fab: "Bonded twill", body: "#8a3b26", trim: "#a5502f", hem: 900, coat: "M165 300 C 130 330, 100 420, 100 560 L 95 900 L 405 900 L 400 560 C 400 420, 370 330, 335 300 Z" },
+      ];
+      const figs = document.getElementById("figs"), nums = document.getElementById("nums");
+      LOOKS.forEach((L, i) => {
+        const d = document.createElement("div"); d.className = "fig"; d.id = "f" + i;
+        d.innerHTML = `<svg viewBox="0 0 500 1360" width="500" height="1360">
+          <defs><linearGradient id="g${i}" x1="0" x2="1"><stop offset="0" stop-color="${L.trim}"/><stop offset=".45" stop-color="${L.body}"/><stop offset="1" stop-color="#060607"/></linearGradient>
+          <linearGradient id="s${i}" x1="0" x2="1"><stop offset="0" stop-color="#3a3130"/><stop offset=".4" stop-color="#5a4a44"/><stop offset="1" stop-color="#151213"/></linearGradient></defs>
+          <g id="legs${i}"><path id="la${i}" d="M205 ${L.hem - 40} L 190 1330 L 222 1330 L 240 ${L.hem - 40} Z" fill="url(#s${i})"/>
+          <path id="lb${i}" d="M262 ${L.hem - 40} L 282 1330 L 314 1330 L 296 ${L.hem - 40} Z" fill="url(#s${i})"/></g>
+          <path d="M228 200 L 232 300 L 268 300 L 272 200 Z" fill="url(#s${i})"/>
+          <ellipse cx="250" cy="150" rx="52" ry="68" fill="url(#s${i})"/>
+          <path d="M196 140 C 196 70, 304 70, 304 140 C 290 104, 210 104, 196 140 Z" fill="#0c0b0b"/>
+          <path d="${L.coat}" fill="url(#g${i})"/>
+          <path d="M100 560 C 90 700, 95 820, 110 900 M400 560 C 410 700, 405 820, 390 900" stroke="#000" stroke-opacity=".35" stroke-width="10" fill="none"/>
+        </svg>`;
+        figs.appendChild(d);
+        const n = document.createElement("div"); n.className = "num"; n.id = "n" + i; n.textContent = L.n; nums.appendChild(n);
+      });
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.set(["#f1", "#f2", "#n1", "#n2", "#flash"], { opacity: 0 }, 0);
+      tl.fromTo("#des", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.05);
+      tl.fromTo("#col", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.2);
+      tl.fromTo(["#fab", "#note"], { opacity: 0 }, { opacity: 1, duration: 0.2 }, 0.3);
+      tl.fromTo("#n0", { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: 0.133, ease: "power4.out" }, 0.3);
+      tl.fromTo("#barf", { scaleX: 0 }, { scaleX: 6 / TOTAL, duration: 0.3 }, 0.3);
+      // walk: stride and bob are functions of t; each flash freezes the frame for 0.5 s
+      const FL = [1.45, 3.05], fab = document.getElementById("fab"), w = { t: 0 };
+      function walk(t) {
+        let look = 0; FL.forEach((f) => { if (t >= f) look++; });
+        let tt = t; FL.forEach((f) => { if (t >= f && t < f + 0.5) tt = f; });   // frozen frame
+        const start = look ? FL[look - 1] : 0, lt = tt - start;
+        LOOKS.forEach((L, i) => {
+          const e = document.getElementById("f" + i);
+          e.style.opacity = i === look ? 1 : 0;
+          if (i !== look) return;
+          const ph = lt * 2 * Math.PI * 0.95, bob = Math.abs(Math.sin(ph)) * 8, sc = 0.96 + 0.02 * lt;   // 2 % push per look
+          e.style.transform = `translateY(${(-bob).toFixed(1)}px) scale(${sc.toFixed(4)}) rotate(${(Math.sin(ph) * 0.6).toFixed(2)}deg)`;
+          document.getElementById("la" + i).setAttribute("transform", `translate(${(Math.sin(ph) * 10).toFixed(1)} ${(Math.max(0, Math.sin(ph)) * -14).toFixed(1)})`);
+          document.getElementById("lb" + i).setAttribute("transform", `translate(${(-Math.sin(ph) * 10).toFixed(1)} ${(Math.max(0, -Math.sin(ph)) * -14).toFixed(1)})`);
+        });
+        fab.textContent = LOOKS[look].fab;
+      }
+      tl.fromTo(w, { t: 0 }, { t: DUR, duration: DUR, ease: "none", onUpdate: () => walk(w.t) }, 0);
+      FL.forEach((f, k) => {
+        // 2-frame flash, then the new number stamps in 4 frames; the old one slides 60 px down and greys
+        tl.to("#flash", { opacity: 1, duration: 0.001 }, f);
+        tl.to("#flash", { opacity: 0, duration: 0.001 }, f + 0.067);
+        tl.to("#n" + k, { y: 60, opacity: 0, color: "#5A5A5A", duration: 0.25, ease: "power2.out" }, f + 0.03);
+        tl.fromTo("#n" + (k + 1), { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: 0.133, ease: "power4.out" }, f + 0.1);
+        tl.to("#barf", { scaleX: (7 + k) / TOTAL, duration: 0.3, ease: "power2.out" }, f + 0.1);
+      });
+      tl.seek(0);
+    </script>
+  </body>
+</html>

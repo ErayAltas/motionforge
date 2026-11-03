@@ -1,0 +1,170 @@
+<!doctype html>
+<!--
+  motionforge style preview: fixture-countdown
+  © 2026 motionforge contributors, MIT
+  Signature scenes "flap board" + "days to go" + "table shuffle": dark split-flap tiles cycle through a
+  seeded run of 3-6 letters (0.06 s per flip, tiles 0.03 s apart, top half folds 0 -> -90°, bottom half
+  90 -> 0) and settle on the opponent and date; the green days number flips 10 -> 5 (0.18 s each, the
+  last 0.4 s power2.out); a result chip lands and the table rows reorder (FLIP, 0.6 s power2.inOut).
+  Teams, ground, date and table are fictional sample data, stamped "as of". Oswald + Hanken Grotesk.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Oswald"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/oswald-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Oswald"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/oswald-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Oswald"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/oswald-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Oswald"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/oswald-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Oswald"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/oswald-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Oswald"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/oswald-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Hanken Grotesk"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/hanken-grotesk-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Hanken Grotesk"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/hanken-grotesk-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Hanken Grotesk"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/hanken-grotesk-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Hanken Grotesk"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/hanken-grotesk-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      /* fonts:end */
+      :root { --paper: #f4f1ea; --ink: #111827; --tile: #1b1f27; --acc: #0f8a3c; --sup: #c8c2b5; --muted: #6b6558; --mf-grain-opacity: .04;
+        --o: "Oswald", "Arial Narrow", sans-serif; --h: "Hanken Grotesk", system-ui, sans-serif; }
+      html, body { background: var(--paper); }
+      #root { background: radial-gradient(1200px 1000px at 50% 30%, #f8f6f0 0%, transparent 70%), var(--paper); color: var(--ink); }
+      #root::before { mix-blend-mode: multiply; opacity: .06; }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 62%, rgba(60,50,30,.1) 100%); }
+      #title { position: absolute; left: 80px; top: 214px; font: 600 92px/1 var(--o); text-transform: uppercase; letter-spacing: .01em; }
+      #lab { position: absolute; left: 80px; top: 330px; font: 700 26px/1 var(--h); letter-spacing: .14em; color: var(--muted); display: flex; gap: 16px; align-items: center; }
+      #lab b { background: var(--acc); color: #fff; padding: 6px 12px 5px; border-radius: 4px; }
+      .flap { position: absolute; perspective: 600px; }
+      .flap .h { position: absolute; left: 0; width: 100%; overflow: hidden; background: var(--tile); }
+      .flap .u { top: 0; border-radius: 8px 8px 0 0; background: #23272f; }
+      .flap .l { border-radius: 0 0 8px 8px; }
+      .flap .h span { position: absolute; left: 0; width: 100%; text-align: center; color: var(--paper); }
+      .flap .hinge { position: absolute; left: 0; width: 100%; height: 2px; background: #0b0d11; z-index: 3; }
+      .flap .fu { transform-origin: 50% 100%; z-index: 2; backface-visibility: hidden; }
+      .flap .fl { transform-origin: 50% 0; z-index: 2; backface-visibility: hidden; }
+      .flap .sh { position: absolute; inset: 0; border-radius: 8px; box-shadow: 0 6px 12px rgba(0,0,0,.25); }
+      #info { position: absolute; left: 80px; top: 728px; font: 600 40px/1.2 var(--h); color: var(--ink); }
+      #info span { color: var(--muted); }
+      #daysLab { position: absolute; left: 520px; top: 1000px; font: 700 26px/1.4 var(--h); letter-spacing: .14em; color: var(--muted); }
+      #daysLab b { display: block; font: 600 64px/1 var(--o); letter-spacing: .01em; color: var(--ink); margin-top: 8px; }
+      #table { position: absolute; left: 80px; top: 1330px; width: 920px; }
+      .trow { position: absolute; left: 0; width: 920px; height: 66px; border-bottom: 1px solid var(--sup); display: flex; align-items: center;
+        font: 600 38px/1 var(--h); font-variant-numeric: tabular-nums; }
+      .trow .pos { width: 70px; padding-left: 22px; color: var(--muted); }
+      .trow .nm { flex: 1; }
+      .trow .pt { width: 90px; text-align: right; font-weight: 700; }
+      .trow .q { position: absolute; left: 0; top: 10px; bottom: 10px; width: 6px; background: var(--acc); transform-origin: top; }
+      .trow.me { background: rgba(15,138,60,.07); }
+      .chip { display: inline-block; margin-left: 14px; font: 700 22px/1 var(--h); padding: 6px 10px; border-radius: 4px; vertical-align: middle; }
+      #up { background: var(--acc); color: #fff; }
+      #res { position: absolute; left: 600px; top: 1268px; font: 700 26px/1 var(--h); letter-spacing: .1em; background: var(--ink); color: var(--paper); padding: 10px 16px; border-radius: 4px; }
+      #th { position: absolute; left: 80px; top: 1282px; font: 700 24px/1 var(--h); letter-spacing: .14em; color: var(--muted); }
+      #asof { position: absolute; left: 80px; top: 1640px; font: 600 26px/1 var(--h); color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="0">Fixture countdown</div>
+      <div id="lab" class="clip" data-start="0" data-duration="4.5" data-track-index="1"><b>NEXT</b>MATCHDAY 12 · AWAY</div>
+      <div id="board" class="clip" data-start="0" data-duration="4.5" data-track-index="2"></div>
+      <div id="info" class="clip" data-start="0" data-duration="4.5" data-track-index="3">Kick-off 15:00 GMT <span>· Quarry Road Ground</span></div>
+      <div id="daysLab" class="clip" data-start="0" data-duration="4.5" data-track-index="4">DAYS TO GO<b>Riverton v Mill Lane</b></div>
+      <div id="th" class="clip" data-start="0" data-duration="4.5" data-track-index="5">GROUP B</div>
+      <div id="res" class="clip" data-start="0" data-duration="4.5" data-track-index="6">FT · MILL LANE 2–0</div>
+      <div id="table" class="clip" data-start="0" data-duration="4.5" data-track-index="7"></div>
+      <div id="asof" class="clip" data-start="0" data-duration="4.5" data-track-index="8">Sample fixture and table · as of 9 March</div>
+    </div>
+
+    <script>
+      const DUR = 4.5, r = MF.rng("fixture-countdown"), ABC = "ABCDEFGHIJKLMNOPRSTUVWYZ0123456789";
+      const board = document.getElementById("board");
+      // a flap unit: element + draw(state) where state = { from, to, p } (p: 0..1 through one flip)
+      function flap(x, y, w, h, fs, font, color, wt) {
+        const el = document.createElement("div"); el.className = "flap";
+        Object.assign(el.style, { left: x + "px", top: y + "px", width: w + "px", height: h + "px", perspective: h * 5 + "px" });
+        const half = h / 2;
+        const mk = (cls, top) => { const d = document.createElement("div"); d.className = "h " + cls; Object.assign(d.style, { top: top + "px", height: half + "px" });
+          const s = document.createElement("span"); Object.assign(s.style, { top: (cls.includes("u") ? 0 : -half) + "px", height: h + "px", font: `${wt || 700} ${fs}px/${h}px ${font}`, color: color || "" }); d.appendChild(s); el.appendChild(d); return s; };
+        el.innerHTML = '<div class="sh"></div>';
+        const su = mk("u", 0), sl = mk("l", half), fu = mk("u fu", 0), fl = mk("l fl", half);
+        const hinge = document.createElement("div"); hinge.className = "hinge"; hinge.style.top = half - 1 + "px"; el.appendChild(hinge);
+        board.appendChild(el);
+        return function draw(from, to, p) {
+          if (p <= 0 || from === to) { su.textContent = sl.textContent = to === undefined ? from : (p <= 0 ? from : to); fu.parentNode.style.visibility = fl.parentNode.style.visibility = "hidden"; return; }
+          if (p >= 1) { su.textContent = sl.textContent = to; fu.parentNode.style.visibility = fl.parentNode.style.visibility = "hidden"; return; }
+          su.textContent = to; sl.textContent = from;
+          if (p < 0.5) {
+            fu.textContent = from; fu.parentNode.style.visibility = "visible"; fu.parentNode.style.transform = `rotateX(${-180 * p}deg)`;
+            fl.parentNode.style.visibility = "hidden";
+          } else {
+            fl.textContent = to; fl.parentNode.style.visibility = "visible"; fl.parentNode.style.transform = `rotateX(${90 * (1 - (p - 0.5) * 2)}deg)`;
+            fu.parentNode.style.visibility = "hidden";
+          }
+        };
+      }
+      // board rows: tile 86 x 140, 6 px gaps, up to 10 per row
+      const ROWS = [["RIVERTON", 0.35, 400], ["SAT 14 MAR", 0.75, 560]];
+      const tiles = [];
+      ROWS.forEach(([word, t0, y]) => {
+        [...word.padEnd(10, " ")].forEach((ch, i) => {
+          const draw = flap(80 + i * 92, y, 86, 140, 112, '"Oswald"', null, 500);
+          const seq = [" "];
+          if (ch !== " ") { const n = 3 + Math.floor(r() * 4); for (let k = 0; k < n; k++) seq.push(r.pick([...ABC])); seq.push(ch); }
+          tiles.push({ draw, seq, t0: t0 + i * 0.03, step: 0.06 });
+        });
+      });
+      // days number: one big unit flipping 10 -> 5
+      const days = flap(80, 870, 400, 400, 330, '"Oswald"', "#0f8a3c", 700);
+      document.querySelectorAll(".flap")[tiles.length].querySelectorAll(".h").forEach((h) => (h.style.background = h.classList.contains("u") ? "#ffffff" : "#fbfaf6"));
+      const DAYS = [["10", "9", 1.7, 0.18], ["9", "8", 1.95, 0.18], ["8", "7", 2.2, 0.18], ["7", "6", 2.45, 0.18], ["6", "5", 2.7, 0.4]];
+
+      function frame(t) {
+        for (const tk of tiles) {
+          const k = (t - tk.t0) / tk.step, n = tk.seq.length - 1;
+          if (k <= 0) tk.draw(" ", " ", 0);
+          else if (k >= n) tk.draw(tk.seq[n], tk.seq[n], 1);
+          else { const i = Math.floor(k); tk.draw(tk.seq[i], tk.seq[i + 1], k - i); }
+        }
+        let shown = false;
+        for (const [a, b, at, d] of DAYS) {
+          if (t >= at && t < at + d) { let p = (t - at) / d; if (d > 0.3) p = 1 - Math.pow(1 - p, 2); days(a, b, p); shown = true; break; }
+        }
+        if (!shown) { let v = "10"; for (const [a, b, at, d] of DAYS) if (t >= at + d) v = b; days(v, v, 1); }
+      }
+      // table: Mill Lane wins and moves 3rd -> 2nd
+      const T = [["Northgate", 25, 25], ["Ashby Vale", 22, 22], ["Mill Lane", 21, 24], ["Riverton", 19, 19]];
+      const table = document.getElementById("table");
+      T.forEach(([nm, a], i) => {
+        const d = document.createElement("div"); d.className = "trow" + (i === 2 ? " me" : ""); d.id = "row" + i; d.style.top = i * 66 + "px";
+        d.innerHTML = `<div class="q" id="q${i}" style="transform:scaleY(${i < 2 ? 1 : 0})"></div><span class="pos">${i + 1}</span><span class="nm">${nm}${i === 2 ? '<span class="chip" id="up">▲ 1</span>' : ""}</span><span class="pt" id="pt${i}">${a}</span>`;
+        table.appendChild(d);
+      });
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      const clock = { t: 0 };
+      tl.fromTo(clock, { t: 0 }, { t: DUR, duration: DUR, ease: "none", onUpdate: () => frame(clock.t) }, 0);
+      tl.fromTo("#title", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 0.05);
+      tl.fromTo("#lab", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.2);
+      tl.fromTo(".flap", { opacity: 0 }, { opacity: 1, duration: 0.15, stagger: 0.015 }, 0.15);
+      tl.fromTo("#info", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 1.25);
+      tl.fromTo("#daysLab", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.35, ease: "power2.out" }, 1.55);
+      tl.fromTo(["#th", "#table", "#asof"], { opacity: 0 }, { opacity: 1, duration: 0.3, stagger: 0.08 }, 1.4);
+      // result lands, points count, rows reorder
+      tl.fromTo("#res", { opacity: 0, y: -30 }, { opacity: 1, y: 0, duration: 0.3, ease: "back.out(2)" }, 3.0);
+      const pt = { v: 21 }, ptEl = document.getElementById("pt2");
+      tl.fromTo(pt, { v: 21 }, { v: 24, duration: 0.4, ease: "none", onUpdate: () => (ptEl.textContent = Math.round(pt.v)) }, 3.25);
+      tl.to("#row2", { top: 66, duration: 0.6, ease: "power2.inOut" }, 3.5);
+      tl.to("#row1", { top: 132, duration: 0.6, ease: "power2.inOut" }, 3.5);
+      tl.set("#row2 .pos", { textContent: "2" }, 3.8); tl.set("#row1 .pos", { textContent: "3" }, 3.8);
+      tl.to("#q1", { scaleY: 0, duration: 0.25 }, 3.75); tl.to("#q2", { scaleY: 1, duration: 0.25 }, 3.85);
+      tl.fromTo("#up", { opacity: 0, scale: 0.4 }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(2)" }, 3.9);
+      tl.seek(0);
+      MF.ready().then(() => tl.seek(tl.time()));
+    </script>
+  </body>
+</html>

@@ -1,0 +1,137 @@
+<!doctype html>
+<!--
+  motionforge style preview: patch-notes
+  © 2026 motionforge contributors, MIT
+  Signature scene: the stat change row. The gold-trimmed banner unfurls (0 -> 900 px, 0.6 s power3.out),
+  the patch number types at 18 chars/s, rows slide in 60 px from the left (0.35 s, 0.1 s stagger); per row
+  the old value strikes through, an arrow draws, the new value flips in and the buff / nerf arrow bounces
+  once with back.out(2). A verdict meter settles with elastic.out(1, 0.5). The game, ability and numbers
+  are fictional. Oxanium + Titillium Web.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts: @fontsource/oxanium, @fontsource/titillium-web (copied from node_modules/@fontsource/<family>/files/) */
+      @font-face { font-family: "Oxanium"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/oxanium-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Oxanium"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/oxanium-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Oxanium"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/oxanium-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Oxanium"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/oxanium-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Titillium Web"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/titillium-web-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Titillium Web"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/titillium-web-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Titillium Web"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/titillium-web-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Titillium Web"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/titillium-web-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Titillium Web"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/titillium-web-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Titillium Web"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/titillium-web-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #141820; --panel: #1E2430; --edge: #2C3444; --ink: #E8EAF0; --gold: #D9B36C; --buff: #4FD18B; --nerf: #F2605B; --mut: #8C93A3; --mf-grain-opacity: 0.04; }
+      html, body { background: var(--bg); }
+      #root { background: radial-gradient(1100px 700px at 50% 0%, #1E2533 0%, transparent 70%), var(--bg); color: var(--ink); font-family: "Titillium Web", sans-serif; }
+      .lab { font: 600 26px/1 "Titillium Web"; letter-spacing: .12em; text-transform: uppercase; color: var(--mut); }
+      #banner { position: absolute; left: 90px; top: 250px; width: 900px; height: 150px; }
+      #bn { position: absolute; left: 0; top: 0; height: 150px; width: 900px; background: linear-gradient(180deg, #232A37, #1A1F29); border-top: 3px solid var(--gold); border-bottom: 3px solid var(--gold);
+            clip-path: polygon(0 50%, 40px 0, calc(100% - 40px) 0, 100% 50%, calc(100% - 40px) 100%, 40px 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      #bn::before, #bn::after { content: ""; position: absolute; top: 14px; bottom: 14px; width: 2px; background: var(--gold); opacity: .6; }
+      #bn::before { left: 60px; } #bn::after { right: 60px; }
+      #pv { font: 700 100px/1 "Oxanium"; letter-spacing: .04em; color: var(--ink); min-height: 100px; }
+      #pd { margin-top: 2px; }
+      #ent { position: absolute; left: 90px; right: 90px; top: 450px; height: 140px; display: flex; align-items: center; gap: 30px; }
+      #ico { width: 130px; height: 130px; }
+      #en { font: 700 60px/1 "Titillium Web"; }
+      #en span { display: block; margin-top: 10px; }
+      .row { position: absolute; left: 90px; width: 900px; height: 150px; background: var(--panel); border: 2px solid var(--edge); border-radius: 10px; display: flex; align-items: center; padding: 0 30px; }
+      .row .lab { width: 210px; line-height: 1.25; }
+      .old { position: relative; font: 600 64px/1 "Oxanium"; color: var(--mut); font-variant-numeric: tabular-nums; width: 170px; }
+      .old i { position: absolute; left: -4px; right: 14px; top: 50%; height: 4px; background: var(--mut); transform-origin: left; }
+      .arr { width: 70px; height: 30px; margin-right: 16px; }
+      .arr path { fill: none; stroke: var(--mut); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+      .nw { position: relative; font: 600 80px/1 "Oxanium"; font-variant-numeric: tabular-nums; padding: 10px 16px; border: 3px solid var(--gold); border-radius: 8px; width: 200px; text-align: center; perspective: 400px; }
+      .tag { margin-left: auto; width: 140px; text-align: center; }
+      .tag b { display: block; font: 700 64px/1 "Oxanium"; }
+      .tag span { display: block; margin-top: 6px; font: 700 30px/1 "Oxanium"; }
+      .buff { color: var(--buff); } .nerf { color: var(--nerf); } .adj { color: var(--ink); }
+      #meter { position: absolute; left: 140px; width: 800px; top: 1260px; height: 220px; }
+      #mlab { position: absolute; left: 0; right: 0; top: 1220px; text-align: center; }
+      #title { position: absolute; left: 0; right: 0; top: 1560px; text-align: center; font: 700 110px/1 "Oxanium"; letter-spacing: .04em; text-transform: uppercase; }
+      #note { position: absolute; left: 0; right: 0; top: 1690px; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="banner" class="clip" data-start="0" data-duration="4.5" data-track-index="0"><div id="bn"><div id="pv"></div><div id="pd" class="lab">12 March · example game</div></div></div>
+      <div id="ent" class="clip" data-start="0" data-duration="4.5" data-track-index="1">
+        <svg id="ico" viewBox="0 0 130 130"><polygon points="65,4 121,34 121,96 65,126 9,96 9,34" fill="#1E2430" stroke="#D9B36C" stroke-width="4" />
+          <path d="M40 92 L82 40 L90 48 L48 100 Z" fill="#E8EAF0" /><path d="M82 40 L96 30 L92 46 Z" fill="#D9B36C" /><path d="M36 84 l14 14" stroke="#8C93A3" stroke-width="6" stroke-linecap="round" /></svg>
+        <div id="en">Ember Lance<span class="lab">Q ability · Varrow (fictional)</span></div>
+      </div>
+      <div id="rows" class="clip" data-start="0" data-duration="4.5" data-track-index="2"></div>
+      <div id="mlab" class="lab clip" data-start="0" data-duration="4.5" data-track-index="3">Verdict</div>
+      <svg id="meter" class="clip" viewBox="0 0 800 220" data-start="0" data-duration="4.5" data-track-index="4"></svg>
+      <h2 id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="5">Patch notes</h2>
+      <div id="note" class="lab clip" data-start="0" data-duration="4.5" data-track-index="6">Fictional game · sample values</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const ROWS = [["Cooldown", "12 s", "10 s", "buff", "▲", "−17 %"], ["Damage", "80", "72", "nerf", "▼", "−10 %"], ["Cast time", "0.25", "0.30", "adj", "◆", "adjust"]];
+      const rowsEl = document.getElementById("rows");
+      ROWS.forEach(([lab, o, n, k, a, d], i) => {
+        const r = document.createElement("div");
+        r.className = "row"; r.id = "row" + i; r.style.top = (640 + i * 170) + "px";
+        r.innerHTML = `<div class="lab">${lab}</div><div class="old">${o}<i></i></div>` +
+          `<svg class="arr" viewBox="0 0 70 30"><path d="M4 15h58M50 5l12 10-12 10" pathLength="1"/></svg>` +
+          `<div class="nw"><div class="nv">${n}</div></div><div class="tag ${k}"><b>${a}</b><span>${d}</span></div>`;
+        rowsEl.appendChild(r);
+      });
+      // verdict meter: a half dial, three segments, needle
+      const NS = "http://www.w3.org/2000/svg", m = document.getElementById("meter");
+      const cx = 400, cy = 210, R = 180;
+      const pt = (deg, rr) => [cx + rr * Math.cos(Math.PI * (1 - deg / 180)), cy - rr * Math.sin(Math.PI * (1 - deg / 180))];
+      [["#F2605B", 0, 58], ["#E8EAF0", 61, 119], ["#4FD18B", 122, 180]].forEach(([c, a0, a1]) => {
+        const p = document.createElementNS(NS, "path"), [x0, y0] = pt(a0, R), [x1, y1] = pt(a1, R);
+        p.setAttribute("d", `M${x0} ${y0} A${R} ${R} 0 0 1 ${x1} ${y1}`);
+        p.setAttribute("stroke", c); p.setAttribute("stroke-width", "30"); p.setAttribute("fill", "none"); p.setAttribute("opacity", c === "#E8EAF0" ? ".35" : ".9");
+        m.appendChild(p);
+      });
+      [["Nerf", 18], ["Adjust", 90], ["Buff", 162]].forEach(([t, a]) => {
+        const [x, y] = pt(a, R + 52), tx = document.createElementNS(NS, "text");
+        tx.setAttribute("x", x); tx.setAttribute("y", y + 8); tx.setAttribute("text-anchor", "middle");
+        tx.setAttribute("style", "font: 600 24px 'Titillium Web'; letter-spacing: .12em; fill: #8C93A3; text-transform: uppercase");
+        tx.textContent = t.toUpperCase(); m.appendChild(tx);
+      });
+      const nd = document.createElementNS(NS, "g");
+      nd.innerHTML = `<path d="M${cx - 8} ${cy} L${cx} ${cy - 150} L${cx + 8} ${cy} Z" fill="#D9B36C"/><circle cx="${cx}" cy="${cy}" r="16" fill="#D9B36C"/>`;
+      nd.setAttribute("id", "needle"); m.appendChild(nd);
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      // banner unfurls 0 -> 900 px, patch number types at 18 chars/s
+      tl.fromTo("#banner", { clipPath: "inset(0% 50% 0% 50%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.6, ease: "power3.out" }, 0.05);
+      const pv = document.getElementById("pv"), P = "PATCH 14.2", ty = { n: 0 };
+      tl.to(ty, { n: P.length, duration: P.length / 18, ease: "none", onUpdate: () => { pv.textContent = P.slice(0, Math.round(ty.n)); } }, 0.3);
+      tl.fromTo("#pd", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.6);
+      tl.fromTo("#ent", { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.35, ease: "power3.out" }, 0.55);
+      tl.fromTo(".row", { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.35, ease: "power3.out", stagger: 0.1 }, 0.75);
+      tl.set(".nw .nv, .tag", { opacity: 0 }, 0);
+      tl.set(".arr path", { strokeDasharray: 1, strokeDashoffset: 1 }, 0);
+      ROWS.forEach((r, i) => {
+        const at = 1.2 + i * 0.5, s = "#row" + i;
+        tl.fromTo(s + " .old i", { scaleX: 0 }, { scaleX: 1, duration: 0.15, ease: "power2.out" }, at);
+        tl.to(s + " .arr path", { strokeDashoffset: 0, duration: 0.15, ease: "power2.out" }, at + 0.1);
+        tl.fromTo(s + " .nv", { opacity: 0, rotationX: -90 }, { opacity: 1, rotationX: 0, duration: 0.22, ease: "power3.out" }, at + 0.2);
+        tl.fromTo(s + " .tag", { opacity: 0, y: r[3] === "nerf" ? -30 : 30 }, { opacity: 1, y: 0, duration: 0.35, ease: "back.out(2)" }, at + 0.32);
+      });
+      tl.to("#row0", { scale: 1.04, duration: 0.3, ease: "power3.out" }, 1.55);
+      tl.to("#row0", { scale: 1, duration: 0.3, ease: "power3.out" }, 2.2);
+      tl.fromTo(["#mlab", "#meter"], { opacity: 0 }, { opacity: 1, duration: 0.3 }, 2.75);
+      tl.fromTo("#needle", { rotation: -90, svgOrigin: `${cx} ${cy}` }, { rotation: 48, svgOrigin: `${cx} ${cy}`, duration: 0.6, ease: "elastic.out(1, 0.5)" }, 2.95);
+      tl.fromTo("#title", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 3.2);
+      tl.fromTo("#note", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 3.4);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

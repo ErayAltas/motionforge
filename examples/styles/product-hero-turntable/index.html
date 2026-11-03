@@ -1,0 +1,270 @@
+<!doctype html>
+<!--
+  motionforge style preview: product-hero-turntable
+  © 2026 motionforge contributors, MIT
+  Built from templates/product-turntable-3d, restyled to the style: cool-grey infinity cove, matte white
+  plinth, the product turns at 45 deg/s and eases into a three-quarter stop (power2.out, 0.8 s); three teal
+  callouts snap on 0.12 s apart (dot back.out(2), leader 0.3 s, label typing at 28 chars/s).
+  The product is the template's original speaker; specs are example values. Fonts: Space Grotesk, Space Mono.
+  3D layer: three.js (MIT, from npm) + mf-three.js, copied into assets/vendor/ by new-scene.sh.
+  Contract: engines/hyperframes/three/README.md (hf-seek drives the 3D, GSAP drives the HTML text).
+  Default product: an original speaker built from primitives. Set "model" to a local .glb to show yours.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script type="importmap">{ "imports": { "three": "./assets/vendor/three.module.min.js", "three/addons/": "./assets/vendor/three-addons/" } }</script>
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/space-grotesk-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/space-grotesk-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/space-grotesk-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/space-grotesk-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Space Mono"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/space-mono-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Space Mono"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/space-mono-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      /* fonts:end */
+      :root { --mf-bg-light: #DADDE1; --mf-text-dark: #15181C; --mf-accent: #00A8B5; --mf-muted: #6B7480; --mf-font-display: "Space Grotesk", sans-serif; --mf-font-body: "Space Grotesk", sans-serif; --mf-font-mono: "Space Mono", monospace; --mf-grain-opacity: .04; }
+      html, body { background: #DADDE1; }
+      .mf-stage.light { background: radial-gradient(900px 1100px at 50% 52%, #EEF0F2 0%, #DADDE1 55%, #C3C7CD 100%); }
+      #pool { position: absolute; left: 0; right: 0; top: 0; bottom: 0; background: radial-gradient(520px 300px at 50% 1450px, rgba(255, 255, 255, 0.10), transparent 70%); }
+      .light #pool { background: radial-gradient(560px 320px at 50% 1450px, rgba(255, 255, 255, 0.9), transparent 70%); }
+      #gl { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      #eyebrow { top: 250px; left: 80px; right: auto; text-align: left; font: 400 28px/1 var(--mf-font-mono); letter-spacing: .08em; color: var(--mf-muted); }
+      #title { top: 296px; left: 80px; right: 80px; text-align: left; font: 700 100px/1.0 var(--mf-font-display); letter-spacing: -0.03em; }
+      #leaders { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: visible; }
+      #leaders line { stroke: var(--mf-muted); stroke-opacity: 0.9; stroke-width: 2; }
+      
+      #leaders .dot { fill: var(--mf-accent); }
+      #leaders .halo { fill: none; stroke: var(--mf-accent); stroke-width: 2; }
+      .callout { position: absolute; top: 0; width: 250px; opacity: 0; color: var(--mf-text-dark); }
+      .callout.left { left: 80px; text-align: left; }
+      .callout.right { right: 80px; text-align: right; }
+      .callout .v { font: 700 52px/1 var(--mf-font-display); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+      .callout .v u { text-decoration: none; font: 400 30px var(--mf-font-mono); color: var(--mf-muted); margin-left: 6px; }
+      .callout.hot .v { color: var(--mf-accent); }
+      .callout .d { margin-top: 12px; font: 400 26px/1.3 var(--mf-font-mono); letter-spacing: 0.08em; min-height: 68px; text-transform: uppercase; color: var(--mf-muted); }
+      #subline { position: absolute; left: 80px; right: 80px; top: 1580px; text-align: center; font: 400 28px/1.5 var(--mf-font-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--mf-muted); }
+      #subline b { color: var(--mf-accent); font-weight: 700; }
+      .light #subline b { color: var(--mf-text-dark); font-weight: 400; }
+      #price { position: absolute; left: 0; right: 0; top: 1650px; text-align: center; font: 700 64px/1 var(--mf-font-display); letter-spacing: -0.02em; color: var(--mf-text-dark); }
+      #grain { position: absolute; inset: 0; z-index: 5; pointer-events: none; background-image: var(--mf-grain); opacity: 0.05; mix-blend-mode: overlay; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="pool"></div>
+      <canvas id="gl" class="clip" width="1080" height="1920" data-start="0" data-duration="4.5" data-track-index="0"></canvas>
+      <svg id="leaders" class="clip" viewBox="0 0 1080 1920" data-start="0" data-duration="4.5" data-track-index="1"></svg>
+      <div id="callouts" class="clip" data-start="0" data-duration="4.5" data-track-index="2"></div>
+      <div id="eyebrow" class="eyebrow clip" data-start="0" data-duration="4.5" data-track-index="3"></div>
+      <h1 id="title" class="title clip" data-start="0" data-duration="4.5" data-track-index="4"></h1>
+      <div id="subline" class="clip" data-start="0" data-duration="4.5" data-track-index="5"></div>
+      <div id="price" class="clip" data-start="0" data-duration="4.5" data-track-index="6">€ 249 <span style="font:400 30px var(--mf-font-mono);color:#6B7480">example price</span></div>
+      <div id="grain"></div>
+    </div>
+
+    <script id="params" type="application/json">
+{
+  "eyebrow": "STYLE · PRODUCT-HERO-TURNTABLE",
+  "title": "Product hero turntable",
+  "subline": "Model S2 · <b>Chalk</b> · example product",
+  "model": "",
+  "modelHeight": 2.1,
+  "productColor": "#e4e0d8",
+  "callouts": [
+    { "value": "28<u>mm</u>", "detail": "silk-dome tweeter", "point": [0, 0.5, 1], "side": "left" },
+    { "value": "130<u>mm</u>", "detail": "long-throw woofer", "point": [0, -0.32, 1], "side": "right", "hot": true },
+    { "value": "1.9<u>kg</u>", "detail": "aluminium dial", "point": [0.45, 1, -0.2], "side": "left" }
+  ],
+  "calloutStart": 2.05,
+  "orbitDegrees": 55,
+  "theme": "light",
+  "lang": "en",
+  "duration": 4.5
+}
+    </script>
+
+    <script>
+      // ---- HTML layer: text + GSAP timeline (the 3D layer below has its own hf-seek handler) ----
+      const P = MF.params();
+      document.documentElement.lang = P.lang;
+      if (P.theme === "light") document.getElementById("root").classList.add("light");
+      document.getElementById("eyebrow").textContent = P.eyebrow || "";
+      // {word} marks the accent word (italic serif, accent colour)
+      const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+      document.getElementById("title").innerHTML = esc(P.title || "").replace(/\{([^}]+)\}/g, '<span class="serif accent">$1</span>');
+      document.getElementById("subline").innerHTML = P.subline || "";
+
+      const tl = MF.timeline("main", P.duration);
+      MF.fit(document.getElementById("title"), 100, 60, 220);
+      tl.fromTo("#eyebrow", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 0.25);
+      tl.fromTo("#title", { opacity: 0, y: 44, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, 0.35);
+      tl.fromTo("#subline", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, P.calloutStart + 0.7);
+      tl.fromTo("#price", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, P.calloutStart + 0.85);
+      MF.ready().then(() => MF.fit(document.getElementById("title"), 100, 60, 220));
+      tl.seek(0);
+    </script>
+
+    <script type="module">
+      import * as THREE from "three";
+      import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+      import { createStage, environment, lights, shadowCatcher, onSeek, orbit, ease, seg, lerp, project, loadGLB, fitToSize } from "./assets/vendor/mf-three.js";
+
+      const P = MF.params();
+      const css = getComputedStyle(document.getElementById("root"));
+      const ACCENT = css.getPropertyValue("--mf-accent").trim() || "#c8f53a";
+      const light = P.theme === "light";
+
+      const { renderer, scene, camera, render } = createStage({ fov: 30, exposure: light ? 1.0 : 1.05 });
+      environment(renderer, scene, 0.55);
+      lights.studio(scene, { size: 3, target: [0, 1, 0] });
+      shadowCatcher(scene, { opacity: light ? 0.14 : 0.55 });
+
+      // ---- pedestal: a low cylinder with a thin accent ring on its top edge ----
+      const PED_R = 1.32, PED_H = 0.44;
+      const pedestal = new THREE.Group();
+      const pedMat = new THREE.MeshStandardMaterial({ color: "#F7F8F9", roughness: 0.6, metalness: 0.0, envMapIntensity: 0.5 });
+      const ped = new THREE.Mesh(new THREE.CylinderGeometry(PED_R, PED_R, PED_H, 128, 1), pedMat);
+      ped.position.y = PED_H / 2;
+      ped.castShadow = true;
+      ped.receiveShadow = true;
+            pedestal.add(ped);
+      scene.add(pedestal);
+
+      // ---- product: an original speaker made of primitives (replaced by a GLB when "model" is set) ----
+      function buildSpeaker() {
+        const g = new THREE.Group();
+        const W = 1.3, H = P.modelHeight || 2.1, D = 1.0;
+        const shell = new THREE.MeshStandardMaterial({ color: P.productColor || "#e4e0d8", roughness: 0.62, metalness: 0.0 });
+        const baffleMat = new THREE.MeshStandardMaterial({ color: "#1d1e21", roughness: 0.85 });
+        const metal = new THREE.MeshStandardMaterial({ color: "#c9ccd1", roughness: 0.28, metalness: 1 });
+        const coneMat = new THREE.MeshStandardMaterial({ color: "#2b2d31", roughness: 0.55, side: THREE.DoubleSide });
+        const body = new THREE.Mesh(new RoundedBoxGeometry(W, H, D, 6, 0.16), shell);
+        body.position.y = H / 2;
+        // front baffle: a dark inset panel
+        const baffle = new THREE.Mesh(new RoundedBoxGeometry(W - 0.16, H - 0.16, 0.06, 4, 0.08), baffleMat);
+        baffle.position.set(0, H / 2, D / 2 - 0.02);
+        g.add(body, baffle);
+        // a driver: metal trim ring + cone (lathe) + dust cap
+        function driver(r, y, depth) {
+          const d = new THREE.Group();
+          const ring = new THREE.Mesh(new THREE.TorusGeometry(r, r * 0.07, 16, 96), metal);
+          const pts = [];
+          for (let i = 0; i <= 12; i++) {
+            const k = i / 12;
+            pts.push(new THREE.Vector2(lerp(r * 0.22, r * 0.96, k), -depth * (1 - k * k)));
+          }
+          const cone = new THREE.Mesh(new THREE.LatheGeometry(pts, 96), coneMat);
+          cone.rotation.x = Math.PI / 2;
+          const cap = new THREE.Mesh(new THREE.SphereGeometry(r * 0.24, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), metal);
+          cap.rotation.x = Math.PI / 2;
+          cap.position.z = -depth * 0.85;
+          d.add(ring, cone, cap);
+          d.position.set(0, y, D / 2 + 0.035 + depth); // no hole in the baffle: the cone sits in front of it
+          return d;
+        }
+        g.add(driver(0.43, H * 0.33, 0.07));
+        const tw = driver(0.17, H * 0.75, 0.025);
+        g.add(tw);
+        // accent ring around the tweeter + a status light
+        const glow = new THREE.Mesh(new THREE.TorusGeometry(0.25, 0.012, 12, 96), new THREE.MeshBasicMaterial({ color: ACCENT }));
+        glow.position.set(0, H * 0.75, D / 2 + 0.03);
+        const led = new THREE.Mesh(new THREE.SphereGeometry(0.025, 16, 8), new THREE.MeshBasicMaterial({ color: ACCENT }));
+        led.position.set(0, H - 0.26, D / 2 + 0.02);
+        // volume dial on top
+        const dial = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.17, 0.09, 64), metal);
+        dial.position.set(W * 0.22, H + 0.04, -0.1);
+        g.add(glow, led, dial);
+        g.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+        return g;
+      }
+
+      const product = new THREE.Group();
+      scene.add(product);
+      let box = new THREE.Box3();
+      const ready = (async () => {
+        let obj;
+        if (P.model) {
+          obj = await loadGLB(P.model);
+          fitToSize(obj, P.modelHeight || 2.1);
+        } else {
+          obj = buildSpeaker();
+        }
+        product.add(obj);
+        product.updateMatrixWorld(true);
+        box = new THREE.Box3().setFromObject(obj); // product-local bounds (product sits at the origin here)
+      })();
+
+      // ---- callouts: HTML labels + SVG leader lines that follow product points ----
+      const SVGNS = "http://www.w3.org/2000/svg";
+      const svg = document.getElementById("leaders");
+      const holder = document.getElementById("callouts");
+      const callouts = (P.callouts || []).map((c, i) => {
+        const el = document.createElement("div");
+        el.className = "callout " + (c.side === "left" ? "left" : "right");
+        el.innerHTML = '<div class="v"></div><div class="d"></div>';
+        el.querySelector(".v").innerHTML = c.value || "";
+        if (c.hot) el.classList.add("hot");
+        holder.appendChild(el);
+        const line = document.createElementNS(SVGNS, "line");
+        const halo = document.createElementNS(SVGNS, "circle");
+        halo.setAttribute("class", "halo");
+        const dot = document.createElementNS(SVGNS, "circle");
+        dot.setAttribute("class", "dot");
+        svg.append(line, halo, dot);
+        return { c, el, line, halo, dot, d: el.querySelector(".d"), start: P.calloutStart + i * 0.12 };
+      });
+      const tmp = new THREE.Vector3();
+      // a point given in the product's bounding box (-1..1 per axis) -> world position
+      function boxPoint(n) {
+        const c = box.getCenter(new THREE.Vector3());
+        const h = box.getSize(new THREE.Vector3()).multiplyScalar(0.5);
+        tmp.set(c.x + n[0] * h.x, c.y + n[1] * h.y, c.z + n[2] * h.z);
+        return product.localToWorld(tmp);
+      }
+
+      function draw(t) {
+        // pedestal rises, product lowers in with a quarter turn
+        const kp = ease.outCubic(seg(t, 0, 0.8));
+        pedestal.position.y = lerp(-0.35, 0, kp);
+        const kd = ease.outQuint(seg(t, 0.25, 1.3));
+        product.position.y = PED_H + pedestal.position.y + lerp(1.3, 0, kd);
+        const DEG = Math.PI / 180, STOP = 2.0, V = 45;
+        const tt = Math.min(t, STOP - 0.8), te = seg(t, STOP - 0.8, 0.8);
+        const ang = -38 + V * tt + V * 0.8 * (te - te * te / 2);   // linear 45 deg/s, then power2.out over 0.8 s
+        product.rotation.y = ang * DEG;
+        product.scale.setScalar(lerp(0.9, 1, kd));
+        // camera: slow orbit + gentle push-in over the whole scene
+        const k = ease.inOutSine(seg(t, 0, P.duration));
+        orbit(camera, { radius: lerp(13.2, 12.5, k), height: 1.85, angle: 0, target: [0, 1.25, 0] });
+        render();
+
+        for (const co of callouts) {
+          const a = seg(t, co.start + 0.1, 0.3);
+          const p = project(boxPoint(co.c.point || [0, 0, 1]), camera);
+          const left = co.el.classList.contains("left");
+          const edge = left ? 80 + 250 : 1080 - 80 - 250;   // inner edge of the label column
+          const y = p.y;
+          co.el.style.transform = `translateY(${y - 30}px)`;
+          co.el.style.opacity = t >= co.start + 0.25 ? 1 : 0;
+          const n = Math.max(0, Math.floor((t - co.start - 0.25) * 28));
+          co.d.textContent = (co.c.detail || "").slice(0, n);
+          const x2 = lerp(p.x, edge, ease.outCubic(a));
+          co.line.setAttribute("x1", p.x); co.line.setAttribute("y1", y);
+          co.line.setAttribute("x2", x2); co.line.setAttribute("y2", y);
+          co.line.style.opacity = a > 0 ? 1 : 0;
+          const r = 9 * ease.outBack(seg(t, co.start, 0.25), 3);
+          co.dot.setAttribute("cx", p.x); co.dot.setAttribute("cy", y); co.dot.setAttribute("r", Math.max(0, r));
+          co.halo.setAttribute("cx", p.x); co.halo.setAttribute("cy", y);
+          co.halo.setAttribute("r", Math.max(0, r * 2));
+          co.halo.style.opacity = Math.max(0, r / 9) * 0.6;
+        }
+      }
+      onSeek(draw, ready);
+    </script>
+  </body>
+</html>

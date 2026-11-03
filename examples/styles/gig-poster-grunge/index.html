@@ -1,0 +1,146 @@
+<!doctype html>
+<!--
+  motionforge style preview: gig-poster-grunge
+  © 2026 motionforge contributors, MIT
+  Signature scenes "toner photo" + "date stamp" + "flyer lockup": paper pieces slam in from 3 % off-frame
+  in 3 frames with no easing and a 6 px copier jump; a torn photo block thresholds from blank to full
+  toner in 6 frames (seeded noise); the date stamp drops in 2 frames, smears for 1 and settles at -3 deg;
+  the day-glo strip slaps on last. Alfa Slab One + Archivo Narrow + Sometype Mono. The band, venue and
+  "photo" (drawn on canvas) are fictional.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      @font-face { font-family: "Alfa Slab One"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/alfa-slab-one-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Alfa Slab One"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/alfa-slab-one-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Archivo Narrow"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/archivo-narrow-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Archivo Narrow"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/archivo-narrow-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Sometype Mono"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/sometype-mono-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Sometype Mono"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/sometype-mono-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #d9d3c5; --ink: #121212; --acc: #f4e409; --sup: #8a8579; --mf-grain-opacity: .0; }
+      html, body { background: var(--bg); }
+      #root { background: radial-gradient(500px 400px at 20% 80%, rgba(138,133,121,.25), transparent 70%), radial-gradient(600px 500px at 80% 30%, rgba(138,133,121,.18), transparent 70%), var(--bg); color: var(--ink); }
+      #root::after { display: none; }
+      #flyer { position: absolute; inset: 0; }
+      #lid { position: absolute; right: 0; top: 0; bottom: 0; width: 70px; background: linear-gradient(90deg, rgba(18,18,18,0), rgba(18,18,18,.55) 70%, rgba(18,18,18,.8)); }
+      #speck { position: absolute; inset: 0; mix-blend-mode: multiply; opacity: .55; }
+      .streak { position: absolute; left: 0; right: 0; height: 2px; background: rgba(18,18,18,.18); }
+      .hole { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: #3b3934; box-shadow: inset 0 2px 2px rgba(0,0,0,.6); }
+      #lab { position: absolute; left: 70px; top: 160px; font: 700 30px/1 "Sometype Mono", monospace; letter-spacing: .04em; }
+      .name { position: absolute; left: -24px; font: 400 238px/0.86 "Alfa Slab One", Rockwell, serif; text-transform: uppercase; letter-spacing: -0.01em; white-space: nowrap; filter: url(#bleed); }
+      #n1 { top: 210px; }
+      #n2 { top: 420px; }
+      #photo { position: absolute; left: 50px; top: 700px; width: 980px; height: 560px; }
+      #photo canvas { width: 980px; height: 560px; display: block; }
+      #stamp { position: absolute; left: 70px; top: 1300px; padding: 16px 30px; border: 8px solid var(--ink); font: 700 72px/1 "Sometype Mono", monospace; text-transform: uppercase; transform-origin: 30% 50%; filter: url(#bleed); }
+      #venue { position: absolute; left: 70px; top: 1470px; font: 700 58px/1.12 "Archivo Narrow", "Arial Narrow", sans-serif; text-transform: uppercase; letter-spacing: .02em; }
+      #strip { position: absolute; left: 50px; top: 1640px; padding: 20px 34px; background: var(--acc); border-radius: 12px; font: 700 42px/1 "Sometype Mono", monospace; text-transform: uppercase; transform-origin: 0 50%; mix-blend-mode: multiply; }
+      #flash { position: absolute; inset: 0; background: #fff; opacity: 0; z-index: 9; }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position:absolute"><filter id="bleed"><feTurbulence type="fractalNoise" baseFrequency="1.1" numOctaves="1" seed="5" /><feDisplacementMap in="SourceGraphic" scale="3.5" /></filter></svg>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="flyer" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <div id="streaks"></div>
+        <div class="hole" style="left:120px;top:80px"></div><div class="hole" style="left:940px;top:80px"></div>
+        <div id="lab">Gig poster grunge · flyer 03</div>
+        <div id="n1" class="name">Gravel</div>
+        <div id="n2" class="name">Hours</div>
+        <div id="photo"><canvas id="cv" width="980" height="560"></canvas></div>
+        <div id="stamp">Fri 14.11 · 21:00</div>
+        <div id="venue">Cellar Nine, Dock Road<br />Doors 20:00 · £8</div>
+        <div id="strip">Tickets on the door · all ages</div>
+        <svg id="speck" viewBox="0 0 1080 1920" preserveAspectRatio="none"><filter id="sp"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="13" /><feColorMatrix values="0 0 0 0 0.07  0 0 0 0 0.07  0 0 0 0 0.07  0 0 0 -11 7.0" /></filter><rect width="1080" height="1920" filter="url(#sp)" /></svg>
+        <div id="lid"></div>
+      </div>
+      <div id="flash" class="clip" data-start="0" data-duration="4.5" data-track-index="1"></div>
+    </div>
+
+    <script>
+      const DUR = 4.5, FR = 1 / 30;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this)
+      const r = MF.rng("gig");
+      // fixed 2 px streaks every ~300 px
+      const sk = document.getElementById("streaks");
+      for (let y = 290; y < 1920; y += 300 + Math.round(r.range(-30, 30))) { const s = document.createElement("div"); s.className = "streak"; s.style.top = y + "px"; sk.appendChild(s); }
+      // torn top/bottom edges for the photo block (seeded)
+      let poly = [];
+      for (let x = 0; x <= 100; x += 2) poly.push(`${x}% ${r.range(0, 2.4).toFixed(2)}%`);
+      for (let x = 100; x >= 0; x -= 2) poly.push(`${x}% ${(100 - r.range(0, 2.4)).toFixed(2)}%`);
+      document.getElementById("photo").style.clipPath = `polygon(${poly.join(",")})`;
+
+      // the "photo": a drawn stage scene (spot light, three silhouettes), then a toner threshold pass
+      const cv = document.getElementById("cv"), cx = cv.getContext("2d");
+      const W = 980, H = 560;
+      const src = document.createElement("canvas"); src.width = W; src.height = H;
+      const s = src.getContext("2d");
+      s.fillStyle = "#222"; s.fillRect(0, 0, W, H);
+      const g = s.createRadialGradient(500, 120, 30, 500, 300, 520);
+      g.addColorStop(0, "#fff"); g.addColorStop(0.45, "#aaa"); g.addColorStop(1, "#111");
+      s.fillStyle = g; s.beginPath(); s.moveTo(380, 0); s.lineTo(620, 0); s.lineTo(900, H); s.lineTo(100, H); s.closePath(); s.fill();
+      s.fillStyle = "#050505";
+      const fig = (x, y, sc) => { s.beginPath(); s.arc(x, y, 34 * sc, 0, Math.PI * 2); s.fill(); s.beginPath(); s.moveTo(x - 70 * sc, y + 60 * sc); s.lineTo(x + 70 * sc, y + 60 * sc); s.lineTo(x + 90 * sc, H); s.lineTo(x - 90 * sc, H); s.closePath(); s.fill(); };
+      fig(300, 290, 1.0); fig(700, 300, 0.95); fig(500, 250, 1.15);
+      s.fillRect(497, 300, 6, 260); s.beginPath(); s.ellipse(500, 300, 12, 18, 0, 0, Math.PI * 2); s.fill();                 // mic stand
+      s.save(); s.translate(700, 420); s.rotate(-0.5); s.fillRect(-130, -10, 260, 22); s.beginPath(); s.ellipse(-120, 0, 60, 46, 0, 0, Math.PI * 2); s.fill(); s.restore(); // guitar
+      const base = s.getImageData(0, 0, W, H).data;
+      const noise = new Float32Array(W * H);
+      for (let i = 0; i < W * H; i++) noise[i] = (r() - 0.5) * 0.36;      // 18 % noise around the threshold
+      const out = cx.createImageData(W, H);
+      const P = { k: 0 };
+      let lastK = -1;
+      function toner() {
+        const k = Math.round(P.k * 6) / 6;                                  // 6 visible steps (one per frame)
+        if (k === lastK) return; lastK = k;
+        const thr = 0.5;
+        for (let i = 0; i < W * H; i++) {
+          const lum = base[i * 4] / 255;
+          const ink = (lum + noise[i]) < thr ? 1 : 0;
+          const v = ink && (i * 2654435761 % 997) / 997 < k ? 18 : 217;   // pixels "develop" in seeded order
+          out.data[i * 4] = v; out.data[i * 4 + 1] = v - (v > 100 ? 6 : 0); out.data[i * 4 + 2] = v - (v > 100 ? 20 : 0); out.data[i * 4 + 3] = 255;
+        }
+        cx.putImageData(out, 0, 0);
+      }
+      toner();
+
+      // slam: from ~3 % off-frame in 3 frames, no easing, then a 6 px copier jump for 2 frames
+      const slam = (sel, at, dx, dy) => {
+        tl.fromTo(sel, { x: dx, y: dy, opacity: 1 }, { x: 0, y: 0, duration: 3 * FR, ease: "none", immediateRender: false }, at);
+        tl.set(sel, { opacity: 0 }, 0);
+        tl.set(sel, { opacity: 1 }, at);
+        tl.set("#flyer", { y: 6 }, at + 3 * FR);
+        tl.set("#flyer", { y: 0 }, at + 5 * FR);
+      };
+      tl.set("#lab", { opacity: 1 }, 0);
+      slam("#n1", 0.2, -60, 0);
+      slam("#n2", 0.45, 60, 0);
+      slam("#photo", 0.9, 0, 60);
+      tl.fromTo(P, { k: 0 }, { k: 1, duration: 6 * FR, ease: "none", onUpdate: toner }, 1.0);
+      // date stamp: drops in 2 frames, one frame of toner smear, settles at -3 deg
+      tl.set("#stamp", { opacity: 0 }, 0);
+      tl.set("#stamp", { opacity: 1, scale: 1.35, rotation: -8, filter: "url(#bleed) blur(0px)" }, 1.9);
+      tl.set("#stamp", { scale: 1.12, rotation: -5 }, 1.9 + FR);
+      tl.set("#stamp", { scale: 1, rotation: -3, x: 10, filter: "url(#bleed) blur(3px)", textShadow: "8px 0 0 rgba(18,18,18,.6)" }, 1.9 + 2 * FR);
+      tl.set("#stamp", { x: 0, filter: "url(#bleed)", textShadow: "none" }, 1.9 + 3 * FR);
+      tl.set("#flyer", { y: 6 }, 1.9 + 2 * FR);
+      tl.set("#flyer", { y: 0 }, 1.9 + 4 * FR);
+      slam("#venue", 2.5, -50, 0);
+      // day-glo strip slaps on last, then a 1-frame copier flash and the 2 s still
+      tl.set("#strip", { opacity: 0 }, 0);
+      tl.fromTo("#strip", { scaleX: 0.2, rotation: -1.5, opacity: 1 }, { scaleX: 1, rotation: -1.5, duration: 2 * FR, ease: "none", immediateRender: false }, 3.0);
+      tl.set("#flyer", { y: 6 }, 3.0 + 2 * FR);
+      tl.set("#flyer", { y: 0 }, 3.0 + 4 * FR);
+      tl.set("#flash", { opacity: 0.85 }, 3.3);
+      tl.set("#flash", { opacity: 0 }, 3.3 + FR);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,134 @@
+<!doctype html>
+<!--
+  motionforge style preview: garage-build-log
+  © 2026 motionforge contributors, MIT
+  Signature scene: the torque stamp, after a knolling flat-lay. Parts pop onto the shop mat one every
+  4 frames, masking-tape labels drop 30 px and rotate from 4° to a seeded angle (0.28 s back.out(1.8)),
+  the view pushes in to one bolt, and on the click frame a stencil "45 N·m" sprays on (0.15 s with
+  overspray) while a yellow paint-pen stripe crosses the bolt head (0.25 s); the spec plate slides 40 px.
+  Parts are original flat drawings on a static rubber-mat noise (no footage in a preview); the build,
+  day and numbers are fictional examples. Big Shoulders Stencil Display + Courier Prime + Caveat.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts: @fontsource/big-shoulders-stencil-display, @fontsource/courier-prime, @fontsource/caveat (copied from node_modules/@fontsource/<family>/files/) */
+      @font-face { font-family: "Big Shoulders Stencil Display"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/big-shoulders-stencil-display-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Big Shoulders Stencil Display"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/big-shoulders-stencil-display-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Courier Prime"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/courier-prime-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Courier Prime"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/courier-prime-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Caveat"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/caveat-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Caveat"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/caveat-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --mat: #26292B; --ink: #F2EEE4; --tape: #E8DDBF; --marker: #1A1A1A; --acc: #F5C400; --sup: #8F8A80; --mf-grain-opacity: 0.07; }
+      html, body { background: var(--mat); }
+      #root { background: radial-gradient(1000px 900px at 50% 45%, #2c2f31 0%, transparent 75%), var(--mat); color: var(--ink); }
+      #matsvg { position: absolute; inset: 0; width: 1080px; height: 1920px; }
+      .sten { font: 800 170px/0.9 "Big Shoulders Stencil Display"; letter-spacing: .04em; text-transform: uppercase; }
+      #day { position: absolute; left: 60px; top: 240px; color: var(--ink); }
+      #job { position: absolute; left: 66px; top: 400px; font: 700 40px/1 "Courier Prime"; color: var(--sup); letter-spacing: .02em; }
+      #chip { position: absolute; right: 180px; top: 262px; padding: 16px 22px; border: 3px solid var(--sup); border-radius: 10px; font: 700 34px/1 "Courier Prime"; color: var(--ink); }
+      #chip b { color: var(--acc); }
+      #view { position: absolute; left: 0; top: 470px; width: 1080px; height: 840px; overflow: hidden; }
+      #lay { position: absolute; left: 0; top: 0; width: 1080px; height: 840px; }
+      .tp { position: absolute; padding: 6px 18px 2px; background: var(--tape); font: 700 50px/1 "Caveat"; color: var(--marker); white-space: nowrap;
+            box-shadow: 0 3px 6px rgba(0,0,0,.35); clip-path: polygon(2% 0, 98% 4%, 100% 50%, 97% 100%, 1% 96%, 0 50%); }
+      #nm { position: absolute; left: 70px; top: 520px; font: 800 190px/0.9 "Big Shoulders Stencil Display"; color: var(--ink); letter-spacing: .02em;
+            text-shadow: 0 0 18px rgba(242,238,228,.35), 0 0 4px rgba(242,238,228,.5); }
+      #nmk { position: absolute; left: 76px; top: 700px; font: 700 36px/1 "Courier Prime"; color: var(--ink); letter-spacing: .06em; }
+      #plate { position: absolute; left: 60px; right: 60px; top: 1330px; padding: 26px 30px; background: rgba(0,0,0,.8); font: 700 40px/1.1 "Courier Prime"; color: var(--ink); }
+      #plate b { color: var(--acc); }
+      #cap { position: absolute; left: 60px; right: 60px; top: 1470px; padding: 22px 30px; background: rgba(0,0,0,.8); font: 700 46px/1.3 "Courier Prime"; color: var(--ink); }
+      #note { position: absolute; left: 60px; top: 1680px; font: 700 26px/1 "Courier Prime"; color: var(--sup); }
+      #click { position: absolute; left: 600px; top: 930px; width: 120px; height: 120px; border-radius: 50%; border: 5px solid var(--acc); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <svg id="matsvg" viewBox="0 0 1080 1920">
+        <filter id="rub" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="9" />
+          <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .09 0" /></filter>
+        <rect width="1080" height="1920" filter="url(#rub)" />
+      </svg>
+      <div id="day" class="sten clip" data-start="0" data-duration="4.5" data-track-index="0">Day 14</div>
+      <div id="job" class="clip" data-start="0" data-duration="4.5" data-track-index="1">REAR BRAKES · example build</div>
+      <div id="chip" class="clip" data-start="0" data-duration="4.5" data-track-index="2">HRS <b>31.5</b></div>
+      <div id="view" class="clip" data-start="0" data-duration="4.5" data-track-index="3">
+        <div id="lay">
+          <svg viewBox="0 0 1080 840" width="1080" height="840">
+            <defs>
+              <radialGradient id="steel" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#c9ccd0" /><stop offset=".6" stop-color="#8d9196" /><stop offset="1" stop-color="#5d6166" /></radialGradient>
+              <linearGradient id="bar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b9bcc0" /><stop offset=".5" stop-color="#7f8388" /><stop offset="1" stop-color="#55595e" /></linearGradient>
+              <linearGradient id="cal" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#6b6f73" /><stop offset="1" stop-color="#3d4044" /></linearGradient>
+            </defs>
+            <g class="pt" id="disc"><circle cx="270" cy="210" r="185" fill="url(#steel)" /><circle cx="270" cy="210" r="150" fill="none" stroke="#6c7075" stroke-width="2" />
+              <circle cx="270" cy="210" r="84" fill="#46494d" /><circle cx="270" cy="210" r="30" fill="#26292b" />
+              <g fill="#2f3235"><circle cx="270" cy="152" r="9" /><circle cx="325" cy="228" r="9" /><circle cx="216" cy="228" r="9" /><circle cx="304" cy="263" r="9" /><circle cx="236" cy="263" r="9" /></g></g>
+            <g class="pt" id="calp"><rect x="600" y="80" width="300" height="200" rx="60" fill="url(#cal)" /><rect x="640" y="120" width="220" height="40" rx="20" fill="#2e3134" /><circle cx="650" cy="240" r="16" fill="#25282b" /><circle cx="850" cy="240" r="16" fill="#25282b" /></g>
+            <g class="pt" id="pad1"><rect x="80" y="470" width="240" height="96" rx="30" fill="#4a4d50" /><rect x="96" y="486" width="208" height="64" rx="22" fill="#2b2a28" /></g>
+            <g class="pt" id="pad2"><rect x="80" y="600" width="240" height="96" rx="30" fill="#4a4d50" /><rect x="96" y="616" width="208" height="64" rx="22" fill="#2b2a28" /></g>
+            <g id="bolts"></g>
+            <g class="pt" id="wr"><rect x="110" y="760" width="760" height="34" rx="17" fill="url(#bar)" /><circle cx="900" cy="777" r="40" fill="url(#steel)" /><circle cx="900" cy="777" r="18" fill="#3a3d40" />
+              <rect x="110" y="756" width="200" height="42" rx="21" fill="#1c1d1e" /><rect x="560" y="764" width="90" height="26" rx="4" fill="#3a3d40" /></g>
+            <path id="stripe" d="M612 486 C 640 482, 680 480, 708 474" stroke="#F5C400" stroke-width="13" stroke-linecap="round" fill="none" pathLength="1" />
+          </svg>
+          <div id="t1" class="tp" style="left: 140px; top: 400px;">DISC 300</div>
+          <div id="t2" class="tp" style="left: 650px; top: 300px;">CALIPER R/L</div>
+          <div id="t3" class="tp" style="left: 360px; top: 560px;">PADS NEW</div>
+          <div id="t4" class="tp" style="left: 570px; top: 650px;">BOLTS M10</div>
+        </div>
+      </div>
+      <div id="click" class="clip" data-start="0" data-duration="4.5" data-track-index="4"></div>
+      <div id="nm" class="clip" data-start="0" data-duration="4.5" data-track-index="5">45 N·m</div>
+      <div id="nmk" class="clip" data-start="0" data-duration="4.5" data-track-index="6">CALIPER BOLT 2 / 4</div>
+      <div id="plate" class="clip" data-start="0" data-duration="4.5" data-track-index="7">M10 × 1.25 · <b>45 N·m</b> · thread lock</div>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="8">Rear left caliper back on, bolts torqued.</div>
+      <div id="note" class="clip" data-start="0" data-duration="4.5" data-track-index="9">Example values, check your service manual</div>
+    </div>
+
+    <script>
+      const DUR = 4.5, NS = "http://www.w3.org/2000/svg";
+      // four hex-head bolts with threaded shanks
+      const bg = document.getElementById("bolts");
+      [560, 660, 760, 860].forEach((x, i) => {
+        const g = document.createElementNS(NS, "g"); g.setAttribute("class", "pt"); g.setAttribute("id", "b" + i);
+        const hex = [...Array(6)].map((_, k) => { const a = Math.PI / 6 + k * Math.PI / 3; return `${(x + Math.cos(a) * 40).toFixed(1)},${(480 + Math.sin(a) * 40).toFixed(1)}`; }).join(" ");
+        let th = ""; for (let y = 530; y < 640; y += 9) th += `<path d="M${x - 15} ${y} L${x + 15} ${y + 4}" stroke="#55595e" stroke-width="3"/>`;
+        g.innerHTML = `<rect x="${x - 16}" y="515" width="32" height="130" rx="4" fill="url(#bar)"/>${th}<polygon points="${hex}" fill="url(#steel)" stroke="#55595e" stroke-width="3"/><circle cx="${x}" cy="480" r="22" fill="none" stroke="#6c7075" stroke-width="3"/>`;
+        bg.appendChild(g);
+      });
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      // stencil sprays on with overspray
+      const spray = (sel, at) => tl.fromTo(sel, { opacity: 0, filter: "blur(10px)" }, { opacity: 1, filter: "blur(0px)", duration: 0.15, ease: "power1.out" }, at);
+      spray("#day", 0.05);
+      tl.fromTo("#job", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 0.2);
+      tl.fromTo("#chip", { opacity: 0, x: 40 }, { opacity: 1, x: 0, duration: 0.3, ease: "power3.out" }, 0.25);
+      // knolling: one part every 4 frames, stepped (no easing)
+      const order = ["#disc", "#calp", "#pad1", "#pad2", "#b0", "#b1", "#b2", "#b3", "#wr"];
+      order.forEach((id, i) => tl.fromTo(id, { opacity: 0 }, { opacity: 1, duration: 0.001 }, 0.4 + i * 0.133));
+      // tape labels: drop 30 px, rotate 4° -> seeded angle
+      const r = MF.rng("garage-build-log");
+      ["#t1", "#t2", "#t3", "#t4"].forEach((id, i) => tl.fromTo(id, { opacity: 0, y: -30, rotation: 4 }, { opacity: 1, y: 0, rotation: r.range(-5, 5), duration: 0.28, ease: "back.out(1.8)" }, 1.65 + i * 0.1));
+      // push in to bolt 2, labels peel away
+      ["#t1", "#t2", "#t3", "#t4"].forEach((id, i) => tl.to(id, { rotation: "+=8", y: -20, opacity: 0, duration: 0.2 }, 2.3 + i * 0.02));
+      tl.to("#lay", { scale: 2.1, x: 0, y: 40, duration: 0.55, ease: "power3.inOut", transformOrigin: "660px 480px" }, 2.35);
+      // the click: ring, stencil value, paint-pen stripe across the bolt head
+      tl.fromTo("#click", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1.4, duration: 0.2, ease: "power2.out" }, 3.0);
+      tl.to("#click", { opacity: 0, duration: 0.15 }, 3.2);
+      spray("#nm", 3.02);
+      tl.fromTo("#nmk", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 3.15);
+      tl.fromTo("#stripe", { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.25, ease: "power1.out" }, 3.02);
+      tl.fromTo("#plate", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.3, ease: "power3.out" }, 3.25);
+      tl.fromTo("#cap", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 3.45);
+      tl.fromTo("#note", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 3.6);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

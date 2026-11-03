@@ -1,0 +1,192 @@
+<!doctype html>
+<!--
+  motionforge style preview: nature-field-notes
+  © 2026 motionforge contributors, MIT
+  Signature scenes "sketch to life" + "specimen tag" + "scale bar": an ink sketch of a grey heron draws
+  itself in drawing order (outline, details, hatching) with seeded pressure (70-110 %), the plate under
+  it fades in, the ink lifts away; a specimen tag swings in on its string (12° -> 0, elastic.out(1, 0.4))
+  and types in DM Mono at 24 chars/s, a margin note writes at 18 chars/s, a scale bar draws with end
+  ticks, and the generalised coordinate pair writes in survey-tape orange.
+  No footage: the plate is a vector illustration standing in for the user's clip (labelled on screen);
+  the location is rounded to 0.1°. Fraunces + Shadows Into Light Two + DM Mono.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Fraunces"; font-style: italic; font-weight: 400; font-display: block; src: url("assets/fonts/fraunces-latin-400-italic.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Fraunces"; font-style: italic; font-weight: 400; font-display: block; src: url("assets/fonts/fraunces-latin-ext-400-italic.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Fraunces"; font-style: italic; font-weight: 600; font-display: block; src: url("assets/fonts/fraunces-latin-600-italic.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Fraunces"; font-style: italic; font-weight: 600; font-display: block; src: url("assets/fonts/fraunces-latin-ext-600-italic.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Shadows Into Light Two"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/shadows-into-light-two-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Shadows Into Light Two"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/shadows-into-light-two-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "DM Mono"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/dm-mono-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "DM Mono"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/dm-mono-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      /* fonts:end */
+      :root { --paper: #e6dfc8; --ink: #2f3b2a; --acc: #f2661c; --sup: #7c8b6a; --tag: #f7f2e2; --mf-grain-opacity: .06;
+        --fr: "Fraunces", "EB Garamond", Georgia, serif; --hand: "Shadows Into Light Two", "Caveat", cursive; --mono: "DM Mono", ui-monospace, monospace; }
+      html, body { background: var(--paper); }
+      #root { background: radial-gradient(900px 1100px at 55% 45%, #efe9d6 0%, transparent 75%), var(--paper); color: var(--ink); }
+      #root::before { mix-blend-mode: multiply; opacity: .09; }
+      #root::after { background: linear-gradient(90deg, rgba(60,50,30,.22) 0px, rgba(60,50,30,0) 60px), radial-gradient(ellipse at 50% 50%, transparent 60%, rgba(60,50,30,.18) 100%); }
+      #lab { position: absolute; left: 80px; top: 214px; font: 500 26px/1 var(--mono); letter-spacing: .08em; color: var(--sup); }
+      #name { position: absolute; left: 76px; top: 254px; font: italic 600 112px/1 var(--fr); letter-spacing: -0.01em; color: var(--ink); }
+      #sci { position: absolute; left: 80px; top: 386px; font: italic 400 44px/1 var(--fr); color: var(--ink); opacity: .85; }
+      #plate { position: absolute; left: 70px; top: 470px; width: 720px; height: 860px; background: #f3eedd; padding: 14px; box-shadow: 0 10px 22px rgba(60,50,30,.22); transform: rotate(-0.8deg); }
+      #plateIn { position: relative; width: 692px; height: 800px; overflow: hidden; }
+      #illu { position: absolute; left: 0; top: 0; }
+      #sk { position: absolute; left: 0; top: 0; }
+      #tape1, #tape2 { position: absolute; width: 150px; height: 46px; background: rgba(240,232,205,.6); box-shadow: 0 2px 4px rgba(0,0,0,.08); }
+      #tape1 { left: -40px; top: -18px; transform: rotate(-24deg); } #tape2 { right: -40px; top: -18px; transform: rotate(22deg); }
+      #tagWrap { position: absolute; left: 800px; top: 520px; width: 230px; height: 460px; transform-origin: 115px 0; }
+      #tagPin { position: absolute; left: 105px; top: -10px; width: 20px; height: 20px; border-radius: 50%; background: #6b6455; box-shadow: 0 3px 4px rgba(0,0,0,.3); }
+      #tagStr { position: absolute; left: 0; top: 0; overflow: visible; }
+      #tag { position: absolute; left: 10px; top: 120px; width: 210px; height: 300px; background: var(--tag); border-radius: 10px 10px 6px 6px; box-shadow: 0 6px 12px rgba(60,50,30,.25);
+        padding: 64px 18px 18px; font: 500 22px/1.45 var(--mono); color: var(--ink); white-space: pre; }
+      #tag::before { content: ""; position: absolute; left: 91px; top: 18px; width: 28px; height: 28px; border-radius: 50%; border: 5px solid #c9c1a6; background: #e6dfc8; }
+      #note { position: absolute; left: 812px; top: 1040px; width: 230px; font: 400 46px/1.15 var(--hand); color: var(--ink); white-space: pre; transform: rotate(-3deg); }
+      #arrowN { position: absolute; left: 640px; top: 1050px; overflow: visible; }
+      #coords { position: absolute; left: 80px; top: 1418px; font: 500 30px/1 var(--mono); letter-spacing: .08em; color: var(--ink); text-transform: uppercase; }
+      #coords b { color: var(--acc); font-weight: 500; }
+      #cred { position: absolute; left: 80px; top: 1470px; font: 500 22px/1 var(--mono); letter-spacing: .08em; color: var(--sup); }
+      #bar { position: absolute; left: 0; top: 0; overflow: visible; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="lab" class="clip" data-start="0" data-duration="4.5" data-track-index="0">NATURE FIELD NOTES · PLATE 07</div>
+      <div id="name" class="clip" data-start="0" data-duration="4.5" data-track-index="1">Grey heron</div>
+      <div id="sci" class="clip" data-start="0" data-duration="4.5" data-track-index="2">Ardea cinerea</div>
+      <div id="plate" class="clip" data-start="0" data-duration="4.5" data-track-index="3">
+        <div id="plateIn">
+          <svg id="illu" width="692" height="800" viewBox="0 0 692 800">
+            <defs>
+              <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfd3c4" /><stop offset=".62" stop-color="#e4dcc2" /><stop offset=".63" stop-color="#7d8b80" /><stop offset="1" stop-color="#4f5d55" /></linearGradient>
+              <linearGradient id="neck" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e9e6dc" /><stop offset="1" stop-color="#b9bab3" /></linearGradient>
+            </defs>
+            <rect width="692" height="800" fill="url(#sky)" />
+            <g fill="#3f4a33" opacity=".85" id="reeds"></g>
+            <g id="refl" opacity=".35"></g>
+            <g transform="translate(-20 30) scale(.98)">
+              <path id="bodyFill" d="M170 236 L276 214 C290 196 318 194 330 210 C342 226 336 250 320 262 C300 290 300 330 330 360 C360 390 380 400 420 404 C500 400 590 430 640 500 L660 540 C600 548 540 556 480 552 C420 548 370 520 350 470 C330 420 300 380 286 330 C276 296 284 270 296 256 Z" fill="url(#neck)" />
+              <path d="M420 404 C500 400 590 430 640 500 L660 540 C600 548 540 556 480 552 C452 540 432 500 430 470 C428 440 420 420 420 404 Z" fill="#7f868a" />
+              <path d="M170 236 L276 214 L296 256 Z" fill="#c8962e" />
+              <path d="M320 205 C350 200 372 206 396 216 C372 214 350 212 330 214 Z" fill="#1c1f22" />
+              <circle cx="306" cy="222" r="5" fill="#d9b13a" />
+              <g stroke="#9a7a3c" stroke-width="9" stroke-linecap="round" fill="none"><path d="M470 552 L462 690 L452 790" /><path d="M500 550 L506 690 L520 790" /></g>
+            </g>
+          </svg>
+          <canvas id="sk" width="692" height="800"></canvas>
+        </div>
+        <div id="tape1"></div><div id="tape2"></div>
+      </div>
+      <svg id="bar" class="clip" width="1080" height="1920" data-start="0" data-duration="4.5" data-track-index="4">
+        <g id="sbar" stroke="#2f3b2a" stroke-width="4" stroke-linecap="round"><line id="sb" x1="104" y1="1370" x2="104" y2="1370" /><line id="t1" x1="104" y1="1356" x2="104" y2="1384" opacity="0" /><line id="t2" x1="404" y1="1356" x2="404" y2="1384" opacity="0" /></g>
+        <text id="sbl" x="420" y="1381" font-family="DM Mono" font-size="26" fill="#2f3b2a" letter-spacing="1"></text>
+      </svg>
+      <div id="tagWrap" class="clip" data-start="0" data-duration="4.5" data-track-index="5">
+        <svg id="tagStr" width="230" height="140"><path d="M115 0 L115 136" stroke="#6b6455" stroke-width="2" fill="none" /></svg>
+        <div id="tagPin"></div><div id="tag"></div>
+      </div>
+      <div id="note" class="clip" data-start="0" data-duration="4.5" data-track-index="6"></div>
+      <div id="coords" class="clip" data-start="0" data-duration="4.5" data-track-index="7"><b id="co"></b> <span id="co2"></span></div>
+      <div id="cred" class="clip" data-start="0" data-duration="4.5" data-track-index="8">ILLUSTRATION IN PLACE OF FOOTAGE · LOCATION ROUNDED</div>
+    </div>
+
+    <script>
+      const DUR = 4.5, r = MF.rng("nature-field-notes");
+      // reeds and their reflections on the illustration plate (seeded)
+      const reeds = document.getElementById("reeds"), refl = document.getElementById("refl");
+      for (let i = 0; i < 26; i++) {
+        const x = r.range(0, 692), h = r.range(120, 300), w = r.range(5, 10), lean = r.range(-30, 30);
+        reeds.insertAdjacentHTML("beforeend", `<path d="M${x} 498 q${lean / 2} ${-h / 2} ${lean} ${-h} l${w / 2} 4 q${-lean / 2 + 4} ${h / 2} ${-lean + 4} ${h - 4} z" />`);
+        refl.insertAdjacentHTML("beforeend", `<rect x="${x - 2}" y="${r.range(520, 760)}" width="${r.range(30, 120)}" height="3" fill="#e9e3cf" />`);
+      }
+      // ---- the ink sketch: paths in drawing order, sampled once, drawn with seeded pressure ----
+      const T = "translate(-20 30) scale(.98)";
+      const PATHS = [
+        // outline
+        "M170 236 L276 214 C290 196 318 194 330 210 C342 226 336 250 320 262 C300 290 300 330 330 360 C360 390 380 400 420 404 C500 400 590 430 640 500 L660 540 C600 548 540 556 480 552 C420 548 370 520 350 470 C330 420 300 380 286 330 C276 296 284 270 296 256 L170 236",
+        "M470 552 L462 690 L452 790 L420 802 M452 790 L476 806", "M500 550 L506 690 L520 790 L552 800 M520 790 L512 808",
+        // details
+        "M320 205 C350 200 372 206 396 216", "M276 214 L296 256", "M300 226 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0", "M430 432 C500 444 560 474 612 512", "M306 300 C318 330 330 350 346 366",
+        // hatching
+        "M470 470 L452 500", "M496 474 L478 506", "M522 482 L504 514", "M548 492 L530 522", "M574 504 L556 532", "M600 516 L584 540",
+        // water line (pencil construction)
+        "M20 790 L672 790",
+      ];
+      const PENCIL = PATHS.length - 1;
+      const NSV = "http://www.w3.org/2000/svg", tmp = document.createElementNS(NSV, "svg");
+      tmp.setAttribute("width", 0); tmp.setAttribute("height", 0); tmp.style.position = "absolute"; document.body.appendChild(tmp);
+      const strokes = PATHS.map((d, k) => {
+        const p = document.createElementNS(NSV, "path"); p.setAttribute("d", d); tmp.appendChild(p);
+        const L = p.getTotalLength(), n = Math.max(2, Math.ceil(L / 4)), pts = [];
+        for (let i = 0; i <= n; i++) { const q = p.getPointAtLength(L * i / n); pts.push([q.x * 0.98 - 20, q.y * 0.98 + 30]); }
+        const press = pts.map(() => r.range(0.7, 1.1));
+        for (let i = 1; i < press.length - 1; i++) press[i] = (press[i - 1] + press[i] + press[i + 1]) / 3;   // smooth the pressure
+        return { pts, press, L, pencil: k === PENCIL };
+      });
+      const total = strokes.reduce((s, x) => s + x.L, 0);
+      const cv = document.getElementById("sk"), ctx = cv.getContext("2d");
+      function drawSketch(progress, alpha) {
+        ctx.clearRect(0, 0, 692, 800);
+        if (alpha <= 0) return;
+        let budget = progress * total;
+        ctx.lineCap = "round"; ctx.lineJoin = "round";
+        for (const s of strokes) {
+          if (budget <= 0) break;
+          const upto = Math.min(s.pts.length - 1, Math.floor((budget / s.L) * (s.pts.length - 1)));
+          ctx.strokeStyle = s.pencil ? `rgba(124,139,106,${0.35 * alpha})` : `rgba(47,59,42,${alpha})`;
+          for (let i = 1; i <= upto; i++) {
+            ctx.lineWidth = s.pencil ? 1.5 : 3.6 * s.press[i];
+            ctx.beginPath(); ctx.moveTo(s.pts[i - 1][0], s.pts[i - 1][1]); ctx.lineTo(s.pts[i][0], s.pts[i][1]); ctx.stroke();
+          }
+          budget -= s.L;
+        }
+      }
+      // torn bottom edge of the plate (seeded)
+      let clip = "polygon(-20% -20%, 120% -20%, 120% 97%";
+      for (let i = 20; i >= 0; i--) clip += `, ${(i / 20 * 100).toFixed(1)}% ${(97 + r.range(-1.6, 1.6)).toFixed(2)}%`;
+      document.getElementById("plate").style.clipPath = clip + ")";
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.fromTo(["#lab", "#name", "#sci"], { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.12, ease: "power2.out" }, 0.05);
+      tl.fromTo("#plate", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.1);
+      tl.set("#illu", { opacity: 0 }, 0);
+      const sk = { p: 0, a: 1 };
+      const redraw = () => drawSketch(sk.p, sk.a);
+      tl.fromTo(sk, { p: 0 }, { p: 1, duration: 1.5, ease: "none", onUpdate: redraw }, 0.3);
+      tl.fromTo("#illu", { opacity: 0 }, { opacity: 1, duration: 1.2, ease: "sine.inOut" }, 1.6);
+      tl.fromTo(sk, { a: 1 }, { a: 0, duration: 0.6, ease: "sine.in", onUpdate: redraw, immediateRender: false }, 2.8);
+      tl.fromTo("#illu", { scale: 1 }, { scale: 1.03, duration: 3, ease: "none", transformOrigin: "50% 50%" }, 1.5);
+      // specimen tag swings in from its pin, then types at 24 chars/s
+      tl.fromTo("#tagWrap", { opacity: 0, rotate: 12 }, { opacity: 1, rotate: 0, duration: 1.4, ease: "elastic.out(1, 0.4)" }, 1.0);
+      const TAG = "GREY HERON\nArdea cinerea\n\n14 APR 2026\n07:12\nRIVER MARGIN\nREGION N", tag = document.getElementById("tag"), ty = { n: 0 };
+      tl.fromTo(ty, { n: 0 }, { n: TAG.length, duration: TAG.length / 24, ease: "none", onUpdate: () => (tag.textContent = TAG.slice(0, Math.round(ty.n))) }, 1.5);
+      // margin note at 18 chars/s
+      const NOTE = "still for\nminutes,\nthen strikes", note = document.getElementById("note"), nt = { n: 0 };
+      tl.fromTo(nt, { n: 0 }, { n: NOTE.length, duration: NOTE.length / 18, ease: "none", onUpdate: () => (note.textContent = NOTE.slice(0, Math.round(nt.n))) }, 2.5);
+      // scale bar: 50 cm at the drawing's scale (heron ~95 cm tall = 600 px on the plate), with end ticks
+      const SB = 316;
+      tl.set("#t1", { opacity: 1 }, 3.0);
+      tl.fromTo("#sb", { attr: { x2: 104 } }, { attr: { x2: 104 + SB }, duration: 0.4, ease: "power2.out" }, 3.0);
+      tl.set("#t2", { attr: { x1: 104 + SB, x2: 104 + SB }, opacity: 1 }, 3.4);
+      const sbl = document.getElementById("sbl"), SBL = "50 cm approx.", sl = { n: 0 };
+      sbl.setAttribute("x", 104 + SB + 18);
+      tl.fromTo(sl, { n: 0 }, { n: SBL.length, duration: SBL.length / 24, ease: "none", onUpdate: () => (sbl.textContent = SBL.slice(0, Math.round(sl.n))) }, 3.4);
+      // coordinates (generalised, orange) + credit
+      const CO = "52.4° N 4.9° E", co = document.getElementById("co"), cn = { n: 0 };
+      tl.fromTo(cn, { n: 0 }, { n: CO.length, duration: CO.length / 24, ease: "none", onUpdate: () => (co.textContent = CO.slice(0, Math.round(cn.n))) }, 3.3);
+      tl.set("#co2", { textContent: "· rounded to 0.1°" }, 3.95);
+      tl.fromTo("#cred", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 3.6);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

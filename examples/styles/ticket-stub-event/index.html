@@ -1,0 +1,121 @@
+<!doctype html>
+<!--
+  motionforge style preview: ticket-stub-event
+  © 2026 motionforge contributors, MIT
+  Signature scenes "ticket print" + "perforation tear": the ticket slides up 300 px (power3.out, 0.5 s)
+  and settles from -3 deg to 0, each field prints left to right at 30 chars/s while the accent marker
+  hops row to row and blinks once, then the stub separates along the perforation: it rotates 6 deg and
+  drops 160 px (power2.in, 0.4 s) with the seat number facing camera. Oswald + Spline Sans Mono +
+  Familjen Grotesk. Event, venue and price are fictional; no scannable code.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      @font-face { font-family: "Oswald"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/oswald-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Oswald"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/oswald-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Spline Sans Mono"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/spline-sans-mono-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Spline Sans Mono"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/spline-sans-mono-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Familjen Grotesk"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/familjen-grotesk-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Familjen Grotesk"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/familjen-grotesk-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Familjen Grotesk"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/familjen-grotesk-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Familjen Grotesk"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/familjen-grotesk-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #17181c; --tk: #f3e7cb; --ink: #23201c; --acc: #1fa5a0; --sup: #8c8577; --mf-grain-opacity: .05; }
+      html, body { background: var(--bg); }
+      #root { background: radial-gradient(1000px 700px at 50% -60px, rgba(42,38,34,1) 0%, transparent 75%), var(--bg); }
+      #cap { position: absolute; left: 0; right: 0; top: 108px; text-align: center; font: 600 48px/1 "Familjen Grotesk", system-ui; color: #efe6d2; }
+      #tick { position: absolute; left: 90px; top: 220px; width: 900px; height: 1480px; transform-origin: 50% 100%; }
+      .part { position: absolute; left: 0; width: 900px; background: var(--tk); overflow: hidden; }
+      #main { top: 0; height: 1080px; border-radius: 28px 28px 0 0;
+        -webkit-mask: radial-gradient(circle at 0 100%, transparent 36px, #000 37px) left / 51% 100% no-repeat, radial-gradient(circle at 100% 100%, transparent 36px, #000 37px) right / 51% 100% no-repeat; }
+      #stub { top: 1080px; height: 400px; border-radius: 0 0 28px 28px; transform-origin: 20% 0;
+        -webkit-mask: radial-gradient(circle at 0 0, transparent 36px, #000 37px) left / 51% 100% no-repeat, radial-gradient(circle at 100% 0, transparent 36px, #000 37px) right / 51% 100% no-repeat; }
+      .band { position: absolute; left: 0; top: 0; bottom: 0; width: 90px; background: var(--acc); }
+      #main .band span { position: absolute; left: 45px; top: 540px; transform: translate(-50%, -50%) rotate(-90deg); font: 500 24px/1 "Familjen Grotesk", system-ui; letter-spacing: .2em; color: var(--tk); white-space: nowrap; }
+      .fib { position: absolute; inset: 0; opacity: .07; background-image: var(--mf-grain); mix-blend-mode: multiply; }
+      #kick { position: absolute; left: 150px; top: 80px; font: 500 24px/1 "Familjen Grotesk", system-ui; letter-spacing: .2em; color: var(--sup); }
+      #title { position: absolute; left: 146px; top: 120px; font: 700 150px/0.95 "Oswald", "Arial Narrow", sans-serif; text-transform: uppercase; letter-spacing: .02em; color: var(--ink); }
+      .fld { position: absolute; width: 360px; }
+      .fld .l { font: 500 24px/1 "Familjen Grotesk", system-ui; letter-spacing: .2em; color: var(--sup); }
+      .fld .v { display: inline-block; margin-top: 14px; font: 600 58px/1 "Spline Sans Mono", monospace; text-transform: uppercase; color: var(--ink); white-space: nowrap; }
+      #mark { position: absolute; left: 120px; width: 12px; height: 70px; border-radius: 6px; background: var(--acc); opacity: 0; }
+      .perf { position: absolute; left: 50px; right: 50px; height: 10px; display: flex; justify-content: space-between; }
+      .perf i { width: 10px; height: 10px; border-radius: 50%; background: #c8bda4; }
+      #perfA { top: 1075px; }
+      #stub .l { position: absolute; font: 500 24px/1 "Familjen Grotesk", system-ui; letter-spacing: .2em; color: var(--sup); }
+      #stub .v { position: absolute; font: 600 72px/1 "Spline Sans Mono", monospace; color: var(--ink); white-space: nowrap; }
+      #holo { position: absolute; right: 60px; top: 70px; width: 120px; height: 240px; border-radius: 12px; background: linear-gradient(160deg, #cfd6d4, #e9eceb 40%, #b9c9c6 60%, #dfe4e2); opacity: .8; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="0">Ticket stub event</div>
+      <div id="tick" class="clip" data-start="0" data-duration="4.5" data-track-index="1">
+        <div id="main" class="part">
+          <div class="band"><span>ADMIT ONE · ADMIT ONE</span></div>
+          <div class="fib"></div>
+          <div id="kick">LIVE COMEDY · ONE NIGHT · SAMPLE EVENT</div>
+          <div id="title">The small<br />hours</div>
+          <div id="mark"></div>
+          <div id="fields"></div>
+        </div>
+        <div id="stub" class="part">
+          <div class="band"></div>
+          <div class="fib"></div>
+          <div class="perf" style="top:-5px"></div>
+          <div class="l" style="left:150px;top:70px">ROW · SEAT</div>
+          <div class="v" id="sv1" style="left:150px;top:110px">F · 14</div>
+          <div class="l" style="left:150px;top:230px">PRICE</div>
+          <div class="v" id="sv2" style="left:150px;top:270px">€24</div>
+          <div id="holo"></div>
+        </div>
+        <div class="perf" id="perfA"></div>
+      </div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this)
+      document.querySelectorAll(".perf").forEach((p) => { p.innerHTML = "<i></i>".repeat(37); });
+      // DATE | DOORS ; VENUE (full row) ; CITY | SECTION
+      const F = [["DATE", "SAT 14 NOV", 150, 440], ["DOORS", "19:30", 550, 440], ["VENUE", "LANTERN HALL", 150, 630], ["CITY", "PORT AVEN", 150, 820], ["SECTION", "STALLS", 550, 820]];
+      const box = document.getElementById("fields");
+      const els = F.map(([l, v, x, y]) => {
+        const d = document.createElement("div"); d.className = "fld";
+        Object.assign(d.style, { left: x + "px", top: y + "px" });
+        d.innerHTML = `<div class="l">${l}</div><div class="v">${v}</div>`;
+        box.appendChild(d);
+        return d;
+      });
+      const ORDER = [0, 1, 2, 3, 4];
+
+      tl.fromTo("#cap", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.05);
+      tl.fromTo("#tick", { y: 300, rotation: -3, opacity: 0 }, { y: 0, rotation: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, 0.1);
+      tl.fromTo(["#kick", "#title"], { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.35, ease: "none", stagger: 0.12 }, 0.55);
+      // fields print one at a time at 30 chars/s; the marker hops row to row and blinks once
+      let t = 1.05;
+      ORDER.forEach((k) => {
+        const v = els[k].querySelector(".v"), l = els[k].querySelector(".l");
+        const dur = v.textContent.length / 30;
+        tl.fromTo(l, { opacity: 0 }, { opacity: 1, duration: 0.1 }, t);
+        tl.fromTo(v, { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: dur, ease: "none" }, t);
+        tl.set("#mark", { top: parseInt(els[k].style.top) + 4, left: parseInt(els[k].style.left) - 30 }, t);
+        tl.fromTo("#mark", { opacity: 1 }, { opacity: 0, duration: 0.18, ease: "steps(1)", immediateRender: false }, t + 0.12);
+        t += Math.max(0.3, dur + 0.08);
+      });
+      tl.fromTo(["#sv1", "#sv2"], { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.2, ease: "none", stagger: 0.2 }, t);
+      // the tear: stub rotates 6 deg and drops 160 px; the main ticket lifts a little
+      const T = t + 0.55;
+      tl.to("#stub", { rotation: 6, y: 160, duration: 0.4, ease: "power2.in" }, T);
+      tl.to("#stub .perf", { opacity: 0.4, duration: 0.2 }, T);
+      tl.to("#main, #perfA", { y: -24, duration: 0.4, ease: "power2.out" }, T + 0.05);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,150 @@
+<!doctype html>
+<!--
+  motionforge style preview: saas-launch-glass
+  © 2026 motionforge contributors, MIT
+  Signature scenes "lens reveal" + "chip drop" + "version stamp": a blurred product capture fills the
+  field, the frosted hero pane rises (90 px, scale .94, blur 12 -> 0), a 520 px glass lens slides in and
+  shows the capture sharp at 1.6x (it magnifies whatever is under it), a rose ring draws, three chips
+  drop with back.out(1.7) and the new one turns rose; "v2.3" strikes and "v2.4" types at 18 chars/s.
+  The product UI is a fictional example drawn in HTML for this preview (labelled on screen).
+  Plus Jakarta Sans + DM Mono.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Plus Jakarta Sans"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/plus-jakarta-sans-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Plus Jakarta Sans"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/plus-jakarta-sans-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Plus Jakarta Sans"; font-style: normal; font-weight: 800; font-display: block; src: url("assets/fonts/plus-jakarta-sans-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Plus Jakarta Sans"; font-style: normal; font-weight: 800; font-display: block; src: url("assets/fonts/plus-jakarta-sans-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "DM Mono"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/dm-mono-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "DM Mono"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/dm-mono-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      /* fonts:end */
+      :root { --mf-bg: #0c1517; --ink: #f2f7f8; --muted: #8fa6aa; --acc: #ff6fa8; --mf-grain-opacity: .05;
+        --disp: "Plus Jakarta Sans", system-ui, sans-serif; --mono: "DM Mono", ui-monospace, monospace; }
+      #root { background: radial-gradient(900px 900px at 15% 10%, #1c3236 0%, transparent 70%), var(--mf-bg); }
+      #root::before { z-index: 5; }
+      #back { position: absolute; left: -420px; top: -120px; width: 920px; height: 760px; transform-origin: 0 0; filter: blur(36px); opacity: .2; }
+      #title { position: absolute; left: 80px; top: 250px; font: 800 112px/0.98 var(--disp); letter-spacing: -0.03em; color: var(--ink); z-index: 2; }
+      #title .l2 { color: var(--muted); }
+      .w { display: inline-block; }
+      #stage { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; perspective: 1800px; z-index: 2; }
+      #pane { position: absolute; left: 80px; top: 520px; width: 920px; height: 760px; border-radius: 40px; overflow: hidden;
+        background: rgba(232,246,248,.10); border: 1.5px solid rgba(232,246,248,.28); box-shadow: 0 40px 80px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.35);
+        backdrop-filter: blur(28px) saturate(140%); }
+      #paneUI { position: absolute; left: 24px; top: 24px; width: 872px; height: 712px; border-radius: 22px; overflow: hidden; }
+      #paneUI .ui { transform: scale(0.947); transform-origin: 0 0; }
+      #lens { position: absolute; left: 0; top: 0; width: 520px; height: 520px; border-radius: 50%; overflow: hidden; z-index: 3;
+        box-shadow: 0 30px 70px rgba(0,0,0,.5), inset 0 0 0 1.5px rgba(232,246,248,.5), inset 0 14px 30px rgba(255,255,255,.18); }
+      #lensIn { position: absolute; width: 920px; height: 760px; }
+      #lensGlare { position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(260px 180px at 35% 22%, rgba(255,255,255,.22), transparent 70%); }
+      #ring { position: absolute; left: 0; top: 0; z-index: 4; overflow: visible; }
+      /* fictional product UI, light theme */
+      .ui { position: absolute; left: 0; top: 0; width: 920px; height: 760px; background: #f6f8f9; font-family: var(--disp); color: #13222a; }
+      .ui .top { position: absolute; left: 0; right: 0; top: 0; height: 72px; background: #fff; border-bottom: 1px solid #e3e9eb; display: flex; align-items: center; padding: 0 26px; gap: 16px; }
+      .ui .logo { width: 30px; height: 30px; border-radius: 9px; background: #1f6f78; }
+      .ui .brand { font: 800 26px/1 var(--disp); }
+      .ui .search { margin-left: 30px; width: 360px; height: 40px; border-radius: 12px; background: #eef2f3; color: #8a9a9e; font: 500 18px/40px var(--disp); padding-left: 16px; }
+      .ui .av { margin-left: auto; width: 38px; height: 38px; border-radius: 50%; background: #c7d6d9; }
+      .ui .side { position: absolute; left: 0; top: 72px; bottom: 0; width: 190px; background: #fff; border-right: 1px solid #e3e9eb; padding: 26px 20px; }
+      .ui .side div { height: 40px; border-radius: 10px; margin-bottom: 10px; font: 600 19px/40px var(--disp); color: #5b6d72; padding-left: 14px; }
+      .ui .side .on { background: #e6f1f2; color: #13222a; }
+      .ui h2 { position: absolute; left: 220px; top: 98px; font: 800 34px/1 var(--disp); letter-spacing: -0.02em; }
+      .ui .stat { position: absolute; top: 160px; width: 214px; height: 112px; background: #fff; border: 1px solid #e3e9eb; border-radius: 16px; padding: 18px; }
+      .ui .stat b { display: block; font: 800 38px/1 var(--disp); margin-top: 12px; }
+      .ui .stat span { font: 600 16px/1 var(--disp); color: #6d7f84; }
+      .ui .sync { position: absolute; left: 270px; top: 318px; width: 330px; height: 104px; background: #fff; border: 2px solid #1f6f78; border-radius: 18px; padding: 16px 18px; }
+      .ui .sync .row1 { display: flex; align-items: center; gap: 10px; font: 800 24px/1 var(--disp); }
+      .ui .sync .dot { width: 12px; height: 12px; border-radius: 50%; background: #2fb67c; }
+      .ui .sync .tg { margin-left: auto; width: 56px; height: 32px; border-radius: 16px; background: #1f6f78; position: relative; }
+      .ui .sync .tg::after { content: ""; position: absolute; right: 4px; top: 4px; width: 24px; height: 24px; border-radius: 50%; background: #fff; }
+      .ui .sync .row2 { margin-top: 14px; font: 600 17px/1 var(--disp); color: #5b6d72; }
+      .ui .list { position: absolute; left: 220px; top: 452px; width: 670px; }
+      .ui .list div { height: 54px; border-bottom: 1px solid #e3e9eb; display: flex; align-items: center; gap: 14px; font: 600 19px/1 var(--disp); }
+      .ui .list i { width: 18px; height: 18px; border-radius: 5px; border: 2px solid #9fb0b4; }
+      .ui .list em { margin-left: auto; font: 500 15px/1 var(--mono); color: #6d7f84; font-style: normal; }
+      .ui .chart { position: absolute; left: 640px; top: 318px; width: 250px; height: 104px; background: #fff; border: 1px solid #e3e9eb; border-radius: 16px; }
+      #chips { position: absolute; left: 80px; top: 1306px; display: flex; gap: 16px; z-index: 2; }
+      .chip { height: 64px; border-radius: 999px; padding: 0 28px; display: flex; align-items: center; gap: 12px; font: 500 28px/1 var(--mono); letter-spacing: .12em; text-transform: uppercase;
+        background: #1c3236; color: var(--ink); white-space: nowrap; }
+      .chip s { color: var(--muted); text-decoration-thickness: 3px; }
+      #cap { position: absolute; left: 80px; top: 1414px; width: 860px; font: 600 50px/1.18 var(--disp); color: var(--ink); letter-spacing: -0.01em; z-index: 2; }
+      #cap span { color: var(--muted); }
+      #note { position: absolute; left: 80px; top: 1610px; font: 500 22px/1 var(--mono); color: var(--muted); letter-spacing: .12em; z-index: 2; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="back" class="clip" data-start="0" data-duration="4.5" data-track-index="0"></div>
+      <h1 id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="1"><span class="w">SaaS</span> <span class="w">launch</span><br /><span class="w l2">glass</span></h1>
+      <div id="stage" class="clip" data-start="0" data-duration="4.5" data-track-index="2">
+        <div id="pane"><div id="paneUI"></div></div>
+        <div id="lens"><div id="lensIn"></div><div id="lensGlare"></div></div>
+        <svg id="ring" width="1080" height="1920" viewBox="0 0 1080 1920"><circle id="rc" r="266" fill="none" stroke="#ff6fa8" stroke-width="3" /></svg>
+      </div>
+      <div id="chips" class="clip" data-start="0" data-duration="4.5" data-track-index="3">
+        <div class="chip" id="c0">New · live sync</div>
+        <div class="chip" id="c1">Offline</div>
+        <div class="chip" id="c2" style="text-transform:none"><s>v2.3</s><span id="ver"></span></div>
+      </div>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="4">Live sync <span>on every device, in two seconds.</span></div>
+      <div id="note" class="clip" data-start="0" data-duration="4.5" data-track-index="5">EXAMPLE PRODUCT UI · FICTIONAL APP</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const UI = `<div class="ui"><div class="top"><div class="logo"></div><div class="brand">Fieldbook</div><div class="search">Search projects</div><div class="av"></div></div>
+        <div class="side"><div class="on">Overview</div><div>Projects</div><div>Inbox</div><div>Reports</div><div>Settings</div></div>
+        <h2>Overview</h2>
+        <div class="stat" style="left:220px"><span>Open tasks</span><b>128</b></div>
+        <div class="stat" style="left:448px"><span>Due this week</span><b>23</b></div>
+        <div class="stat" style="left:676px"><span>Done</span><b>412</b></div>
+        <div class="sync"><div class="row1"><div class="dot"></div>Live sync<div class="tg"></div></div><div class="row2">4 devices · synced 2 s ago</div></div>
+        <div class="chart"><svg width="250" height="104"><polyline points="18,80 60,66 100,72 140,44 180,50 230,22" fill="none" stroke="#1f6f78" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+        <div class="list"><div><i></i>Spring field survey<em>TODAY</em></div><div><i></i>Trail map update<em>WED</em></div><div><i></i>Volunteer schedule<em>FRI</em></div><div><i></i>Budget review<em>MAR 14</em></div></div></div>`;
+      document.getElementById("back").innerHTML = UI;
+      document.getElementById("paneUI").innerHTML = UI;
+      document.getElementById("lensIn").innerHTML = UI;
+      gsap.set("#back", { scale: 2.6 });
+      // the lens magnifies whatever part of the pane's capture lies under its centre
+      const lens = document.getElementById("lens"), lensIn = document.getElementById("lensIn"), rc = document.getElementById("rc");
+      const PX = 80 + 24, PY = 520 + 24, S = 0.947, MAG = 1.6;
+      const L = { x: 1320, y: 1000 };
+      function place() {
+        lens.style.transform = `translate(${L.x - 260}px, ${L.y - 260}px)`;
+        rc.setAttribute("cx", L.x); rc.setAttribute("cy", L.y);
+        const ux = (L.x - PX) / S, uy = (L.y - PY) / S;         // UI coordinates under the lens centre
+        lensIn.style.transformOrigin = `${ux}px ${uy}px`;
+        lensIn.style.transform = `translate(${260 - ux}px, ${260 - uy}px) scale(${MAG * S})`;
+      }
+      place();
+      const CIRC = 2 * Math.PI * 266;
+      rc.setAttribute("stroke-dasharray", `${CIRC} ${CIRC}`); rc.setAttribute("stroke-dashoffset", CIRC);
+      rc.setAttribute("transform-origin", "center");
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.fromTo("#back", { x: 0 }, { x: -60, duration: DUR, ease: "none" }, 0);
+      tl.fromTo("#title .w", { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", stagger: 0.08 }, 0.05);
+      tl.fromTo("#pane", { opacity: 0, y: 90, scale: 0.94, rotateY: 6, filter: "blur(12px)" }, { opacity: 1, y: 0, scale: 1, rotateY: 0, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, 0.35);
+      tl.fromTo(L, { x: 1320, y: 1000 }, { x: 516, y: 896, duration: 0.6, ease: "power3.out", onUpdate: place }, 1.15);
+      tl.fromTo("#paneUI", { filter: "blur(0px)", opacity: 1 }, { filter: "blur(4px)", opacity: 0.8, duration: 0.5 }, 1.2);
+      tl.fromTo(rc, { attr: { "stroke-dashoffset": CIRC } }, { attr: { "stroke-dashoffset": 0 }, duration: 0.4, ease: "power2.out" }, 1.7);
+      tl.to(L, { x: 536, y: 904, duration: 2.4, ease: "sine.inOut", onUpdate: place }, 1.9);
+      tl.fromTo(".chip", { opacity: 0, y: -80 }, { opacity: 1, y: 0, duration: 0.4, ease: "back.out(1.7)", stagger: 0.08 }, 2.15);
+      tl.to("#c0", { backgroundColor: "#ff6fa8", color: "#0c1517", duration: 0.3 }, 2.6);
+      const v = { n: 0 }, ver = document.getElementById("ver"), VS = "v2.4";
+      tl.fromTo(v, { n: 0 }, { n: VS.length, duration: VS.length / 18, ease: "none", onUpdate: () => { ver.textContent = VS.slice(0, Math.round(v.n)); } }, 2.85);
+      tl.fromTo("#c2 s", { color: "#f2f7f8", textDecorationColor: "rgba(143,166,170,0)" }, { color: "#8fa6aa", textDecorationColor: "rgba(143,166,170,1)", duration: 0.25 }, 2.7);
+      tl.fromTo("#cap", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 3.2);
+      tl.fromTo("#note", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 3.5);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

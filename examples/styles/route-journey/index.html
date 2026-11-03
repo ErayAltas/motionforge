@@ -1,0 +1,123 @@
+<!doctype html>
+<!--
+  motionforge style preview: route-journey
+  © 2026 motionforge contributors, MIT
+  Signature scenes "leg draw" + "day pin": on a muted map (land, water, parks, white roads) the travelled
+  leg sits at 45 % accent while the current leg draws via stroke-dashoffset with a 4 px white casing, a car
+  icon rides the draw head, km and hours count up in Overpass Mono, the camera pans along the route
+  (power2.inOut) and the day marker pops with back.out(1.8). Outfit + Overpass Mono.
+  The map and every place name are fictional, drawn for this preview (no map data, no app screenshots).
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      @font-face { font-family: "Outfit"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/outfit-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Outfit"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/outfit-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Outfit"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/outfit-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Outfit"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/outfit-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Overpass Mono"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/overpass-mono-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Overpass Mono"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/overpass-mono-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --land: #eeebe3; --water: #aecbd8; --ink: #1e2b2f; --acc: #e23d6f; --park: #cfdcc0; --mf-grain-opacity: .04; }
+      html, body { background: var(--land); }
+      #root { background: var(--land); color: var(--ink); }
+      #root::before { mix-blend-mode: multiply; }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 62%, rgba(30,43,47,.10) 100%); }
+      #head { position: absolute; left: 0; right: 0; top: 0; height: 450px; background: linear-gradient(var(--land) 85%, rgba(238,235,227,0)); z-index: 3; }
+      #eyebrow { position: absolute; left: 80px; top: 200px; font: 600 28px/1 "Overpass Mono", monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--acc); z-index: 4; }
+      #title { position: absolute; left: 76px; top: 246px; font: 800 116px/1 "Outfit", system-ui; letter-spacing: -0.02em; z-index: 4; white-space: nowrap; }
+      #title span { color: #8a9397; font-weight: 500; }
+      #view { position: absolute; left: 0; top: 400px; width: 1080px; height: 1260px; overflow: hidden; -webkit-mask-image: linear-gradient(#000 82%, transparent 100%); }
+      #map { position: absolute; left: 0; top: 0; width: 1080px; height: 1500px; transform-origin: 0 0; }
+      .town { font: 500 30px "Outfit", system-ui; fill: #1e2b2f; paint-order: stroke; stroke: #eeebe3; stroke-width: 8px; stroke-linejoin: round; }
+      .sea { font: 500 26px "Overpass Mono", monospace; fill: #6f98aa; letter-spacing: .3em; }
+      #chip { position: absolute; left: 80px; top: 1560px; display: flex; gap: 18px; align-items: center; padding: 22px 34px; background: #fff; border-radius: 22px; box-shadow: 0 10px 24px rgba(30,43,47,.12); font: 600 34px/1 "Overpass Mono", monospace; letter-spacing: .12em; z-index: 4; }
+      #chip i { width: 18px; height: 18px; border-radius: 50%; background: var(--acc); }
+      #credit { position: absolute; left: 80px; top: 1846px; font: 600 22px/1 "Overpass Mono", monospace; letter-spacing: .08em; color: #8a9397; z-index: 4; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="view" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <svg id="map" viewBox="0 0 1080 1500">
+          <path fill="#aecbd8" d="M0 520 C90 560 150 640 140 760 C132 860 230 930 330 990 C420 1045 470 1100 540 1200 C600 1290 620 1400 640 1500 L0 1500 Z" />
+          <ellipse cx="880" cy="250" rx="130" ry="72" fill="#aecbd8" transform="rotate(-12 880 250)" />
+          <path fill="#cfdcc0" d="M600 560 C680 520 780 560 790 640 C800 720 700 760 640 730 C580 700 540 610 600 560 Z" />
+          <path fill="#cfdcc0" d="M250 210 C320 170 420 200 420 270 C420 340 330 360 280 330 C230 300 200 250 250 210 Z" />
+          <path fill="#cfdcc0" d="M840 860 C900 830 1000 860 1000 930 C1000 1000 900 1010 860 980 C820 950 800 890 840 860 Z" />
+          <g fill="none" stroke="#ffffff" stroke-linecap="round">
+            <path stroke-width="7" d="M1080 120 C900 160 760 220 640 300 C520 380 470 520 420 640 C370 760 300 820 220 1000" />
+            <path stroke-width="4" d="M120 80 C300 160 420 300 560 380 C700 460 900 470 1080 520" />
+            <path stroke-width="4" d="M640 300 C700 420 820 470 900 640 C960 760 940 900 1080 980" />
+            <path stroke-width="3" d="M420 640 C520 700 600 800 720 860 C800 900 880 1040 900 1500" />
+            <path stroke-width="4" d="M250 940 C360 1040 520 1060 700 1120 C860 1170 960 1260 1080 1300" />
+            <path stroke-width="3" d="M0 360 C120 330 200 400 280 470 C340 520 380 600 420 640" />
+          </g>
+          <path id="ghostCase" fill="none" stroke="#ffffff" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" d="M900 120 C820 200 720 230 660 280 C620 312 600 335 580 370" />
+          <path id="ghost" fill="none" stroke="#e23d6f" stroke-opacity=".45" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" d="M900 120 C820 200 720 230 660 280 C620 312 600 335 580 370" />
+          <path id="legCase" fill="none" stroke="#ffffff" stroke-width="20" stroke-linecap="round" stroke-linejoin="round" />
+          <path id="leg" fill="none" stroke="#e23d6f" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+          <text class="town" x="760" y="80">Ostrel</text>
+          <text class="town" x="618" y="402">Varnholm</text>
+          <text class="town" x="300" y="1006">Caldera Point</text>
+          <text class="sea" x="40" y="900" transform="rotate(-62 40 900)">QUIET BAY</text>
+          <g id="m1" transform="translate(900 120)"><circle r="42" fill="#fff" stroke="#1e2b2f" stroke-width="4" /><text text-anchor="middle" y="13" style="font: 800 38px Outfit" fill="#1e2b2f">1</text></g>
+          <g id="m2" transform="translate(580 370)"><circle r="42" fill="#fff" stroke="#1e2b2f" stroke-width="4" /><text text-anchor="middle" y="13" style="font: 800 38px Outfit" fill="#1e2b2f">2</text></g>
+          <g id="m3w" transform="translate(250 940)"><g id="m3"><circle r="42" fill="#e23d6f" stroke="#fff" stroke-width="5" /><text text-anchor="middle" y="13" style="font: 800 38px Outfit" fill="#fff">3</text></g></g>
+          <g id="car"><circle r="36" fill="#fff" stroke="#e23d6f" stroke-width="5" /><g fill="#1e2b2f"><path d="M-21 7 V0 Q-21 -3 -17 -4 L-11 -5 L-6 -12 Q-5 -13 -3 -13 H8 Q10 -13 11 -11 L15 -5 L19 -4 Q22 -3 22 1 V7 Z" /><path d="M-4 -10 H2 V-5 H-8 Z M5 -10 H9 L12 -5 H5 Z" fill="#fff" /><circle cx="-11" cy="8" r="5.5" stroke="#fff" stroke-width="2.5" /><circle cx="12" cy="8" r="5.5" stroke="#fff" stroke-width="2.5" /></g></g>
+        </svg>
+      </div>
+      <div id="head" class="clip" data-start="0" data-duration="4.5" data-track-index="1"></div>
+      <div id="eyebrow" class="clip" data-start="0" data-duration="4.5" data-track-index="2">Route journey · day 3 of 5</div>
+      <h1 id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="3">Coast road <span>→</span></h1>
+      <div id="chip" class="clip" data-start="0" data-duration="4.5" data-track-index="4"><i></i><span id="km">0 KM</span><span>·</span><span id="hr">0 H 00</span></div>
+      <div id="credit" class="clip" data-start="0" data-duration="4.5" data-track-index="5">Fictional map drawn for this preview</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this)
+      const LEG = "M580 370 C520 470 650 560 580 660 C510 760 330 760 250 940";
+      const leg = document.getElementById("leg"), legCase = document.getElementById("legCase");
+      leg.setAttribute("d", LEG); legCase.setAttribute("d", LEG);
+      const LL = leg.getTotalLength();
+      const car = document.getElementById("car");
+      const kmEl = document.getElementById("km"), hrEl = document.getElementById("hr");
+      const S = { k: 0, cx: -200, cy: -120, cs: 1.25 };
+      function render() {
+        const l = LL * S.k;
+        [leg, legCase].forEach((p) => { p.setAttribute("stroke-dasharray", `${l} ${LL + 40}`); });
+        legCase.style.opacity = leg.style.opacity = S.k > 0.002 ? 1 : 0;
+        const p = leg.getPointAtLength(Math.max(0.1, l));
+        car.setAttribute("transform", `translate(${p.x} ${p.y})`);
+        const km = Math.round(212 * S.k), mins = Math.round(190 * S.k);
+        kmEl.textContent = km + " KM";
+        hrEl.textContent = Math.floor(mins / 60) + " H " + String(mins % 60).padStart(2, "0");
+        gsap.set("#map", { x: S.cx, y: S.cy, scale: S.cs });
+      }
+      tl.eventCallback("onUpdate", render);
+      // camera: starts on day 2, pans down the coast with the leg, ends framing day 3
+      tl.set(S, { cx: -200, cy: -120, cs: 1.25 }, 0);
+      tl.fromTo("#view", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0);
+      tl.fromTo("#eyebrow", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.1);
+      tl.fromTo("#title", { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.45, ease: "power2.out" }, 0.15);
+      tl.fromTo(["#m1", "#m2"], { scale: 0, transformOrigin: "50% 50%" }, { scale: 1, duration: 0.3, ease: "back.out(1.8)", stagger: 0.1 }, 0.3);
+      tl.fromTo("#car", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 0.75);
+      tl.fromTo("#chip", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.25, ease: "power2.out" }, 0.8);
+      tl.to(S, { k: 1, duration: 2.2, ease: "power1.inOut" }, 0.9);
+      tl.to(S, { cx: -40, cy: -260, cs: 1.12, duration: 2.0, ease: "power2.inOut" }, 0.9);
+      tl.set("#m3", { scale: 0, transformOrigin: "50% 50%" }, 0);
+      tl.to("#m3", { scale: 1, duration: 0.3, ease: "back.out(1.8)" }, 3.1);
+      tl.to("#car", { opacity: 0, duration: 0.2 }, 3.1);
+      tl.fromTo("#credit", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 3.3);
+      tl.seek(0);
+      render();
+    </script>
+  </body>
+</html>

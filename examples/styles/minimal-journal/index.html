@@ -1,0 +1,105 @@
+<!doctype html>
+<!--
+  motionforge style preview: minimal-journal
+  © 2026 motionforge contributors, MIT
+  Date header in terracotta DM Mono with a hairline drawing out, Cormorant title, Source Serif lines rising
+  one by one (0.9 s, 0.35 s stagger), the last word in Cormorant italic receiving the slow terracotta
+  underline, and a small mounted print (an original drawn window-light study) pushing 4 %.
+  Fonts: Cormorant Garamond 300 + 400 italic, Source Serif 4, DM Mono (Fontsource, OFL). Text is sample copy.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Cormorant Garamond"; font-style: normal; font-weight: 300; font-display: block; src: url("assets/fonts/cormorant-garamond-latin-300-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Cormorant Garamond"; font-style: normal; font-weight: 300; font-display: block; src: url("assets/fonts/cormorant-garamond-latin-ext-300-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Cormorant Garamond"; font-style: italic; font-weight: 400; font-display: block; src: url("assets/fonts/cormorant-garamond-latin-400-italic.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Cormorant Garamond"; font-style: italic; font-weight: 400; font-display: block; src: url("assets/fonts/cormorant-garamond-latin-ext-400-italic.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Source Serif 4"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/source-serif-4-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Source Serif 4"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/source-serif-4-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "DM Mono"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/dm-mono-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "DM Mono"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/dm-mono-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      /* fonts:end */
+      :root { --paper: #EEE5D3; --ink: #2F2A25; --acc: #A65A3A; --sup: #8C8173; --rule: #CDBFA8; --mf-grain-opacity: .06; }
+      html, body { background: var(--paper); }
+      #root { background: var(--paper); color: var(--ink); }
+      #root::before { mix-blend-mode: multiply; opacity: .09; }
+      #root::after { background: radial-gradient(ellipse at 50% 45%, transparent 60%, rgba(90,60,30,.10) 100%); }
+      #date { position: absolute; left: 120px; top: 280px; font: 400 24px/1 "DM Mono", monospace; letter-spacing: .2em; text-transform: uppercase; color: var(--acc); }
+      #hair { position: absolute; left: 120px; top: 330px; width: 600px; height: 1.5px; background: var(--rule); transform-origin: left; }
+      #title { position: absolute; left: 120px; top: 372px; font: 300 100px/1.05 "Cormorant Garamond", serif; color: var(--ink); }
+      #body { position: absolute; left: 120px; width: 840px; top: 540px; }
+      .ln { font: 400 48px/1.45 "Source Serif 4", serif; color: var(--ink); }
+      .ln em { position: relative; font: italic 400 60px/1 "Cormorant Garamond", serif; }
+      #ul { position: absolute; left: 0; bottom: -6px; height: 2px; width: 100%; background: var(--acc); transform-origin: left; transform: scaleX(0); }
+      #print { position: absolute; left: 250px; top: 880px; width: 580px; height: 720px; background: #fbf8f2; padding: 28px; border: 1px solid var(--rule); box-shadow: 0 10px 30px rgba(60,40,20,.18); }
+      #photo { width: 100%; height: 100%; overflow: hidden; position: relative; }
+      #photo svg { width: 100%; height: 100%; display: block; transform-origin: 50% 50%; }
+      #pcap { position: absolute; left: 250px; top: 1640px; font: 400 24px/1 "DM Mono", monospace; letter-spacing: .2em; text-transform: uppercase; color: var(--sup); }
+      #page { position: absolute; right: 250px; top: 1640px; font: 400 24px/1 "DM Mono", monospace; letter-spacing: .2em; color: var(--sup); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="date" class="clip" data-start="0" data-duration="4.5" data-track-index="0">Tuesday · 3 November</div>
+      <div id="hair" class="clip" data-start="0" data-duration="4.5" data-track-index="1"></div>
+      <div id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="2">Minimal journal</div>
+      <div id="body" class="clip" data-start="0" data-duration="4.5" data-track-index="3">
+        <div class="ln">The kettle, the window,</div>
+        <div class="ln">and one hour that asks for</div>
+        <div class="ln">nothing but to be <em>slow<span id="ul"></span></em></div>
+      </div>
+      <div id="print" class="clip" data-start="0" data-duration="4.5" data-track-index="4"><div id="photo">
+        <svg viewBox="0 0 424 544" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+          <defs>
+            <linearGradient id="w" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d8c7ab"/><stop offset="1" stop-color="#a99272"/></linearGradient>
+            <filter id="s"><feGaussianBlur stdDeviation="6"/></filter>
+            <filter id="s2"><feGaussianBlur stdDeviation="2"/></filter>
+          </defs>
+          <rect width="424" height="544" fill="url(#w)"/>
+          <g filter="url(#s)" opacity=".9">
+            <path d="M120 40 L 330 20 L 360 330 L 150 360Z" fill="#f6e6c6"/>
+            <path d="M232 30 L 244 345" stroke="#b9a283" stroke-width="10"/>
+            <path d="M135 200 L 345 178" stroke="#b9a283" stroke-width="10"/>
+          </g>
+          <g filter="url(#s)" fill="#8c7558" opacity=".55">
+            <path d="M260 120 C 300 160 300 220 270 260 C 250 220 240 170 260 120Z"/>
+            <path d="M300 170 C 340 200 350 240 330 280 C 305 250 296 210 300 170Z"/>
+          </g>
+          <rect x="0" y="420" width="424" height="124" fill="#7d6750"/>
+          <rect x="0" y="420" width="424" height="3" fill="#cbb594" opacity=".7"/>
+          <g filter="url(#s2)">
+            <path d="M70 420 L 80 360 Q 105 350 130 360 L 140 420Z" fill="#efe7da"/>
+            <ellipse cx="105" cy="362" rx="26" ry="6" fill="#5a4636"/>
+            <path d="M230 420 L 236 300 L 262 300 L 268 420Z" fill="#6f8a6a" opacity=".85"/>
+            <path d="M249 300 C 220 250 230 220 250 200 C 262 230 270 260 249 300Z M249 300 C 280 260 300 250 312 236 C 300 270 280 290 249 300Z" fill="#5d7656"/>
+          </g>
+        </svg>
+      </div></div>
+      <div id="pcap" class="clip" data-start="0" data-duration="4.5" data-track-index="5">Kadıköy, 06:40</div>
+      <div id="page" class="clip" data-start="0" data-duration="4.5" data-track-index="6">p. 12</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.fromTo("#date", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power1.out" }, 0);
+      tl.fromTo("#hair", { scaleX: 0 }, { scaleX: 1, duration: 1.2, ease: "power2.inOut" }, 0.05);
+      tl.fromTo("#title", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.9, ease: "power1.out" }, 0.2);
+      tl.fromTo(".ln", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.9, ease: "power1.out", stagger: 0.35 }, 0.7);
+      tl.to("#ul", { scaleX: 1, duration: 0.8, ease: "power2.inOut" }, 2.1);
+      tl.fromTo("#print", { opacity: 0 }, { opacity: 1, duration: 1.0, ease: "sine.inOut" }, 1.5);
+      tl.fromTo("#photo svg", { scale: 1.0 }, { scale: 1.04, duration: DUR - 1.5, ease: "none" }, 1.5);
+      tl.fromTo("#pcap", { opacity: 0 }, { opacity: 1, duration: 0.6, ease: "power1.out" }, 2.1);
+      tl.fromTo("#page", { opacity: 0 }, { opacity: 1, duration: 0.6 }, 2.4);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

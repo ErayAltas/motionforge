@@ -1,0 +1,137 @@
+<!doctype html>
+<!--
+  motionforge style preview: player-stat-card
+  © 2026 motionforge contributors, MIT
+  Signature scenes "card reveal" + "radar unfold" (flat CSS 3D fallback, no WebGL): the card rises
+  400 px face-down and flips (rotateX 25 -> 0, rotateY 180 -> 0, 0.9 s power3.out), one specular band
+  crosses the silver foil border, the surname slams from 150 % to 130 % width, the radar axes draw,
+  the mint polygon unfolds with back.out(1.4) over a dashed pool-average polygon, the rating counts up
+  and two stat chips pop. Player, club and numbers are fictional sample data; the head-and-shoulders
+  shape is a plain silhouette standing in for a licensed cut-out. Anybody + Chivo Mono.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Anybody"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/anybody-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Anybody"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/anybody-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Anybody"; font-style: normal; font-weight: 900; font-display: block; src: url("assets/fonts/anybody-latin-900-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Anybody"; font-style: normal; font-weight: 900; font-display: block; src: url("assets/fonts/anybody-latin-ext-900-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Chivo Mono"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/chivo-mono-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Chivo Mono"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/chivo-mono-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Chivo Mono"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/chivo-mono-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Chivo Mono"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/chivo-mono-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      /* fonts:end */
+      :root { --mf-bg: #121418; --card: #1a1d22; --ink: #f1f4f6; --acc: #43e0a0; --sup: #59616c; --mf-grain-opacity: .07;
+        --a: "Anybody", "Arial Black", sans-serif; --m: "Chivo Mono", ui-monospace, monospace; }
+      #root { background: radial-gradient(700px 800px at 50% 52%, #1e2228 0%, transparent 72%), var(--mf-bg); }
+      #cap { position: absolute; left: 0; right: 0; top: 200px; text-align: center; font: 900 64px/1 var(--a); text-transform: uppercase; letter-spacing: -0.01em; color: var(--ink); }
+      #cap2 { position: absolute; left: 0; right: 0; top: 276px; text-align: center; font: 500 24px/1 var(--m); letter-spacing: .1em; color: #8a929c; }
+      #persp { position: absolute; left: 130px; top: 380px; width: 820px; height: 1180px; perspective: 2400px; }
+      #card { position: absolute; inset: 0; transform-style: preserve-3d; }
+      .face { position: absolute; inset: 0; backface-visibility: hidden; }
+      .shape { position: absolute; inset: 0; clip-path: polygon(0 36px, 36px 0, 690px 0, 820px 130px, 820px 1144px, 784px 1180px, 36px 1180px, 0 1144px); }
+      .foil { background: linear-gradient(135deg, #d9dee4 0%, #8e969f 50%, #d9dee4 100%); box-shadow: 0 40px 80px rgba(0,0,0,.5); }
+      .inner { position: absolute; inset: 14px; background: var(--card); clip-path: polygon(0 26px, 26px 0, 672px 0, 792px 120px, 792px 1126px, 766px 1152px, 26px 1152px, 0 1126px); overflow: hidden; }
+      #sweep { position: absolute; left: -300px; top: -200px; width: 220px; height: 1600px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.85), transparent); transform: rotate(20deg); mix-blend-mode: screen; }
+      #back { transform: rotateY(180deg); }
+      #back .inner { background: radial-gradient(400px 400px at 50% 50%, #232831, #16191d); }
+      #back .mark { position: absolute; left: 260px; top: 440px; width: 272px; height: 272px; border: 10px solid #8e969f; transform: rotate(45deg); }
+      #back .mark2 { position: absolute; left: 330px; top: 510px; width: 132px; height: 132px; background: #43e0a0; transform: rotate(45deg); opacity: .8; }
+      #num { position: absolute; left: 120px; top: -60px; font: 900 900px/1 var(--a); color: #fff; opacity: .04; }
+      #club { position: absolute; left: 0; top: 0; width: 10px; height: 100%; background: #c4572e; }
+      #rate { position: absolute; left: 44px; top: 40px; font: 900 200px/0.9 var(--a); color: var(--ink); transform: scaleX(.75); transform-origin: left top; font-variant-numeric: tabular-nums; }
+      #pos { position: absolute; left: 50px; top: 230px; font: 600 40px/1 var(--m); letter-spacing: .1em; color: #8a929c; }
+      #fn { position: absolute; left: 0; right: 0; top: 372px; text-align: center; font: 600 44px/1 var(--a); color: #b7bec7; }
+      #sn { position: absolute; left: 0; right: 0; top: 418px; text-align: center; font: 900 118px/1 var(--a); text-transform: uppercase; letter-spacing: -0.01em; color: var(--ink); }
+      #radar { position: absolute; left: 0; top: 0; overflow: visible; }
+      .ax { font: 500 23px var(--m); letter-spacing: .06em; fill: #8a929c; text-transform: uppercase; }
+      .chip { position: absolute; top: 1052px; height: 64px; padding: 0 22px; border-radius: 12px; background: #23272e; border: 2px solid #343a43;
+        font: 600 24px/60px var(--m); letter-spacing: .06em; color: var(--ink); white-space: nowrap; }
+      .chip b { color: var(--acc); font-weight: 600; }
+      #cut { position: absolute; left: 0; top: 0; width: 820px; height: 400px; overflow: visible; pointer-events: none; }
+      #src { position: absolute; left: 0; right: 0; top: 1600px; text-align: center; font: 500 24px/1.4 var(--m); color: #737b86; letter-spacing: .04em; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="0">Player stat card</div>
+      <div id="cap2" class="clip" data-start="0" data-duration="4.5" data-track-index="1">OUR RATING 0–99 · SAMPLE DATA</div>
+      <div id="persp" class="clip" data-start="0" data-duration="4.5" data-track-index="2">
+        <div id="card">
+          <div class="face" id="back"><div class="shape foil"></div><div class="inner"><div class="mark"></div><div class="mark2"></div></div></div>
+          <div class="face" id="front">
+            <div class="shape foil"><div id="sweep"></div></div>
+            <div class="inner">
+              <div id="num">8</div><div id="club"></div>
+              <div id="rate">0</div><div id="pos">CM</div>
+              <div id="fn">Theo</div><div id="sn">Arden</div>
+              <svg id="radar" width="792" height="1152"></svg>
+              <div class="chip" id="ch0" style="left:48px">PROG. PASSES /90 · <b>7.1</b></div>
+              <div class="chip" id="ch1" style="left:470px">DUELS WON · 58%</div>
+            </div>
+            <svg id="cut" width="820" height="400" viewBox="0 0 820 400"><g transform="translate(410 0) scale(.82) translate(-410 0)">
+              <defs><linearGradient id="sg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a414b" /><stop offset="1" stop-color="#1f242b" /></linearGradient></defs>
+              <path d="M410 -84 C470 -84 506 -40 506 18 C506 70 488 104 462 126 L466 162 C540 176 640 214 690 262 C716 288 728 330 732 400 L88 400 C92 330 104 288 130 262 C180 214 280 176 354 162 L358 126 C332 104 314 70 314 18 C314 -40 350 -84 410 -84 Z"
+                fill="url(#sg)" stroke="#d9dee4" stroke-opacity=".55" stroke-width="3" /></g>
+            </svg>
+          </div>
+        </div>
+      </div>
+      <div id="src" class="clip" data-start="0" data-duration="4.5" data-track-index="3">Fictional player · 2025/26 sample data<br />Percentiles vs. league midfielders · dashed: pool average</div>
+    </div>
+
+    <script>
+      const DUR = 4.5, NS = "http://www.w3.org/2000/svg";
+      const svg = document.getElementById("radar");
+      const mk = (tag, at, p = svg) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); p.appendChild(e); return e; };
+      const CX = 396, CY = 790, RAD = 196;
+      const AX = [["Passing", 92], ["Chances", 81], ["Dribbles", 64], ["Duels", 58], ["Pressing", 77], ["Shots", 45]];
+      const pt = (i, v) => { const a = -Math.PI / 2 + i * Math.PI / 3; return [CX + Math.cos(a) * RAD * v / 100, CY + Math.sin(a) * RAD * v / 100]; };
+      const web = mk("g", { id: "web" });
+      [33, 66, 100].forEach((v) => mk("polygon", { points: AX.map((_, i) => pt(i, v).join(",")).join(" "), fill: "none", stroke: "#59616c", "stroke-width": 2, opacity: 0.6 }, web));
+      const axes = AX.map((_, i) => { const [x, y] = pt(i, 100); return mk("line", { x1: CX, y1: CY, x2: x, y2: y, stroke: "#59616c", "stroke-width": 2 }); });
+      AX.forEach(([n], i) => { const [x, y] = pt(i, i % 3 === 0 ? 117 : 132); const t = mk("text", { x, y: y + 8, "text-anchor": "middle", class: "ax" }); t.textContent = n.toUpperCase(); });
+      const pool = mk("polygon", { points: AX.map((_, i) => pt(i, 50).join(",")).join(" "), fill: "none", stroke: "#8a929c", "stroke-width": 2.5, "stroke-dasharray": "8 7" });
+      const poly = mk("polygon", { points: AX.map((_, i) => pt(i, 0).join(",")).join(" "), fill: "rgba(67,224,160,.3)", stroke: "#43e0a0", "stroke-width": 4, "stroke-linejoin": "round" });
+      const dots = AX.map(() => mk("circle", { r: 8, fill: "#43e0a0", cx: CX, cy: CY }));
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.fromTo(["#cap", "#cap2"], { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, stagger: 0.1, ease: "power3.out" }, 0.05);
+      // rise face-down and flip
+      tl.fromTo("#persp", { y: 400, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, ease: "power3.out" }, 0.1);
+      tl.fromTo("#card", { rotateX: 25, rotateY: 180 }, { rotateX: 0, rotateY: -6, duration: 0.9, ease: "power3.out" }, 0.1);
+      tl.to("#card", { rotateY: 0, duration: 0.3, ease: "back.out(1.3)" }, 1.0);
+      // one specular band across the foil
+      tl.fromTo("#sweep", { x: 0 }, { x: 1400, duration: 0.7, ease: "power2.inOut" }, 1.0);
+      // surname slam: width 150 % -> 130 % (static font, so scaleX stands in for the width axis)
+      tl.fromTo("#sn", { scaleX: 1.5, opacity: 0 }, { scaleX: 1.3, opacity: 1, duration: 0.3, ease: "power4.out" }, 0.95);
+      tl.fromTo("#fn", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 1.05);
+      // radar: axes draw 0.3 s, polygon unfolds 0.6 s back.out(1.4), vertex dots 0.05 s apart
+      tl.fromTo(axes, { attr: { x2: CX, y2: CY } }, { attr: { x2: (i) => pt(i, 100)[0], y2: (i) => pt(i, 100)[1] }, duration: 0.3, ease: "power2.out" }, 1.25);
+      tl.fromTo("#web, .ax", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 1.25);
+      tl.fromTo(pool, { opacity: 0 }, { opacity: 1, duration: 0.3 }, 1.4);
+      const u = { v: 0 };
+      tl.fromTo(u, { v: 0 }, { v: 1, duration: 0.6, ease: "back.out(1.4)", onUpdate: () => {
+        poly.setAttribute("points", AX.map(([, v], i) => pt(i, v * u.v).join(",")).join(" "));
+      } }, 1.55);
+      dots.forEach((d, i) => tl.fromTo(d, { attr: { cx: CX, cy: CY }, opacity: 0 }, { attr: { cx: pt(i, AX[i][1])[0], cy: pt(i, AX[i][1])[1] }, opacity: 1, duration: 0.45, ease: "back.out(1.4)" }, 1.6 + i * 0.05));
+      // rating counts up 0.8 s power2.out
+      const r = { v: 0 }, rate = document.getElementById("rate");
+      tl.fromTo(r, { v: 0 }, { v: 87, duration: 0.8, ease: "power2.out", onUpdate: () => (rate.textContent = Math.round(r.v)) }, 1.3);
+      tl.fromTo("#pos", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 1.5);
+      tl.fromTo(".chip", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(2)", stagger: 0.12 }, 2.4);
+      tl.fromTo("#src", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 2.7);
+      // slow yaw drift across the hold
+      tl.to("#card", { rotateY: 5, rotateX: -2, duration: 2.1, ease: "sine.inOut" }, 2.35);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

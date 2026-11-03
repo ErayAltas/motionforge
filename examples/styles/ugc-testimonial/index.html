@@ -1,0 +1,149 @@
+<!doctype html>
+<!--
+  motionforge style preview: ugc-testimonial
+  © 2026 motionforge contributors, MIT
+  A phone-shaped clip card (an original illustrated selfie stands in for a customer's own footage), a white
+  review card rising over its bottom, stars filling one by one to the rating given (4 stays 4), the amber
+  marker sweeping behind the key phrase as it is said, then the carousel push to the next reviewer.
+  Reviewers, quotes and ratings are fictional samples, labelled on screen. Fonts: DM Sans, Work Sans.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "DM Sans"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/dm-sans-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "DM Sans"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/dm-sans-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "DM Sans"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/dm-sans-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "DM Sans"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/dm-sans-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Work Sans"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/work-sans-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Work Sans"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/work-sans-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      /* fonts:end */
+      :root { --bg: #F5F1EB; --card: #FFFFFF; --ink: #1D1B19; --acc: #F6A700; --sup: #6F6A63; --mf-grain-opacity: .03; }
+      html, body { background: var(--bg); }
+      #root { background: var(--bg); color: var(--ink); }
+      #root::before { mix-blend-mode: multiply; }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 65%, rgba(29,27,25,.06) 100%); }
+      #title { position: absolute; left: 0; right: 0; top: 236px; text-align: center; font: 700 80px/1 "DM Sans", sans-serif; letter-spacing: -0.02em; }
+      #title small { display: block; margin-top: 14px; font: 500 28px/1 "Work Sans", sans-serif; letter-spacing: 0; color: var(--sup); }
+      .slide { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      .clipc { position: absolute; left: 230px; top: 420px; width: 620px; height: 980px; border-radius: 44px; overflow: hidden; box-shadow: 0 20px 50px rgba(29,27,25,.18); background: #222; }
+      .clipc svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+      .cap { position: absolute; left: 0; right: 0; top: 700px; text-align: center; }
+      .cap span { display: inline-block; padding: 10px 18px; border-radius: 12px; background: rgba(0,0,0,.3); font: 700 50px/1.1 "DM Sans", sans-serif; color: #fff; }
+      .rec { position: absolute; left: 34px; top: 30px; display: flex; gap: 10px; align-items: center; font: 500 22px/1 "Work Sans", sans-serif; color: #fff; opacity: .85; }
+      .rec i { width: 14px; height: 14px; border-radius: 50%; background: #fff; }
+      .rcard { position: absolute; left: 80px; top: 1250px; width: 920px; padding: 40px 44px 36px; border-radius: 28px; background: var(--card); box-shadow: 0 20px 50px rgba(29,27,25,.14); }
+      .stars { display: flex; gap: 10px; margin-bottom: 22px; }
+      .stars svg { width: 50px; height: 50px; }
+      .stars .o { fill: none; stroke: #d9d2c7; stroke-width: 3; }
+      .stars .f { fill: var(--acc); transform-origin: 25px 25px; }
+      .q { font: 500 54px/1.25 "DM Sans", sans-serif; color: var(--ink); }
+      .hl { position: relative; white-space: nowrap; }
+      .hl i { position: absolute; left: -6px; right: -6px; top: 6px; bottom: 2px; border-radius: 8px; background: rgba(246,167,0,.45); transform-origin: left; transform: scaleX(0); z-index: -1; }
+      .q { position: relative; z-index: 0; }
+      .who { margin-top: 24px; font: 500 28px/1 "Work Sans", sans-serif; color: var(--sup); }
+      .who b { color: var(--ink); font-weight: 500; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="0">UGC testimonial<small>real words, real stars · sample reviews</small></div>
+      <div id="s1" class="slide clip" data-start="0" data-duration="4.5" data-track-index="1"></div>
+      <div id="s2" class="slide clip" data-start="0" data-duration="4.5" data-track-index="2"></div>
+    </div>
+
+    <script>
+      const STAR = "M25 3 L31.5 17 L46.5 18.6 L35.2 28.8 L38.4 43.6 L25 36 L11.6 43.6 L14.8 28.8 L3.5 18.6 L18.5 17Z";
+      function selfie(o) {
+        return `<svg viewBox="0 0 620 980" preserveAspectRatio="xMidYMid slice"><defs>
+          <linearGradient id="bg${o.id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${o.w1}"/><stop offset="1" stop-color="${o.w2}"/></linearGradient>
+          <linearGradient id="sk${o.id}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="${o.s2}"/><stop offset=".5" stop-color="${o.s1}"/><stop offset="1" stop-color="${o.s2}"/></linearGradient>
+          <filter id="bl${o.id}"><feGaussianBlur stdDeviation="10"/></filter></defs>
+          <rect width="620" height="980" fill="url(#bg${o.id})"/>
+          <g filter="url(#bl${o.id})" opacity=".85">${o.back}</g>
+          <path d="M40 980 C 50 760 160 690 310 680 C 460 690 570 760 580 980Z" fill="${o.top}"/>
+          <rect x="262" y="560" width="96" height="150" rx="40" fill="${o.s2}"/>
+          <g class="head">
+            <path d="${o.hairBack}" fill="${o.hair}"/>
+            <ellipse cx="310" cy="440" rx="125" ry="158" fill="url(#sk${o.id})"/>
+            <path d="${o.hairFront}" fill="${o.hair}"/>
+            <path d="M250 418 q 26 -14 50 -2 M320 416 q 24 -12 50 2" stroke="#3a2418" stroke-width="9" fill="none" stroke-linecap="round"/>
+            <ellipse cx="275" cy="450" rx="18" ry="12" fill="#fbf6ee"/><circle cx="277" cy="451" r="9" fill="#2f1d14"/>
+            <ellipse cx="345" cy="450" rx="18" ry="12" fill="#fbf6ee"/><circle cx="347" cy="451" r="9" fill="#2f1d14"/>
+            <path d="M312 460 C 306 490 302 506 298 512 Q 312 520 326 512" stroke="${o.line}" stroke-width="6" fill="none" stroke-linecap="round"/>
+            <path class="mouth" d="M276 548 Q 310 556 344 548 Q 310 566 276 548Z" fill="#7a2f2a"/>
+          </g>
+          ${o.front || ""}
+        </svg>`;
+      }
+      const R = [
+        { id: "a", w1: "#e9d3b5", w2: "#b98f6a", s1: "#e2b08d", s2: "#c48b66", top: "#7a8c6e", hair: "#3b2416", line: "#a06a4a",
+          back: '<rect x="400" y="80" width="200" height="300" fill="#fff7e6"/><rect x="20" y="300" width="140" height="22" fill="#7a5c41"/><circle cx="70" cy="270" r="34" fill="#5d8a55"/>',
+          hairBack: "M170 480 C 150 300 210 250 310 250 C 420 250 470 300 450 480 C 470 620 440 700 400 720 L 220 720 C 180 700 150 620 170 480Z",
+          hairFront: "M186 420 C 180 300 240 268 310 268 C 390 268 444 310 436 420 C 420 350 380 330 340 322 C 300 350 230 360 186 420Z",
+          front: '<g transform="translate(410 760) rotate(-12)"><rect x="0" y="0" width="150" height="190" rx="24" fill="#d8cfc0"/><rect x="0" y="0" width="150" height="40" rx="20" fill="#2e2a26"/><path d="M150 50 q 50 10 40 70 q -8 30 -40 30" fill="none" stroke="#2e2a26" stroke-width="16"/></g>',
+          cap: ["it boils so fast", "and the handle", "stays cool"], capT: [0.35, 1.0, 1.7],
+          q: 'Boils fast, pours clean, and <span class="hl"><i></i>the handle stays cool</span>.',
+          who: "<b>Selin K.</b> · İzmir · March 2026 · sample", stars: 4 },
+        { id: "b", w1: "#c9d4d8", w2: "#7d8f97", s1: "#c99b78", s2: "#a87656", top: "#2f3b4a", hair: "#1f1712", line: "#875a3e",
+          back: '<rect x="30" y="90" width="180" height="260" fill="#eef2f0"/><rect x="430" y="380" width="170" height="20" fill="#5b4a3a"/>',
+          hairBack: "M190 400 C 190 300 240 270 310 270 C 380 270 430 300 430 400Z",
+          hairFront: "M186 420 C 176 300 240 262 312 262 C 392 262 446 300 434 420 C 420 360 400 340 380 330 C 330 344 260 340 230 330 C 206 350 192 380 186 420Z",
+          cap: ["I use it daily"], capT: [3.95],
+          q: 'Three months in and <span class="hl"><i></i>not a single drip</span> on the counter.',
+          who: "<b>Arda T.</b> · Bursa · February 2026 · sample", stars: 5 },
+      ];
+      R.forEach((r, k) => {
+        const s = document.getElementById("s" + (k + 1));
+        s.innerHTML = `<div class="clipc">${selfie(r)}<div class="rec"><i></i>customer clip</div><div class="cap"><span></span></div></div>
+          <div class="rcard"><div class="stars">${[0, 1, 2, 3, 4].map((i) => `<svg viewBox="0 0 50 50"><path class="o" d="${STAR}"/><path class="f" d="${STAR}" opacity="0"/></svg>`).join("")}</div>
+          <div class="q">${r.q}</div><div class="who">${r.who}</div></div>`;
+      });
+
+      const DUR = 4.5, PUSH = 3.55;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      gsap.set("#s2", { x: 1080 });
+      tl.fromTo("#title", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 0);
+      tl.fromTo("#s1 .clipc", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 0.05);
+      function reviewer(sel, r, t0, rise) {
+        const caps = document.querySelector(sel + " .cap span");
+        r.cap.forEach((c, i) => tl.call(() => { caps.textContent = c; }, null, r.capT[i]));
+        tl.set(caps, { textContent: "" }, 0);
+        tl.fromTo(caps, { opacity: 0 }, { opacity: 1, duration: 0.1 }, r.capT[0]);
+        if (rise) tl.fromTo(sel + " .rcard", { opacity: 0, y: 160 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, t0);
+        const fills = gsap.utils.toArray(sel + " .stars .f").slice(0, r.stars);
+        tl.fromTo(fills, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(2)", stagger: 0.07 }, t0 + (rise ? 0.3 : 0.2));
+        return sel;
+      }
+      reviewer("#s1", R[0], 0.55, true);
+      tl.to("#s1 .hl i", { scaleX: 1, duration: 0.35, ease: "power2.inOut" }, 1.7);
+      tl.fromTo("#s1 .who", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 1.4);
+      // carousel: card and clip push left together as the next reviewer pushes in
+      tl.to("#s1", { x: -1080, duration: 0.35, ease: "power3.inOut" }, PUSH);
+      tl.to("#s2", { x: 0, duration: 0.35, ease: "power3.inOut" }, PUSH);
+      reviewer("#s2", R[1], PUSH + 0.35, false);
+      tl.to("#s2 .hl i", { scaleX: 1, duration: 0.35, ease: "power2.inOut" }, 4.05);
+      // speaking mouths (seeded syllables, frame = f(t))
+      const rr = MF.rng("ugc"), syl = Array.from({ length: 50 }, () => rr());
+      const m = document.querySelectorAll(".mouth"), heads = document.querySelectorAll(".head");
+      const k = { t: 0 };
+      tl.fromTo(k, { t: 0 }, { t: DUR, duration: DUR, ease: "none", onUpdate: () => {
+        const t = k.t, i = Math.floor(t * 8), f = t * 8 - i;
+        [0, 1].forEach((j) => {
+          const on = j === 0 ? t < 2.4 : t > 3.8;
+          const h = on ? 4 + 34 * syl[(i + j * 7) % 50] * Math.sin(Math.PI * f) : 2;
+          m[j].setAttribute("d", `M276 548 Q 310 ${552 - h * 0.2} 344 548 Q 310 ${560 + h} 276 548Z`);
+          heads[j].setAttribute("transform", `rotate(${1.2 * Math.sin(t * 2.6 + j)} 310 640)`);
+        });
+      } }, 0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

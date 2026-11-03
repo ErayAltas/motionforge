@@ -1,0 +1,135 @@
+<!doctype html>
+<!--
+  motionforge style preview: breaking-ticker
+  © 2026 motionforge contributors, MIT
+  Signature scenes "breaking slam" + "ticker crawl": the white headline slab wipes in by clip-path
+  (0.3 s power4.out), its text follows 0.08 s later with a 40 px slide, the red tag slams 1.3 -> 1
+  (back.out(3)), time and place type on at 30 chars/s, the LIVE dot breathes on a 1 s sine of time and
+  the yellow ticker crawls at a constant 140 px/s computed from the playhead; the headline then flips to
+  the next one (rotateX, 0.2 s each). Barlow Condensed + Source Sans 3 + Overpass Mono.
+  The city, story and visual (drawn in SVG, no footage) are fictional; no channel name or logo.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      @font-face { font-family: "Barlow Condensed"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/barlow-condensed-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Barlow Condensed"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/barlow-condensed-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Barlow Condensed"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/barlow-condensed-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Barlow Condensed"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/barlow-condensed-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Source Sans 3"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/source-sans-3-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Source Sans 3"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/source-sans-3-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Overpass Mono"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/overpass-mono-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Overpass Mono"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/overpass-mono-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #071a33; --ink: #ffffff; --acc: #d3122a; --banner: #f5f7fa; --sup: #f2c230; --mf-grain-opacity: .03; }
+      html, body { background: var(--bg); }
+      #root { background: radial-gradient(900px 700px at 85% 10%, #10294a 0%, transparent 70%), var(--bg); color: var(--ink); }
+      #vis { position: absolute; left: 0; top: 330px; width: 1080px; height: 850px; overflow: hidden; }
+      #vis svg { width: 1080px; height: 850px; display: block; }
+      #vis::after { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(7,26,51,.35), rgba(7,26,51,0) 30%, rgba(7,26,51,0) 70%, rgba(7,26,51,.9)); }
+      #bug { position: absolute; left: 80px; top: 250px; display: flex; align-items: center; gap: 22px; }
+      #live { display: flex; align-items: center; gap: 12px; padding: 10px 18px; background: var(--acc); font: 800 40px/1 "Barlow Condensed", sans-serif; letter-spacing: .06em; }
+      #dot { width: 16px; height: 16px; border-radius: 50%; background: #fff; }
+      #time { font: 600 30px/1 "Overpass Mono", monospace; white-space: pre; }
+      #style { position: absolute; left: 80px; top: 200px; font: 600 24px/1 "Overpass Mono", monospace; letter-spacing: .08em; color: rgba(255,255,255,.55); }
+      #tag { position: absolute; left: 60px; top: 1146px; padding: 8px 20px 6px; background: var(--acc); font: 800 44px/1 "Barlow Condensed", sans-serif; letter-spacing: .06em; text-transform: uppercase; transform-origin: 0 100%; z-index: 3; }
+      #slab { position: absolute; left: 60px; width: 880px; top: 1200px; height: 200px; background: var(--banner); border-left: 6px solid var(--acc); box-shadow: 0 8px 24px rgba(0,0,0,.35), inset 0 1px 0 #fff; perspective: 900px; overflow: hidden; }
+      .hl { position: absolute; left: 34px; right: 30px; top: 18px; font: 700 82px/0.98 "Barlow Condensed", sans-serif; color: #0a1220; transform-origin: 50% 0%; backface-visibility: hidden; }
+      #sub, #sub2 { position: absolute; left: 66px; right: 120px; top: 1418px; font: 600 40px/1.2 "Source Sans 3", system-ui; color: #e8edf4; }
+      #ticker { position: absolute; left: 0; right: 0; top: 1600px; height: 64px; background: var(--sup); overflow: hidden; }
+      #tk-lab { position: absolute; left: 0; top: 0; bottom: 0; width: 150px; background: #0a1220; display: flex; align-items: center; justify-content: center; font: 800 34px/1 "Barlow Condensed", sans-serif; letter-spacing: .06em; z-index: 2; }
+      #crawl { position: absolute; left: 150px; top: 0; height: 64px; display: flex; align-items: center; white-space: nowrap; font: 600 36px/1 "Source Sans 3", system-ui; color: #0a1220; }
+      #crawl span { padding: 0 22px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="vis" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <svg viewBox="0 0 1080 850">
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b2240" /><stop offset=".6" stop-color="#2b4a63" /><stop offset="1" stop-color="#7a6a63" /></linearGradient>
+            <linearGradient id="wat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d3550" /><stop offset="1" stop-color="#081a2e" /></linearGradient>
+          </defs>
+          <rect width="1080" height="560" fill="url(#sky)" />
+          <g id="city"></g>
+          <rect y="540" width="1080" height="310" fill="url(#wat)" />
+          <g id="refl" opacity=".5"></g>
+          <g stroke="#c9d3dc" fill="none" opacity=".9">
+            <path d="M-20 500 C300 470 780 470 1100 500" stroke-width="12" />
+            <path d="M330 160 V560 M750 160 V560" stroke-width="16" />
+            <g id="cables" stroke-width="2"></g>
+          </g>
+          <g id="lamps"></g>
+        </svg>
+      </div>
+      <div id="bug" class="clip" data-start="0" data-duration="4.5" data-track-index="1"><div id="live"><div id="dot"></div>LIVE</div><div id="time"></div></div>
+      <div id="style" class="clip" data-start="0" data-duration="4.5" data-track-index="2">BREAKING TICKER · SAMPLE</div>
+      <div id="slab" class="clip" data-start="0" data-duration="4.5" data-track-index="3">
+        <div class="hl" id="hl1">Harbour bridge reopens two weeks early</div>
+        <div class="hl" id="hl2">Ferry timetable back to normal from Monday</div>
+      </div>
+      <div id="tag" class="clip" data-start="0" data-duration="4.5" data-track-index="4">Breaking</div>
+      <div id="sub" class="clip" data-start="0" data-duration="4.5" data-track-index="5">City office: both lanes open from 06:00</div>
+      <div id="sub2" class="clip" data-start="0" data-duration="4.5" data-track-index="7">Port office: first sailing at 07:15</div>
+      <div id="ticker" class="clip" data-start="0" data-duration="4.5" data-track-index="6"><div id="tk-lab">LATEST</div><div id="crawl"></div></div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this)
+      const r = MF.rng("port-aven");
+      // skyline, lit windows and their reflections (seeded)
+      let city = "", refl = "", lamps = "", cab = "";
+      for (let x = -10; x < 1090;) { const w = r.range(40, 90), h = r.range(60, 210); city += `<rect x="${x.toFixed(0)}" y="${(545 - h).toFixed(0)}" width="${w.toFixed(0)}" height="${h.toFixed(0)}" fill="#0c1d33"/>`;
+        for (let k = 0; k < 4; k++) if (r() < 0.6) { const wx = x + r.range(6, w - 10), wy = 545 - r.range(10, h - 10); city += `<rect x="${wx.toFixed(0)}" y="${wy.toFixed(0)}" width="6" height="8" fill="#ffd98a" opacity="${r.range(.5, .9).toFixed(2)}"/>`; refl += `<rect x="${wx.toFixed(0)}" y="${(1090 - wy).toFixed(0)}" width="6" height="${r.range(16, 40).toFixed(0)}" fill="#ffd98a"/>`; }
+        x += w + r.range(2, 12); }
+      for (let i = 0; i < 9; i++) { const x = 40 + i * 125; lamps += `<circle cx="${x}" cy="${(497 - 30 * Math.sin(Math.PI * x / 1080) * 0).toFixed(0)}" r="5" fill="#ffe2a6"/>`; }
+      [[330, 160], [750, 160]].forEach(([px, py]) => { for (let k = 1; k <= 6; k++) { cab += `<path d="M${px} ${py + k * 22} L${px - k * 50} 490 M${px} ${py + k * 22} L${px + k * 50} 490"/>`; } });
+      document.getElementById("city").innerHTML = city;
+      document.getElementById("refl").innerHTML = refl;
+      document.getElementById("lamps").innerHTML = lamps;
+      document.getElementById("cables").innerHTML = cab;
+      // ticker items; the row is repeated so the crawl can loop
+      const ITEMS = ["Sample story for this preview", "Rail works end on the north line", "Weekend market moves to Pier Square", "Rain expected from Thursday"];
+      const crawl = document.getElementById("crawl");
+      const row = ITEMS.map((s) => `<span>${s}</span><span>•</span>`).join("");
+      crawl.innerHTML = row + row + row;
+      const dot = document.getElementById("dot"), timeEl = document.getElementById("time");
+      const TIME = "14:32 UTC · PORT AVEN";
+      let ROWW = 0;
+      function frame() {
+        const t = tl.time();
+        if (!ROWW) ROWW = crawl.scrollWidth / 3;
+        crawl.style.transform = `translateX(${-((140 * t) % ROWW)}px)`;          // linear, never eased
+        dot.style.opacity = (0.55 + 0.45 * Math.cos(2 * Math.PI * t)).toFixed(3);   // 1.0 s sine
+        const n = Math.max(0, Math.min(TIME.length, Math.floor((t - 0.35) * 30)));  // 30 chars/s
+        timeEl.textContent = TIME.slice(0, n);
+      }
+      tl.eventCallback("onUpdate", frame);
+      tl.fromTo("#vis", { opacity: 0.6 }, { opacity: 1, duration: 0.4 }, 0);
+      tl.fromTo("#vis svg", { scale: 1 }, { scale: 1.02, duration: DUR, ease: "none" }, 0);
+      tl.fromTo("#live", { scale: 1.3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.18, ease: "back.out(3)" }, 0.1);
+      tl.fromTo("#style", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.2);
+      // breaking slam
+      tl.fromTo("#slab", { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.3, ease: "power4.out" }, 0.45);
+      tl.fromTo("#hl1", { x: -40, opacity: 0 }, { x: 0, opacity: 1, duration: 0.25, ease: "power2.out" }, 0.53);
+      tl.set("#hl2", { rotationX: -90, opacity: 0 }, 0);
+      tl.fromTo("#tag", { scale: 1.3, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.18, ease: "back.out(3)" }, 0.7);
+      tl.fromTo("#sub", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 0.95);
+      // headline swap: old line flips up, new one flips in from below
+      tl.to("#hl1", { rotationX: 90, opacity: 0, duration: 0.2, ease: "power2.in" }, 3.0);
+      tl.set("#hl2", { opacity: 1, transformOrigin: "50% 100%" }, 3.2);
+      tl.to("#hl2", { rotationX: 0, duration: 0.2, ease: "power2.out" }, 3.2);
+      tl.to("#sub", { opacity: 0, duration: 0.15 }, 3.0);
+      tl.fromTo("#sub2", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 3.35);
+      tl.seek(0);
+      frame();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,93 @@
+<!doctype html>
+<!--
+  motionforge style preview: annual-report
+  © 2026 motionforge contributors, MIT
+  Signature scene: the KPI tile. A full-width brand block sweeps across, contracts into the key tile,
+  and the figure counts up (1.2 s power2.out) to its value with the period and source fading in after.
+  Secondary tiles rise 40 px + fade (0.5 s power3.out, 0.1 s stagger). The company and every figure
+  are fictional and labelled as example data. Public Sans + Source Serif 4 italic.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts: @fontsource/public-sans, @fontsource/source-serif-4 (copied from node_modules/@fontsource/<family>/files/) */
+      @font-face { font-family: "Public Sans"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/public-sans-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Public Sans"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/public-sans-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Public Sans"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/public-sans-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Public Sans"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/public-sans-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Public Sans"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/public-sans-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Public Sans"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/public-sans-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Source Serif 4"; font-weight: 500; font-style: italic; font-display: block; src: url("assets/fonts/source-serif-4-latin-500-italic.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Source Serif 4"; font-weight: 500; font-style: italic; font-display: block; src: url("assets/fonts/source-serif-4-latin-ext-500-italic.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #F4F5F2; --ink: #0E1A2B; --acc: #1550E8; --sup: #5C6B7A; --blk: #DDE2E6; --mf-grain-opacity: 0.02; }
+      html, body { background: var(--bg); }
+      #root { background: var(--bg); color: var(--ink); font-family: "Public Sans", sans-serif; }
+      #root::before { mix-blend-mode: multiply; }
+      #root::after { display: none; }
+      .lab { font: 600 28px/1 "Public Sans"; letter-spacing: .12em; text-transform: uppercase; color: var(--sup); }
+      #chap { position: absolute; left: 80px; top: 262px; display: flex; gap: 22px; align-items: center; }
+      #chap i { font-style: normal; color: var(--acc); }
+      #head { position: absolute; left: 80px; right: 80px; top: 330px; font: 800 112px/1 "Public Sans"; letter-spacing: -0.03em; }
+      #head span { display: block; font-size: 64px; font-weight: 700; color: var(--sup); letter-spacing: -0.02em; margin-top: 14px; }
+      #block { position: absolute; left: 0; top: 590px; width: 1080px; height: 480px; background: var(--acc); }
+      #kpi { position: absolute; left: 80px; width: 920px; top: 590px; height: 480px; padding: 52px 56px; color: #fff; }
+      #kpi .lab { color: rgba(255,255,255,.78); }
+      #fig { margin-top: 34px; font: 700 200px/0.9 "Public Sans"; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+      #fig small { font-size: 90px; letter-spacing: -0.02em; margin-left: 10px; }
+      #per { margin-top: 34px; font: 600 34px/1.2 "Public Sans"; color: rgba(255,255,255,.9); }
+      .tile { position: absolute; top: 1100px; width: 445px; height: 250px; background: var(--blk); padding: 40px 44px; }
+      #t1 { left: 80px; } #t2 { left: 555px; }
+      .tile b { display: block; margin-top: 26px; font: 700 110px/0.9 "Public Sans"; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+      .tile b small { font-size: 50px; color: var(--sup); margin-left: 6px; }
+      #quote { position: absolute; left: 80px; right: 80px; top: 1400px; font: italic 500 58px/1.22 "Source Serif 4", Georgia; color: var(--ink); }
+      #src { position: absolute; left: 80px; right: 80px; top: 1610px; font: 600 24px/1.5 "Public Sans"; color: var(--sup); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage light" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="chap" class="lab clip" data-start="0" data-duration="4.5" data-track-index="0"><i>01</i> Growth · Annual report</div>
+      <h1 id="head" class="clip" data-start="0" data-duration="4.5" data-track-index="1">A steady year<span>Larkfield Freight (example)</span></h1>
+      <div id="block" class="clip" data-start="0" data-duration="4.5" data-track-index="2"></div>
+      <div id="kpi" class="clip" data-start="0" data-duration="4.5" data-track-index="3">
+        <div class="lab">Revenue</div>
+        <div id="fig">€<span id="fv">0.0</span><small>M</small></div>
+        <div id="per">FY 2025 · +18 % on FY 2024</div>
+      </div>
+      <div id="t1" class="tile clip" data-start="0" data-duration="4.5" data-track-index="4"><div class="lab">Staff</div><b><span data-v="212">0</span></b></div>
+      <div id="t2" class="tile clip" data-start="0" data-duration="4.5" data-track-index="5"><div class="lab">Markets</div><b><span data-v="14">0</span><small>countries</small></b></div>
+      <div id="quote" class="clip" data-start="0" data-duration="4.5" data-track-index="6">“We grew where our customers already were.”</div>
+      <div id="src" class="clip" data-start="0" data-duration="4.5" data-track-index="7">Source: example figures for this preview, not a real company.<br />Fiscal year Jan–Dec 2025, audited figures would go here.</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo("#chap", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.05);
+      tl.fromTo("#head", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.15);
+      // the brand block sweeps across the full width, then settles into the key tile
+      tl.fromTo("#block", { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.45, ease: "power3.inOut" }, 0.45);
+      tl.to("#block", { left: 80, width: 920, duration: 0.45, ease: "power3.inOut" }, 0.95);
+      tl.fromTo("#kpi", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 1.15);
+      tl.set("#per", { opacity: 0 }, 0);
+      const o = { v: 0 }, fv = document.getElementById("fv");
+      tl.to(o, { v: 48.2, duration: 1.2, ease: "power2.out", onUpdate: () => { fv.textContent = o.v.toFixed(1); } }, 1.2);
+      tl.to("#per", { opacity: 1, duration: 0.3 }, 2.5);
+      // secondary tiles: rise 40 px + fade, 0.1 s stagger; figures count 1.2 s
+      tl.fromTo(".tile", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out", stagger: 0.1 }, 1.7);
+      document.querySelectorAll(".tile span").forEach((s) => {
+        const p = { v: 0 };
+        tl.to(p, { v: +s.dataset.v, duration: 1.2, ease: "power2.out", onUpdate: () => { s.textContent = Math.round(p.v); } }, 1.8);
+      });
+      tl.fromTo("#quote", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 2.8);
+      tl.fromTo("#src", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 3.1);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

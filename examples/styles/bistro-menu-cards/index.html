@@ -1,0 +1,134 @@
+<!doctype html>
+<!--
+  motionforge style preview: bistro-menu-cards
+  © 2026 motionforge contributors, MIT
+  Signature scenes "course card" + "under-the-card plate" + "special stamp": the cream card rises 220 px
+  (4 -> 1.5 deg, 0.7 s power3.out, settle to 1.2 deg), names fade up by word, the gilt rule draws, prices
+  come last; a plate glides out from under the card's edge; a bottle-green TODAY stamp lands at -8 deg.
+  Cormorant Garamond + Jost. The plate is drawn in CSS (no photo); dishes and prices are sample content.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      @font-face { font-family: "Cormorant Garamond"; font-weight: 500; font-style: italic; font-display: block; src: url("assets/fonts/cormorant-garamond-latin-500-italic.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Cormorant Garamond"; font-weight: 500; font-style: italic; font-display: block; src: url("assets/fonts/cormorant-garamond-latin-ext-500-italic.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Cormorant Garamond"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/cormorant-garamond-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Cormorant Garamond"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/cormorant-garamond-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Jost"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/jost-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Jost"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/jost-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #e9e2d3; --card: #fbf8f1; --ink: #2a2420; --mut: #7a6e62; --acc: #24533f; --gilt: #b89a5e; --mf-grain-opacity: .04; }
+      html, body { background: var(--bg); }
+      #root { background: radial-gradient(1200px 1000px at 15% 8%, #f4efe4 0%, transparent 65%), var(--bg); }
+      #root::before { mix-blend-mode: multiply; opacity: .09; }
+      #root::after { background: radial-gradient(ellipse at 40% 35%, transparent 60%, rgba(42,36,32,.16) 100%); }
+      #world { position: absolute; inset: 0; transform-origin: 50% 45%; }
+      .jost { font-family: "Jost", system-ui, sans-serif; }
+      #label { position: absolute; left: 0; right: 0; top: 262px; text-align: center; font: 500 32px/1 "Jost", system-ui; letter-spacing: .18em; color: var(--mut); text-transform: uppercase; }
+      #plate { position: absolute; left: 0; top: 0; width: 600px; height: 600px; border-radius: 50%;
+        background: radial-gradient(circle at 42% 38%, #ffffff 0%, #f6f4ef 52%, #e7e2d8 60%, #fbfaf6 66%, #f1eee7 92%, #ddd7cc 100%);
+        box-shadow: 0 26px 40px rgba(42,36,32,.22), 0 4px 8px rgba(42,36,32,.12); }
+      #tart { position: absolute; left: 130px; top: 130px; width: 340px; height: 340px; border-radius: 50%;
+        background: radial-gradient(circle at 45% 40%, #f0d9a0 0%, #e2b866 55%, #c88e3e 82%, #a86f2a 100%);
+        box-shadow: inset 0 0 0 16px rgba(176,118,48,.75), inset 0 0 22px 22px rgba(120,70,20,.35), 0 8px 14px rgba(80,50,20,.3); }
+      #tart i { position: absolute; border-radius: 50%; }
+      #card { position: absolute; left: 100px; top: 360px; width: 880px; height: 980px; background: var(--card); border-radius: 6px; box-shadow: 0 18px 30px rgba(42,36,32,.18); }
+      #card::before { content: ""; position: absolute; inset: 24px; border: 1.5px solid var(--gilt); }
+      #cardin { position: absolute; inset: 70px 80px; text-align: center; color: var(--ink); }
+      #course { font: 500 30px/1 "Jost", system-ui; letter-spacing: .18em; color: var(--mut); }
+      #title { margin-top: 26px; font: 600 98px/1 "Cormorant Garamond", Georgia; color: var(--ink); }
+      #title span { display: inline-block; }
+      #rule { margin: 36px auto 0; width: 360px; height: 20px; position: relative; }
+      #rule svg { width: 360px; height: 20px; overflow: visible; }
+      .dish { margin-top: 50px; text-align: left; }
+      .dish .row { display: flex; justify-content: space-between; align-items: baseline; }
+      .dish .nm { font: 600 58px/1.05 "Cormorant Garamond", Georgia; }
+      .dish .nm span { display: inline-block; }
+      .dish .pr { font: 600 62px/1 "Cormorant Garamond", Georgia; font-variant-numeric: oldstyle-nums; }
+      .dish .ds { margin-top: 8px; font: italic 500 42px/1.2 "Cormorant Garamond", Georgia; color: var(--mut); }
+      #stamp { position: absolute; left: 700px; top: 290px; width: 280px; height: 170px; border-radius: 50%; border: 6px solid var(--acc); color: var(--acc); display: flex; flex-direction: column; align-items: center; justify-content: center; mix-blend-mode: multiply;
+        -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='200'><filter id='m'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' seed='3'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.4 2.15'/></filter><rect width='100%' height='100%' filter='url(%23m)'/></svg>"); -webkit-mask-size: 300px 200px; }
+      #stamp::before { content: ""; position: absolute; inset: 8px; border-radius: 50%; border: 2px solid var(--acc); }
+      #stamp b { font: 500 46px/1 "Jost", system-ui; letter-spacing: .18em; margin-left: .18em; }
+      #stamp em { margin-top: 6px; font: italic 500 32px/1 "Cormorant Garamond", Georgia; }
+      #foot { position: absolute; left: 100px; top: 1760px; font: 500 26px/1 "Jost", system-ui; letter-spacing: .18em; color: var(--mut); text-transform: uppercase; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="world" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <div id="label">Today’s menu</div>
+        <div id="plate"><div id="tart"></div></div>
+        <div id="card">
+          <div id="cardin">
+            <div id="course">STARTERS</div>
+            <div id="title"><span>Bistro</span> <span>Menu</span> <span>Cards</span></div>
+            <div id="rule"><svg viewBox="0 0 360 20"><path id="rl" d="M0 10 H160 M200 10 H360" stroke="#b89a5e" stroke-width="1.5" fill="none" /><path id="dm" d="M180 2 L188 10 L180 18 L172 10 Z" fill="none" stroke="#b89a5e" stroke-width="1.5" /></svg></div>
+            <div class="dish"><div class="row"><div class="nm"><span>Leek</span> <span>&amp;</span> <span>Gruyère</span> <span>Tart</span></div><div class="pr">14</div></div><div class="ds">crème fraîche, chive oil</div></div>
+            <div class="dish"><div class="row"><div class="nm"><span>Roasted</span> <span>Beetroot</span></div><div class="pr">12</div></div><div class="ds">goat’s curd, walnut, thyme honey</div></div>
+            <div class="dish"><div class="row"><div class="nm"><span>Onion</span> <span>Soup</span></div><div class="pr">11</div></div><div class="ds">slow-cooked, toasted country bread</div></div>
+          </div>
+        </div>
+        <div id="stamp"><b>TODAY</b><em>chef’s special</em></div>
+        <div id="foot">Sample menu · prices in €</div>
+      </div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this)
+      // tart topping: seeded leek rings and herb flecks
+      const r = MF.rng("tart");
+      const tart = document.getElementById("tart");
+      for (let i = 0; i < 9; i++) {
+        const a = r() * Math.PI * 2, d = r.range(20, 110), s = r.range(34, 52);
+        const e = document.createElement("i");
+        Object.assign(e.style, { left: (170 + Math.cos(a) * d - s / 2) + "px", top: (170 + Math.sin(a) * d - s / 2) + "px", width: s + "px", height: s + "px", border: "5px solid #9db86c", background: "rgba(236,236,196,.4)" });
+        tart.appendChild(e);
+      }
+      for (let i = 0; i < 26; i++) {
+        const a = r() * Math.PI * 2, d = r.range(10, 130), s = r.range(5, 9);
+        const e = document.createElement("i");
+        Object.assign(e.style, { left: (170 + Math.cos(a) * d) + "px", top: (170 + Math.sin(a) * d) + "px", width: s + "px", height: s + "px", background: "#3f6b2e" });
+        tart.appendChild(e);
+      }
+      const rl = document.getElementById("rl"), dm = document.getElementById("dm");
+      [rl, dm].forEach((p) => { const L = p.getTotalLength(); p.style.strokeDasharray = L; p.style.strokeDashoffset = L; p.dataset.L = L; });
+
+      // slow 3 % push over the whole shot
+      tl.fromTo("#world", { scale: 1 }, { scale: 1.03, duration: 2.6, ease: "sine.out" }, 0);   // push settles before the stamp (keeps the GIF small)
+      tl.fromTo("#label", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.05);
+      // card lands: rise 220 px, 4 -> 1.5 deg, then settle to 1.2 deg
+      tl.fromTo("#card", { y: 220, rotation: 4, opacity: 0 }, { y: 0, rotation: 1.5, opacity: 1, duration: 0.7, ease: "power3.out" }, 0.15);
+      tl.to("#card", { rotation: 1.2, duration: 0.15, ease: "sine.inOut" }, 0.85);
+      tl.fromTo("#course", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.6);
+      tl.fromTo("#title span", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out", stagger: 0.12 }, 0.65);
+      tl.to(rl, { strokeDashoffset: 0, duration: 0.5, ease: "power2.inOut" }, 1.0);
+      tl.to(dm, { strokeDashoffset: 0, duration: 0.3, ease: "power2.out" }, 1.2);
+      document.querySelectorAll(".dish").forEach((d, i) => {
+        tl.fromTo(d.querySelectorAll(".nm span"), { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: 0.12 }, 1.25 + i * 0.3);
+        tl.fromTo(d.querySelector(".ds"), { opacity: 0 }, { opacity: 1, duration: 0.35 }, 1.45 + i * 0.3);
+      });
+      tl.fromTo(".pr", { opacity: 0 }, { opacity: 1, duration: 0.3, stagger: 0.1 }, 2.35);
+      // the plate glides out from under the card's lower edge; the card stays on top
+      tl.set("#plate", { opacity: 0 }, 0);
+      tl.set("#plate", { opacity: 1 }, 1.7);
+      tl.fromTo("#plate", { x: 340, y: 700, rotation: -10 }, { x: 470, y: 1220, rotation: 0, duration: 0.8, ease: "power2.out" }, 1.7);
+      // TODAY stamp: 0.2 s power4.in, 4 px shake, ink spreads 1.0 -> 1.02
+      tl.fromTo("#stamp", { opacity: 0, scale: 1.5, rotation: -14 }, { opacity: 0.9, scale: 1, rotation: -8, duration: 0.2, ease: "power4.in" }, 2.8);
+      tl.to("#stamp", { scale: 1.02, duration: 0.3, ease: "power1.out" }, 3.0);
+      const sh = MF.rng("bistro-shake"), shake = gsap.timeline();
+      for (let i = 0; i < 3; i++) shake.to("#card", { x: sh.range(-4, 4), y: sh.range(-4, 4), duration: 0.03, ease: "none" });
+      shake.to("#card", { x: 0, y: 0, duration: 0.03 });
+      tl.add(shake, 3.0);
+      tl.fromTo("#foot", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 3.2);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

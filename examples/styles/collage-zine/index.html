@@ -1,0 +1,147 @@
+<!doctype html>
+<!--
+  motionforge style preview: collage-zine
+  © 2026 motionforge contributors, MIT
+  Signature scene: the ransom headline. Each letter is its own scrap with a seeded face (Yeseva One,
+  Rubik Mono One, Abril Fatface, Anton, Sometype Mono), size, angle and paper; letters arrive per
+  syllable, dropping from 1.15 scale with a ±10° spin to rest in 4 stepped frames, then a 1-frame settle.
+  Scissor-cut halftone scraps (generated in canvas from original drawings, no photos) glue on, typed
+  caption strips follow, and one blue marker circles a scrap and writes a verdict at 900 px/s. Held headline
+  scraps jitter 1–2 px at 12 fps (seeded). The event on the flyer is fictional. Caption face: Instrument Sans.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts: @fontsource/yeseva-one, @fontsource/rubik-mono-one, @fontsource/abril-fatface, @fontsource/anton, @fontsource/sometype-mono, @fontsource/instrument-sans (copied from node_modules/@fontsource/<family>/files/) */
+      @font-face { font-family: "Yeseva One"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/yeseva-one-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Yeseva One"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/yeseva-one-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Rubik Mono One"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/rubik-mono-one-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Rubik Mono One"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/rubik-mono-one-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Abril Fatface"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/abril-fatface-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Abril Fatface"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/abril-fatface-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Anton"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/anton-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Anton"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/anton-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Sometype Mono"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/sometype-mono-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Sometype Mono"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/sometype-mono-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Instrument Sans"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/instrument-sans-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Instrument Sans"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/instrument-sans-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --paper: #E2DFD8; --ink: #101010; --blue: #1E50FF; --scrap: #F2EFE9; --toner: #9C9890; --mf-grain-opacity: 0.12; }
+      html, body { background: var(--paper); }
+      #root { background: linear-gradient(90deg, #2a2927 0, #6d6a64 26px, rgba(156,152,144,.35) 60px, transparent 140px), radial-gradient(900px 1200px at 60% 40%, transparent 50%, rgba(80,76,70,.18) 100%), var(--paper); color: var(--ink); }
+      #root::before { mix-blend-mode: multiply; }
+      #root::after { display: none; }
+      #fog { position: absolute; inset: 0; width: 1080px; height: 1920px; }
+      #fold { position: absolute; left: 0; right: 0; top: 960px; height: 3px; background: linear-gradient(rgba(0,0,0,.12), rgba(255,255,255,.5)); }
+      #all { position: absolute; inset: 0; }
+      .lt { position: absolute; display: flex; align-items: center; justify-content: center; color: var(--ink); line-height: 1; box-shadow: 3px 4px 0 rgba(60,56,50,.35); }
+      .scr { position: absolute; box-shadow: 4px 6px 0 rgba(60,56,50,.35); }
+      .scr canvas { display: block; }
+      .strip { position: absolute; left: 0; background: #fff; padding: 12px 20px; font: 600 46px/1 "Instrument Sans"; color: var(--ink); box-shadow: 3px 4px 0 rgba(60,56,50,.3); white-space: nowrap; }
+      #mk { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; pointer-events: none; }
+      #mk path { fill: none; stroke: var(--blue); stroke-width: 13; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage light" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <svg id="fog" viewBox="0 0 1080 1920"><filter id="tf" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.004 0.012" numOctaves="3" seed="12" />
+        <feColorMatrix values="0 0 0 0 .3  0 0 0 0 .29  0 0 0 0 .27  0 0 0 .5 -.12" /></filter><rect width="1080" height="1920" filter="url(#tf)" /></svg>
+      <div id="fold"></div>
+      <div id="all" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <div id="head"></div>
+        <div id="scraps"></div>
+        <div id="s1" class="strip" style="left: 90px; top: 1420px; transform: rotate(-1.5deg)">Zine night · back room, 9 pm</div>
+        <div id="s2" class="strip" style="left: 250px; top: 1510px; transform: rotate(1deg)">Example flyer, all made up</div>
+        <svg id="mk" viewBox="0 0 1080 1920">
+          <path id="m0" pathLength="1" d="M760 820 C 900 800, 1000 880, 990 990 C 980 1110, 840 1150, 730 1120 C 610 1085, 590 960, 650 880 C 690 830, 760 808, 830 812" />
+          <g transform="matrix(1.25 0 0 1.25 -44 -311)" style="stroke-width: 10px">
+          <path id="m1" pathLength="1" d="M180 1240 L 176 1340 L 232 1336" />
+          <path id="m2" pathLength="1" d="M300 1250 C 258 1252, 252 1338, 296 1340 C 340 1342, 344 1250, 300 1250 Z" />
+          <path id="m3" pathLength="1" d="M372 1246 C 368 1300, 372 1340, 402 1340 C 432 1340, 438 1300, 434 1246" />
+          <path id="m4" pathLength="1" d="M470 1244 L 466 1342 C 540 1346, 548 1250, 470 1244" />
+          </g>
+        </svg>
+      </div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const r = MF.rng("collage-zine");
+      const FACES = [["Yeseva One", 400], ["Rubik Mono One", 400], ["Abril Fatface", 400], ["Anton", 400], ["Sometype Mono", 700]];
+      const PAPERS = ["#F2EFE9", "#FFFFFF", "#F2EFE9", "#D8D4CC", "#E9D9C2", "#101010"];
+      // ransom headline: syllables "COL" "LAGE" / "ZINE"
+      const SYL = [["COL", 0, 0.15], ["LAGE", 0, 0.45], ["ZINE", 1, 0.8]];
+      const head = document.getElementById("head"), letters = [];
+      const lineX = [70, 230], lineY = [250, 450];
+      const cursor = [lineX[0], lineX[1]];
+      SYL.forEach(([syl, line, at], si) => {
+        [...syl].forEach((ch, i) => {
+          const [fam, w] = r.pick(FACES), size = Math.round(line ? r.range(160, 190) : r.range(110, 150)), paper = r.pick(PAPERS), m = Math.round(r.range(6, 14));
+          const d = document.createElement("div"); d.className = "lt"; d.textContent = ch;
+          const wch = fam === "Rubik Mono One" || fam === "Sometype Mono" ? 0.82 : fam === "Anton" ? 0.5 : 0.72;
+          const wd = Math.round(size * wch + 2 * m), ht = Math.round(size * 1.05 + 2 * m);
+          Object.assign(d.style, { left: cursor[line] + "px", top: (lineY[line] + r.range(-14, 14)) + "px", width: wd + "px", height: ht + "px", font: `${w} ${size}px/1 "${fam}"`,
+            background: paper, color: paper === "#101010" ? "#F2EFE9" : "#101010", clipPath: `polygon(${r.range(0, 4)}% ${r.range(0, 5)}%, ${r.range(96, 100)}% 0%, 100% ${r.range(95, 100)}%, ${r.range(0, 5)}% 100%)` });
+          cursor[line] += wd + r.range(-6, 6);
+          head.appendChild(d);
+          letters.push([d, at + i * 0.04, r.range(-8, 8), r.range(-10, 10)]);
+        });
+      });
+      // halftone scraps from simple procedural pictures (darkness 0..1)
+      function halftone(w, h, dark, ink = "#101010", bg = "#F2EFE9", step = 10) {
+        const c = document.createElement("canvas"); c.width = w; c.height = h; const g = c.getContext("2d");
+        g.fillStyle = bg; g.fillRect(0, 0, w, h); g.fillStyle = ink;
+        for (let y = 0, row = 0; y < h + step; y += step * 0.87, row++) for (let x = (row % 2) * step / 2; x < w + step; x += step) {
+          const v = Math.max(0, Math.min(1, dark(x / w, y / h))); if (v < 0.04) continue;
+          g.beginPath(); g.arc(x, y, step * 0.62 * Math.sqrt(v), 0, 7); g.fill();
+        }
+        return c;
+      }
+      const towers = (u, v) => {
+        let d = 0.15 + 0.35 * v;
+        const B = [[0.05, 0.35, 0.3], [0.32, 0.18, 0.25], [0.6, 0.42, 0.22], [0.8, 0.28, 0.2]];
+        B.forEach(([x0, top, w]) => { if (u > x0 && u < x0 + w && v > top) { const win = (Math.floor((u - x0) * 40) % 3 === 1) && (Math.floor((v - top) * 30) % 3 === 1); d = win ? 0.25 : 0.85 - 0.25 * ((u - x0) / w); } });
+        return d;
+      };
+      const sun = (u, v) => { const r0 = Math.hypot(u - 0.5, v - 0.42); if (v > 0.68) return 0.55 + 0.25 * Math.sin(u * 40 + v * 12) * 0.5; return r0 < 0.24 ? 0.05 + r0 * 0.6 : 0.35 + 0.5 * v; };
+      const SC = [
+        { x: 80, y: 690, w: 540, h: 620, rot: -4, at: 1.1, c: halftone(540, 620, towers) },
+        { x: 560, y: 780, w: 440, h: 400, rot: 5, at: 1.3, c: halftone(440, 400, sun, "#101010", "#F2EFE9", 9) },
+        { x: 610, y: 1180, w: 360, h: 190, rot: -7, at: 1.5, c: null },
+      ];
+      const scraps = document.getElementById("scraps");
+      SC.forEach((s, i) => {
+        const d = document.createElement("div"); d.className = "scr"; d.id = "sc" + i;
+        const cut = `polygon(${[[0, 2], [30, 0], [62, 3], [100, 0], [98, 40], [100, 100], [55, 97], [20, 100], [0, 96], [2, 50]].map(([a, b]) => `${a + r.range(-1.5, 1.5)}% ${b + r.range(-1.5, 1.5)}%`).join(",")})`;
+        Object.assign(d.style, { left: s.x + "px", top: s.y + "px", width: s.w + "px", height: s.h + "px", clipPath: cut });
+        if (s.c) d.appendChild(s.c);
+        else { d.style.background = "#D9642E"; d.innerHTML = `<div style="padding:26px 30px;font:400 64px/1 Anton;color:#F2EFE9;letter-spacing:.02em">ADMIT ONE</div><div style="padding:0 30px;font:700 26px/1.2 'Sometype Mono';color:#101010;white-space:nowrap">SAT · 9 PM · NO. 0042</div>`; }
+        scraps.appendChild(d);
+      });
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      // stepped drops: 1.15 -> 1 with a spin, 4 frames, then a 1-frame settle
+      const drop = (el, at, rot, spin) => {
+        tl.fromTo(el, { opacity: 0, scale: 1.15, rotation: rot + spin }, { opacity: 1, scale: 1, rotation: rot + spin * 0.1, duration: 0.133, ease: "steps(4)" }, at);
+        tl.to(el, { rotation: rot, duration: 0.001 }, at + 0.167);
+      };
+      letters.forEach(([d, at, rot, spin]) => drop(d, at, rot, spin));
+      SC.forEach((s, i) => drop("#sc" + i, s.at, s.rot, i % 2 ? -10 : 10));
+      drop("#s1", 1.85, -1.5, 6); drop("#s2", 2.0, 1, -6);
+      // marker: 900 px/s
+      const lens = [880, 200, 350, 290, 325];
+      let at = 1.95;
+      lens.forEach((L, i) => { const d = L / 900; tl.fromTo("#m" + i, { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: d, ease: "none" }, at); at += d + 0.04; });
+      // stop-motion jitter on held frames, 12 fps, seeded
+      const J = { t: 0 }, all = document.getElementById("head");   // jitter the headline scraps only (keeps the halftone still)
+      tl.to(J, { t: DUR, duration: DUR, ease: "none", onUpdate: () => { const jr = MF.rng("j" + Math.floor(J.t * 12)); all.style.transform = `translate(${jr.range(-1.5, 1.5).toFixed(1)}px, ${jr.range(-1.5, 1.5).toFixed(1)}px)`; } }, 0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

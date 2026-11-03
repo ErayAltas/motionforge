@@ -1,0 +1,203 @@
+<!doctype html>
+<!--
+  motionforge style preview: crayon-story
+  © 2026 motionforge contributors, MIT
+  Signature scene: the scribble wipe. Page one draws on (outlines along their path, then hatch fills;
+  sun spirals in, sky hatches across, title letters 0.06 s apart, red read-along underline word to word),
+  then a red crayon zig-zags across the page in 0.5 s (9 passes) and the counting page is underneath:
+  stars draw one by one and Baloo numbers pop with back.out(2) (0.45 s apart here instead of 1 s, to fit
+  the preview). All drawing is canvas: a static seeded paper-tooth mask makes the wax skip, outlines
+  boil on twos (seed = frame step). Original drawings. Baloo 2 + Patrick Hand.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts: @fontsource/baloo-2, @fontsource/patrick-hand (copied from node_modules/@fontsource/<family>/files/) */
+      @font-face { font-family: "Baloo 2"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/baloo-2-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Baloo 2"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/baloo-2-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Patrick Hand"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/patrick-hand-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Patrick Hand"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/patrick-hand-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --paper: #FBF8F1; --ink: #262421; --red: #E63B2E; --blue: #2F5FD0; --yel: #FFC93C; --mf-grain-opacity: 0.0; }
+      html, body { background: var(--paper); }
+      #root { background: var(--paper); color: var(--ink); }
+      #root::after { display: none; }
+      #art { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      .ttl { position: absolute; left: 70px; right: 70px; text-align: left; font: 800 132px/1 "Baloo 2"; color: var(--ink); }
+      .ttl span { display: inline-block; }
+      #t1 { top: 330px; } #t2 { top: 330px; }
+      .ra { position: absolute; left: 90px; right: 90px; top: 1380px; text-align: center; font: 400 64px/1.25 "Patrick Hand"; color: var(--ink); }
+      .ra span { position: relative; display: inline-block; margin: 0 8px; }
+      .ul { position: absolute; top: 1462px; height: 9px; border-radius: 5px; background: var(--red); }
+      #pg { position: absolute; left: 80px; top: 1650px; font: 400 40px/1 "Patrick Hand"; color: #6b655c; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage light" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <canvas id="art" class="clip" width="1080" height="1920" data-start="0" data-duration="4.5" data-track-index="0"></canvas>
+      <div id="t1" class="ttl clip" data-start="0" data-duration="4.5" data-track-index="1">Crayon story</div>
+      <div id="t2" class="ttl clip" data-start="0" data-duration="4.5" data-track-index="2">Count with me</div>
+      <div id="r1" class="ra clip" data-start="0" data-duration="4.5" data-track-index="3"><span>The</span><span>sun</span><span>came</span><span>up</span><span>early.</span></div>
+      <div id="r2" class="ra clip" data-start="0" data-duration="4.5" data-track-index="4"><span>One,</span><span>two,</span><span>three</span><span>stars!</span></div>
+      <div id="u1" class="ul clip" data-start="0" data-duration="4.5" data-track-index="5"></div>
+      <div id="u2" class="ul clip" data-start="0" data-duration="4.5" data-track-index="6"></div>
+      <div id="pg" class="clip" data-start="0" data-duration="4.5" data-track-index="7">page 3</div>
+      <div id="nums" class="clip" data-start="0" data-duration="4.5" data-track-index="8"></div>
+    </div>
+
+    <script>
+      const DUR = 4.5, W = 1080, H = 1920;
+      const cv = document.getElementById("art"), ctx = cv.getContext("2d");
+      const C = { ink: "#262421", red: "#E63B2E", blue: "#2F5FD0", yel: "#FFC93C", grn: "#3FA34D", org: "#F28C28" };
+      // ---- static paper tooth: seeded specks at half resolution, used to knock holes in the wax ----
+      const tooth = document.createElement("canvas"); tooth.width = W / 2; tooth.height = H / 2;
+      (function () {
+        const tc = tooth.getContext("2d"), id = tc.createImageData(W / 2, H / 2), r = MF.rng("tooth");
+        for (let i = 0; i < id.data.length; i += 4) { const v = r(); id.data[i + 3] = v < 0.22 ? 255 : v < 0.34 ? 120 : 0; }
+        tc.putImageData(id, 0, 0);
+      })();
+      // the same tooth textures the hand-set title letters
+      const mask = "url(" + tooth.toDataURL() + ")";
+      document.querySelectorAll(".ttl").forEach((e) => { e.style.webkitMaskImage = "linear-gradient(#000,#000), " + mask; e.style.webkitMaskComposite = "xor"; e.style.webkitMaskSize = "100% 100%, 540px 960px"; e.style.webkitMaskPosition = "0 0, -70px -330px"; });
+
+      // ---- shapes: hand-wobbled polylines (static wobble) + boil on twos ----
+      const R0 = MF.rng("crayon-story");
+      function dens(pts, step = 14, amp = 3) {
+        const out = [];
+        for (let i = 0; i < pts.length - 1; i++) {
+          const [x0, y0] = pts[i], [x1, y1] = pts[i + 1], n = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0) / step));
+          for (let k = 0; k < n; k++) out.push([x0 + (x1 - x0) * k / n + R0.range(-amp, amp), y0 + (y1 - y0) * k / n + R0.range(-amp, amp)]);
+        }
+        out.push(pts[pts.length - 1]); return out;
+      }
+      function circ(cx, cy, r, turns = 1.08, n = 60) { const p = []; for (let i = 0; i <= n * turns; i++) { const a = i / n * Math.PI * 2 - 1.7; p.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]); } return p; }
+      function spiral(cx, cy, r, turns) { const p = []; const n = 70 * turns; for (let i = 0; i <= n; i++) { const a = i / 70 * Math.PI * 2, rr = r * i / n; p.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]); } return p; }
+      function star(cx, cy, r) { const p = []; for (let i = 0; i <= 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? r * 0.45 : r; p.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr]); } return p; }
+      function stroke(pts, color, w, prog, boil) {
+        if (prog <= 0) return;
+        const n = Math.max(2, Math.floor(pts.length * Math.min(1, prog)));
+        const rb = MF.rng("boil" + boil + pts.length + Math.round(pts[0][0]));
+        ctx.strokeStyle = color; ctx.lineCap = "round"; ctx.lineJoin = "round";
+        for (let pass = 0; pass < 2; pass++) {
+          ctx.globalAlpha = pass ? 0.55 : 0.92; ctx.lineWidth = pass ? w * 0.55 : w;
+          ctx.beginPath();
+          for (let i = 0; i < n; i++) { const j = boil >= 0 ? 1.6 : 0; const x = pts[i][0] + rb.range(-j, j) + pass * 2, y = pts[i][1] + rb.range(-j, j) + pass * 1.5; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+          ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+      }
+      // zig-zag hatch inside a clip region, drawn left to right up to prog
+      function hatch(region, box, color, sp, w, prog, ang = 0.5) {
+        if (prog <= 0) return;
+        ctx.save(); ctx.beginPath(); region(); ctx.clip();
+        const [x0, y0, x1, y1] = box, rh = MF.rng("h" + x0 + y0), xe = x0 + (x1 - x0) * Math.min(1, prog);
+        ctx.strokeStyle = color; ctx.lineWidth = w; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.globalAlpha = 0.85;
+        ctx.beginPath(); ctx.moveTo(x0, y1);
+        for (let x = x0, up = true; x < xe; x += sp, up = !up) ctx.lineTo(x + rh.range(-4, 4) + (up ? (y1 - y0) * ang * 0.1 : 0), up ? y0 + rh.range(-10, 10) : y1 + rh.range(-10, 10));
+        ctx.stroke(); ctx.restore(); ctx.globalAlpha = 1;
+      }
+      const polyRegion = (pts) => () => { pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.closePath(); };
+
+      // page one
+      const SUN = spiral(845, 600, 105, 4.2), SUNO = dens(circ(845, 600, 110));
+      const RAYS = [0, 1, 2, 3, 4, 5, 6, 7].map((k) => { const a = k * Math.PI / 4 + 0.2; return dens([[845 + Math.cos(a) * 140, 600 + Math.sin(a) * 140], [845 + Math.cos(a) * 200, 600 + Math.sin(a) * 200]], 10, 2); });
+      const HOUSE = dens([[250, 1000], [250, 1260], [600, 1260], [600, 1000], [250, 1000]]);
+      const ROOFP = [[220, 1005], [425, 820], [630, 1005]], ROOF = dens([...ROOFP, [220, 1005]]);
+      const DOOR = dens([[380, 1260], [380, 1140], [470, 1140], [470, 1260]]);
+      const WIN = dens([[505, 1060], [570, 1060], [570, 1115], [505, 1115], [505, 1060]], 10, 2);
+      const HILL = [[0, 1230], [200, 1205], [420, 1250], [700, 1215], [1080, 1240], [1080, 1330], [0, 1330]];
+      const HILLO = dens(HILL.slice(0, 5));
+      const KID = [dens(circ(790, 1010, 42)), dens([[790, 1052], [740, 1190], [840, 1190], [790, 1052]]), dens([[765, 1190], [760, 1255]], 10, 2), dens([[815, 1190], [820, 1255]], 10, 2), dens([[770, 1100], [715, 1060]], 10, 2), dens([[810, 1100], [865, 1060]], 10, 2)];
+      const DRESS = [[790, 1052], [740, 1190], [840, 1190]];
+      // page two
+      const STARS = [[250, 820, 120], [540, 960, 135], [830, 800, 120]].map(([x, y, r]) => ({ x, y, r, o: dens(star(x, y, r), 12, 2.5), p: star(x, y, r) }));
+      // the scribble: 9 zig-zag passes top to bottom
+      const SCR = []; { const rs = MF.rng("scribble"); for (let i = 0; i <= 9; i++) { const y = 120 + i * 200 + rs.range(-30, 30); SCR.push(i % 2 ? [1180, y] : [-100, y]); } }
+      const SCRD = dens(SCR, 20, 6);
+
+      const pg = document.getElementById("pg");
+      const seg = (t, a, d) => Math.max(0, Math.min(1, (t - a) / d));
+      function draw(t) {
+        pg.textContent = t < 2.75 ? "page 3" : "page 4";
+        const boil = Math.floor(t * 12);   // outlines re-jitter on twos (12 drawings per second)
+        ctx.clearRect(0, 0, W, H);
+        if (t < 2.75) {
+          hatch(() => ctx.rect(0, 225, W, 85), [0, 205, W, 330], C.blue, 26, 12, seg(t, 0.1, 0.45));
+          stroke(SUN, C.yel, 18, seg(t, 0.25, 0.55), -1);
+          stroke(SUNO, C.org, 8, seg(t, 0.6, 0.3), boil);
+          RAYS.forEach((r, i) => stroke(r, C.org, 9, seg(t, 0.8 + i * 0.03, 0.12), boil));
+          hatch(polyRegion(HILL), [0, 1195, W, 1335], C.grn, 24, 11, seg(t, 0.55, 0.45));
+          stroke(HILLO, C.ink, 7, seg(t, 0.5, 0.45), boil);
+          hatch(polyRegion(ROOFP), [215, 815, 640, 1010], C.red, 22, 12, seg(t, 1.25, 0.35));
+          stroke(HOUSE, C.ink, 8, seg(t, 0.75, 0.45), boil);
+          stroke(ROOF, C.ink, 8, seg(t, 1.05, 0.25), boil);
+          stroke(DOOR, C.ink, 7, seg(t, 1.25, 0.2), boil);
+          stroke(WIN, C.blue, 7, seg(t, 1.4, 0.15), boil);
+          hatch(polyRegion(DRESS), [735, 1050, 845, 1195], C.red, 16, 10, seg(t, 1.75, 0.25));
+          KID.forEach((k, i) => stroke(k, C.ink, 7, seg(t, 1.45 + i * 0.06, 0.2), boil));
+        } else {
+          STARS.forEach((s, i) => {
+            const a = 2.95 + i * 0.45;
+            hatch(polyRegion(s.p), [s.x - s.r, s.y - s.r, s.x + s.r, s.y + s.r], C.yel, 18, 12, seg(t, a + 0.2, 0.25));
+            stroke(s.o, C.ink, 8, seg(t, a, 0.25), boil);
+          });
+        }
+        // scribble wipe: draws 2.2 -> 2.7, then lifts off (2.75 -> 2.95) with page two under it
+        if (t >= 2.2 && t < 2.95) {
+          ctx.globalAlpha = t < 2.75 ? 1 : 1 - seg(t, 2.75, 0.2);
+          const n = Math.floor(SCRD.length * seg(t, 2.2, 0.5));
+          if (n > 1) { ctx.strokeStyle = C.red; ctx.lineWidth = 290; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.beginPath(); for (let i = 0; i < n; i++) i ? ctx.lineTo(...SCRD[i]) : ctx.moveTo(...SCRD[i]); ctx.stroke(); }
+          ctx.globalAlpha = 1;
+        }
+        // wax skips over the paper tooth
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.drawImage(tooth, 0, 0, W, H);
+        ctx.globalCompositeOperation = "source-over";
+      }
+
+      // numbers for the counting page
+      const nums = document.getElementById("nums");
+      STARS.forEach((s, i) => {
+        const d = document.createElement("div");
+        d.className = "num"; d.id = "n" + i; d.textContent = i + 1;
+        Object.assign(d.style, { position: "absolute", left: (s.x - 60) + "px", top: (s.y + s.r + 10) + "px", width: "120px", textAlign: "center", font: "800 140px/1 'Baloo 2'", color: "#262421" });
+        nums.appendChild(d);
+      });
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      const P = { t: 0 };
+      tl.fromTo(P, { t: 0 }, { t: DUR, duration: DUR, ease: "none", onUpdate: () => draw(P.t) }, 0);
+      // title letters one by one, 0.06 s each
+      ["#t1", "#t2"].forEach((id) => { const e = document.querySelector(id); e.innerHTML = [...e.textContent].map((c) => `<span>${c === " " ? "&nbsp;" : c}</span>`).join(""); });
+      tl.set(["#t2", "#r2", "#u2", ".num"], { opacity: 0 }, 0);
+      tl.fromTo("#t1 span", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.01, stagger: 0.06 }, 0.35);
+      tl.fromTo("#r1", { opacity: 0 }, { opacity: 1, duration: 0.25 }, 1.05);
+      tl.fromTo("#pg", { opacity: 0 }, { opacity: 1, duration: 0.25 }, 1.05);
+      // read-along underline slides word to word (positions read at draw time, after fonts load)
+      function underline(rid, uid, t0, step) {
+        const words = [...document.querySelectorAll(rid + " span")], u = document.querySelector(uid), o = { k: 0 };
+        tl.fromTo(o, { k: 0 }, { k: words.length - 1, duration: (words.length - 1) * step, ease: "none", onUpdate: () => {
+          const i = Math.min(words.length - 2, Math.floor(o.k)), f = Math.min(1, (o.k - i) / 0.6), e = 1 - Math.pow(1 - f, 3);
+          const a = words[i].getBoundingClientRect(), b = words[i + 1].getBoundingClientRect();
+          u.style.left = (a.left - 4 + (b.left - a.left) * e) + "px"; u.style.width = (a.width + 8 + (b.width - a.width) * e) + "px";
+        } }, t0);
+      }
+      tl.set("#u1", { opacity: 0 }, 0);
+      tl.set("#u1", { opacity: 1 }, 1.2);
+      underline("#r1", "#u1", 1.2, 0.22);
+      tl.set(["#t1", "#r1", "#u1"], { opacity: 0 }, 2.75);
+      tl.set(["#t2"], { opacity: 1 }, 2.75);
+      tl.fromTo("#t2 span", { opacity: 0 }, { opacity: 1, duration: 0.01, stagger: 0.04 }, 2.78);
+      tl.set(["#r2", "#u2"], { opacity: 1 }, 2.9);
+      underline("#r2", "#u2", 2.95, 0.45);
+      STARS.forEach((s, i) => tl.fromTo("#n" + i, { opacity: 0, scale: 0.3 }, { opacity: 1, scale: 1, duration: 0.35, ease: "back.out(2)" }, 3.15 + i * 0.45));
+      tl.seek(0);
+    </script>
+  </body>
+</html>

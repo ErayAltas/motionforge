@@ -1,0 +1,143 @@
+<!doctype html>
+<!--
+  motionforge style preview: passport-stamps
+  © 2026 motionforge contributors, MIT
+  Signature scenes "stamp drop" + "flight hop": on a cream security-paper page with wavy guilloche lines,
+  rubber stamps fall from scale 1.6 in 0.12 s (power4.in), the page jolts 4 px (elastic.out(1, 0.5)),
+  ink fills 0.1 s later with seeded coverage holes and a doubled edge; older stamps turn green at 70 %;
+  a dashed navy arc draws in 0.9 s (power1.inOut) with a plane riding its tangent to the next stamp.
+  Saira Stencil One + Courier Prime + IBM Plex Mono. All places are fictional; no emblems or numbers.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      @font-face { font-family: "Saira Stencil One"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/saira-stencil-one-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Saira Stencil One"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/saira-stencil-one-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Courier Prime"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/courier-prime-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Courier Prime"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/courier-prime-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "IBM Plex Mono"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "IBM Plex Mono"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/ibm-plex-mono-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #22362f; --page: #ebe1c9; --ink: #1d2b45; --acc: #cf3f2a; --sup: #4e7a63; --gui: #c9bc9a; --mf-grain-opacity: .07; }
+      html, body { background: var(--bg); }
+      #root { background: radial-gradient(1000px 1200px at 50% 40%, #2c443b 0%, transparent 70%), var(--bg); }
+      #book { position: absolute; left: 30px; top: 150px; width: 1040px; height: 1720px; transform: rotate(-2deg); transform-origin: 75% 72%; }
+      #pageL { position: absolute; left: -900px; top: 0; width: 960px; height: 1720px; background: #e3d8bd; border-radius: 6px; }
+      #page { position: absolute; left: 60px; top: 0; width: 1000px; height: 1720px; background: var(--page); border-radius: 6px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,.45); }
+      #gutter { position: absolute; left: 0; top: 0; bottom: 0; width: 70px; background: linear-gradient(90deg, rgba(60,45,20,.28), rgba(60,45,20,0)); }
+      #gui { position: absolute; inset: 0; }
+      #rose { position: absolute; left: 260px; top: 560px; width: 520px; height: 520px; opacity: .1; }
+      #lab { position: absolute; left: 110px; top: 110px; font: 500 28px/1 "IBM Plex Mono", monospace; letter-spacing: .2em; color: var(--ink); text-transform: uppercase; }
+      #pno { position: absolute; right: 60px; top: 110px; font: 500 28px/1 "IBM Plex Mono", monospace; letter-spacing: .2em; color: #a8996f; }
+      .stamp { position: absolute; color: var(--acc); mix-blend-mode: multiply; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border: 7px solid currentColor;
+        -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='360' height='360'><filter id='m'><feTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='3' seed='9'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -3.2 2.55'/></filter><rect width='100%' height='100%' filter='url(%23m)'/></svg>"); -webkit-mask-size: 360px 360px; }
+      .stamp::before { content: ""; position: absolute; inset: 9px; border: 2.5px solid currentColor; border-radius: inherit; }
+      .stamp .nm { font: 400 52px/1 "Saira Stencil One", system-ui; letter-spacing: .04em; text-shadow: 2px 1px 0 currentColor; }
+      .stamp .sm { font: 500 22px/1.3 "IBM Plex Mono", monospace; letter-spacing: .2em; }
+      .circ { border-radius: 50%; }
+      .oval { border-radius: 50%; }
+      .rect { border-radius: 14px; }
+      #hop { position: absolute; left: 0; top: 0; width: 1000px; height: 1720px; overflow: visible; }
+      #slip { position: absolute; left: 110px; top: 1660px; padding: 22px 34px; background: #f6f0e0; box-shadow: 0 8px 18px rgba(0,0,0,.18); transform: rotate(1.5deg); font: 700 68px/1.2 "Courier Prime", monospace; color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="book" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <div id="pageL"></div>
+        <div id="page">
+          <svg id="gui" viewBox="0 0 1000 1720"></svg>
+          <svg id="rose" viewBox="-100 -100 200 200"><g fill="none" stroke="#1d2b45" stroke-width="1.5"><circle r="92" /><circle r="70" /><path d="M0 -96 L12 -12 L96 0 L12 12 L0 96 L-12 12 L-96 0 L-12 -12 Z" /><path d="M0 -60 L0 60 M-60 0 L60 0" /></g></svg>
+          <div id="gutter"></div>
+          <div id="lab">Entries · Mar 2026</div>
+          <div id="pno">07</div>
+          <svg id="hop" viewBox="0 0 1000 1720"><path id="arc" fill="none" stroke="#1d2b45" stroke-width="4" stroke-linecap="round" /><path id="plane" fill="#1d2b45" d="M22 0 L4 -3 L-6 -16 L-11 -16 L-5 -3 L-15 -2 L-19 -8 L-23 -8 L-20 0 L-23 8 L-19 8 L-15 2 L-5 3 L-11 16 L-6 16 L4 3 Z" /></svg>
+          <div id="stamps"></div>
+        </div>
+      </div>
+      <div id="slip" class="clip" data-start="0" data-duration="4.5" data-track-index="1">Passport stamps</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this)
+      // guilloche: fine wavy security lines (no grid)
+      const gui = document.getElementById("gui");
+      let gp = "";
+      for (let k = 0; k < 46; k++) {
+        const y0 = 40 + k * 37;
+        let d = `M0 ${y0}`;
+        for (let x = 0; x <= 1000; x += 20) d += ` L${x} ${(y0 + 9 * Math.sin(x / 60 + k * 0.55) + 5 * Math.sin(x / 23 + k)).toFixed(1)}`;
+        gp += `<path d="${d}" />`;
+      }
+      gui.innerHTML = `<g fill="none" stroke="#c9bc9a" stroke-width="0.9" opacity=".55">${gp}</g>`;
+
+      // stamps: fictional places, shapes by seed
+      const S = [
+        { nm: "VALDORIA", top: "ENTRY", sm: "02 MAR 2026", cls: "circ", x: 130, y: 260, w: 340, h: 340, rot: -9 },
+        { nm: "ISTRENA", top: "ARRIVAL · DAY 6", sm: "08 MAR 2026", cls: "rect", x: 540, y: 420, w: 400, h: 250, rot: 7 },
+        { nm: "KORVALE", top: "ENTRY", sm: "14 MAR 2026", cls: "oval", x: 120, y: 820, w: 400, h: 270, rot: -6 },
+        { nm: "MERANTE", top: "ENTRY · DAY 19", sm: "21 MAR 2026", cls: "circ", x: 560, y: 1050, w: 360, h: 360, rot: 11 },
+      ];
+      const box = document.getElementById("stamps");
+      const els = S.map((s) => {
+        const e = document.createElement("div");
+        e.className = "stamp " + s.cls;
+        Object.assign(e.style, { left: s.x + "px", top: s.y + "px", width: s.w + "px", height: s.h + "px" });
+        e.innerHTML = `<div class="sm">${s.top}</div><div class="nm">${s.nm}</div><div class="sm">${s.sm}</div>`;
+        box.appendChild(e);
+        return e;
+      });
+      // seeded mask offsets so every stamp has its own coverage holes
+      const rr = MF.rng("ink");
+      els.forEach((e) => { e.style.webkitMaskPosition = `${Math.round(rr.range(0, 360))}px ${Math.round(rr.range(0, 360))}px`; });
+
+      tl.fromTo("#book", { y: 60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "power3.out" }, 0);
+      tl.fromTo("#slip", { y: 40, opacity: 0, rotation: 6 }, { y: 0, opacity: 1, rotation: 1.5, duration: 0.4, ease: "power3.out" }, 0.3);
+      const drop = (i, t) => {
+        const e = els[i], s = S[i];
+        tl.fromTo(e, { scale: 1.6, rotation: s.rot - 6, opacity: 0 }, { scale: 1, rotation: s.rot, opacity: 0.75, duration: 0.12, ease: "power4.in" }, t);
+        tl.to(e, { opacity: 1, duration: 0.1 }, t + 0.12);                        // ink reaches full density
+        tl.fromTo("#book", { y: 4 }, { y: 0, duration: 0.25, ease: "elastic.out(1, 0.5)", immediateRender: false }, t + 0.12);
+        // the previous stamp fades to visa green at 70 %
+        if (i > 0) tl.to(els[i - 1], { color: "#4e7a63", opacity: 0.7, duration: 0.3 }, t + 0.12);
+      };
+      drop(0, 0.55); drop(1, 1.15); drop(2, 1.75);
+      // flight hop from the third stamp to the next stamp's spot
+      const arc = document.getElementById("arc"), plane = document.getElementById("plane");
+      const A = [320, 1080], B = [740, 1180];
+      arc.setAttribute("d", "M525 935 C610 830 760 880 742 1040");
+      const AL = arc.getTotalLength();
+      const hop = { k: 0 };
+      const drawHop = () => {
+        const l = AL * hop.k;
+        // 14/10 px dashes, revealed up to the head
+        arc.setAttribute("stroke-dasharray", dashTo(l));
+        const p = arc.getPointAtLength(Math.max(0.1, l)), q = arc.getPointAtLength(Math.max(0, l - 2));
+        const ang = Math.atan2(p.y - q.y, p.x - q.x) * 180 / Math.PI;
+        plane.setAttribute("transform", `translate(${p.x} ${p.y}) rotate(${ang}) scale(1.4)`);
+        plane.style.opacity = hop.k > 0.01 && hop.k < 0.995 ? 1 : 0;
+        arc.style.opacity = hop.k > 0.01 ? 1 : 0;
+      };
+      function dashTo(l) {
+        const out = []; let s = 0;
+        while (s + 24 <= l) { out.push(14, 10); s += 24; }
+        const rest = l - s; out.push(Math.min(14, rest), 10 + Math.max(0, 14 - rest)); out.push(0, AL + 100);
+        return out.join(" ");
+      }
+      drawHop();
+      tl.to(hop, { k: 1, duration: 0.9, ease: "power1.inOut", onUpdate: drawHop }, 2.25);
+      drop(3, 3.2);
+      // slow 3 % push into the newest stamp
+      tl.to("#book", { scale: 1.03, duration: 1.0, ease: "power1.out" }, 3.4);
+      tl.seek(0);
+      drawHop();
+    </script>
+  </body>
+</html>

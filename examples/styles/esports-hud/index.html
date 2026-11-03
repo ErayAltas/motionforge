@@ -1,0 +1,161 @@
+<!doctype html>
+<!--
+  motionforge style preview: esports-hud
+  © 2026 motionforge contributors, MIT
+  Signature scene: play of the round, as a full-graphic frame (no gameplay in a preview). Score bug panels
+  slide in (0.3 s), kill-feed rows slide from the right (0.2 s) and push older rows down, the decisive row
+  turns gold; then a 2-frame flash, a chevron wipe, the player card slams in on a 45° mask (0.25 s
+  power4.out, seeded 3 % shake) and the gold strip cuts across. Teams, players and stats are fictional.
+  Saira Condensed + Chakra Petch.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts: @fontsource/saira-condensed, @fontsource/chakra-petch (copied from node_modules/@fontsource/<family>/files/) */
+      @font-face { font-family: "Saira Condensed"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/saira-condensed-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Saira Condensed"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/saira-condensed-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Saira Condensed"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/saira-condensed-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Saira Condensed"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/saira-condensed-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Chakra Petch"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/chakra-petch-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Chakra Petch"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/chakra-petch-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #0B0E14; --panel: rgba(20,26,36,.88); --edge: #283246; --ink: #F4F6FA; --a: #FF3D5A; --b: #2BC0FF; --gold: #FFCC33; --mut: #7C8798; --mf-grain-opacity: 0.05; }
+      html, body { background: var(--bg); }
+      #root { background: radial-gradient(500px 1200px at 0% 50%, rgba(255,61,90,.08), transparent 70%), radial-gradient(500px 1200px at 100% 50%, rgba(43,192,255,.08), transparent 70%), var(--bg); color: var(--ink); font-family: "Chakra Petch", sans-serif; }
+      .lab { font: 600 28px/1 "Chakra Petch"; letter-spacing: .1em; text-transform: uppercase; color: var(--mut); }
+      .sc { font-family: "Saira Condensed"; text-transform: uppercase; }
+      #bug { position: absolute; left: 120px; width: 840px; top: 240px; height: 96px; }
+      .tp { position: absolute; top: 0; height: 96px; width: 340px; background: var(--panel); border: 2px solid var(--edge); display: flex; align-items: center; padding: 0 26px; gap: 16px; }
+      #ta { left: 0; clip-path: polygon(0 0, 100% 0, 100% 100%, 22px 100%, 0 74px); border-left: 8px solid var(--a); }
+      #tb { right: 0; justify-content: flex-end; clip-path: polygon(0 0, 100% 0, 100% 74px, calc(100% - 22px) 100%, 0 100%); border-right: 8px solid var(--b); }
+      .tn { font: 700 56px/1 "Saira Condensed"; letter-spacing: .02em; }
+      .sv { font: 800 84px/96px "Saira Condensed"; font-variant-numeric: tabular-nums; height: 96px; overflow: hidden; width: 70px; text-align: center; }
+      .sv div { height: 96px; }
+      #ta .sv { margin-left: auto; color: var(--a); } #tb .sv { margin-right: auto; color: var(--b); }
+      #clock { position: absolute; left: 340px; width: 160px; top: 8px; height: 80px; text-align: center; font: 800 60px/80px "Saira Condensed"; color: var(--gold); font-variant-numeric: tabular-nums; }
+      #rnd { position: absolute; left: 0; right: 0; top: 350px; text-align: center; }
+      #feed { position: absolute; left: 560px; width: 400px; top: 400px; height: 260px; }
+      .kf { position: absolute; right: 0; height: 52px; width: 400px; background: var(--panel); border: 2px solid var(--edge); display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 0 18px; font: 600 28px/1 "Chakra Petch"; letter-spacing: .06em; }
+      .kf .x { width: 28px; height: 10px; background: var(--mut); clip-path: polygon(0 30%, 70% 30%, 70% 0, 100% 50%, 70% 100%, 70% 70%, 0 70%); }
+      .kf.g { background: var(--gold); color: #14100A; border-color: var(--gold); }
+      .kf.g .x { background: #14100A; }
+      .A { color: var(--a); } .B { color: var(--b); } .kf.g .A, .kf.g .B { color: #14100A; }
+      #wipe { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; pointer-events: none; }
+      #card { position: absolute; left: 70px; width: 940px; top: 720px; height: 470px; }
+      #cardIn { position: absolute; inset: 0; background: linear-gradient(110deg, rgba(255,61,90,.22), rgba(20,26,36,.95) 45%); border: 2px solid var(--edge);
+                clip-path: polygon(0 0, calc(100% - 60px) 0, 100% 60px, 100% 100%, 60px 100%, 0 calc(100% - 60px)); }
+      #cam { position: absolute; left: 40px; top: 40px; width: 330px; height: 390px; background: #121824; clip-path: polygon(0 0, 100% 0, 100% 86%, 86% 100%, 0 100%); overflow: hidden; }
+      #cam svg { position: absolute; left: 0; top: 0; width: 330px; height: 390px; }
+      #pn { position: absolute; left: 410px; top: 46px; font: 800 140px/1 "Saira Condensed"; letter-spacing: .02em; transform: skewX(-8deg); }
+      #pr { position: absolute; left: 414px; top: 196px; }
+      #stats { position: absolute; left: 410px; top: 268px; display: flex; gap: 46px; }
+      .st b { display: block; font: 800 96px/1 "Saira Condensed"; font-variant-numeric: tabular-nums; }
+      .st b.gold { color: var(--gold); }
+      #strip { position: absolute; left: -60px; width: 1200px; top: 1250px; height: 120px; background: var(--gold); color: #14100A; transform: rotate(-4deg);
+               display: flex; align-items: center; justify-content: center; font: 800 92px/1 "Saira Condensed"; letter-spacing: .04em; }
+      #strip span { display: inline-block; transform: skewX(-8deg); }
+      #xh { position: absolute; left: 390px; top: 760px; width: 300px; height: 300px; }
+      #xh line { stroke: #F4F6FA; stroke-width: 6; stroke-linecap: round; }
+      #xhl { position: absolute; left: 0; right: 0; top: 1090px; text-align: center; }
+      #flash { position: absolute; inset: 0; background: rgba(244,246,250,.85); }
+      #foot { position: absolute; left: 0; right: 0; top: 1460px; text-align: center; }
+      #title { position: absolute; left: 0; right: 0; top: 1520px; text-align: center; font: 800 120px/1 "Saira Condensed"; text-transform: uppercase; letter-spacing: .02em; }
+      #title span { display: inline-block; transform: skewX(-8deg); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="bug" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <div id="ta" class="tp"><span class="tn">Kite</span><div class="sv"><div id="sa"><div>11</div><div>12</div></div></div></div>
+        <div id="clock">0:07</div>
+        <div id="tb" class="tp"><div class="sv"><div>10</div></div><span class="tn">Orca</span></div>
+      </div>
+      <div id="rnd" class="lab clip" data-start="0" data-duration="4.5" data-track-index="1">Round 23 · example match</div>
+      <div id="feed" class="clip" data-start="0" data-duration="4.5" data-track-index="2"></div>
+      <svg id="xh" class="clip" viewBox="0 0 300 300" data-start="0" data-duration="4.5" data-track-index="9"><circle cx="150" cy="150" r="5" fill="#F4F6FA" />
+        <line x1="150" y1="60" x2="150" y2="118" /><line x1="150" y1="182" x2="150" y2="240" /><line x1="60" y1="150" x2="118" y2="150" /><line x1="182" y1="150" x2="240" y2="150" />
+        <circle cx="150" cy="150" r="96" fill="none" stroke="#FFCC33" stroke-width="4" id="xr" opacity="0" /></svg>
+      <div id="xhl" class="lab clip" data-start="0" data-duration="4.5" data-track-index="10">Gameplay layer · freeze at the kill</div>
+      <svg id="wipe" class="clip" viewBox="0 0 1080 1920" data-start="0" data-duration="4.5" data-track-index="3">
+        <g id="chev">
+          <polygon points="-900,0 -500,0 -100,960 -500,1920 -900,1920 -500,960" fill="#FF3D5A" />
+          <polygon points="-560,0 -380,0 20,960 -380,1920 -560,1920 -160,960" fill="#F4F6FA" />
+          <polygon points="-1300,0 -950,0 -550,960 -950,1920 -1300,1920 -900,960" fill="#141A24" />
+        </g>
+      </svg>
+      <div id="card" class="clip" data-start="0" data-duration="4.5" data-track-index="4">
+        <div id="cardIn">
+          <div id="cam"><svg viewBox="0 0 330 390"><defs><linearGradient id="rim" x1="0" x2="1"><stop offset="0" stop-color="#FF3D5A" stop-opacity=".9" /><stop offset=".5" stop-color="#1b2332" /></linearGradient></defs>
+            <circle cx="165" cy="150" r="78" fill="url(#rim)" /><path d="M30 390c10-110 60-150 135-150s125 40 135 150z" fill="url(#rim)" />
+            <path d="M0 330h330" stroke="#283246" stroke-width="2" /></svg></div>
+          <div id="pn" class="sc">Nova</div>
+          <div id="pr" class="lab">Entry · Team Kite</div>
+          <div id="stats">
+            <div class="st"><b class="gold" data-v="4">0</b><span class="lab">Kills</span></div>
+            <div class="st"><b>1v2</b><span class="lab">Clutch</span></div>
+            <div class="st"><b data-v="212">0</b><span class="lab">ADR</span></div>
+          </div>
+        </div>
+      </div>
+      <div id="strip" class="clip" data-start="0" data-duration="4.5" data-track-index="5"><span>Play of the round</span></div>
+      <div id="foot" class="lab clip" data-start="0" data-duration="4.5" data-track-index="6">Fictional teams and players</div>
+      <div id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="7"><span>Esports HUD</span></div>
+      <div id="flash" class="clip" data-start="0" data-duration="4.5" data-track-index="8"></div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const FEED = [["Rix", "B", "Tam", "A", 0], ["Nova", "A", "Jun", "B", 0], ["Nova", "A", "Pell", "B", 0], ["Nova", "A", "Sora", "B", 1]];
+      const feed = document.getElementById("feed");
+      const rows = FEED.map(([k, kt, v, vt, g]) => {
+        const d = document.createElement("div");
+        d.className = "kf" + (g ? " g" : "");
+        d.innerHTML = `<span class="${kt}">${k.toUpperCase()}</span><i class="x"></i><span class="${vt}">${v.toUpperCase()}</span>`;
+        feed.appendChild(d); return d;
+      });
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.set("#flash", { opacity: 0 }, 0);
+      // score bug: panels slide in from the sides
+      tl.fromTo("#ta", { x: -420 }, { x: 0, duration: 0.3, ease: "power4.out" }, 0.05);
+      tl.fromTo("#tb", { x: 420 }, { x: 0, duration: 0.3, ease: "power4.out" }, 0.05);
+      tl.fromTo("#clock", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.25, ease: "power4.out" }, 0.25);
+      tl.fromTo("#rnd", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.3);
+      const ck = { v: 7 }, clock = document.getElementById("clock");
+      tl.to(ck, { v: 3, duration: 4, ease: "none", onUpdate: () => { clock.textContent = "0:0" + Math.ceil(ck.v); } }, 0.4);
+      // kill feed: newest on top, older rows pushed down 60 px
+      rows.forEach((row, i) => {
+        const at = 0.5 + i * 0.32;
+        tl.fromTo(row, { x: 640, y: 0, opacity: 1 }, { x: 0, duration: 0.2, ease: "power4.out" }, at);
+        for (let j = 0; j < i; j++) tl.to(rows[j], { y: 60 * (i - j), duration: 0.2, ease: "power4.out" }, at);
+      });
+      tl.fromTo(["#xh", "#xhl"], { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.4);
+      tl.to("#xh", { scale: 1.3, duration: 0.12, ease: "power2.out" }, 1.5);
+      tl.to("#xr", { opacity: 1, duration: 0.05 }, 1.5);
+      tl.to(["#xh", "#xhl"], { opacity: 0, duration: 0.1 }, 1.95);
+      // freeze: 2-frame flash, chevron wipe, card slams in on a diagonal mask, seeded shake
+      tl.to("#flash", { opacity: 1, duration: 0.01 }, 1.85);
+      tl.to("#flash", { opacity: 0, duration: 0.01 }, 1.92);
+      tl.fromTo("#chev", { x: -200 }, { x: 2600, duration: 0.42, ease: "none" }, 1.9);
+      tl.fromTo("#card", { clipPath: "polygon(0 0, 0 0, -50% 100%, -50% 100%)", x: -120 }, { clipPath: "polygon(0 0, 150% 0, 100% 100%, -50% 100%)", x: 0, duration: 0.25, ease: "power4.out" }, 2.1);
+      const r = MF.rng("esports-hud");
+      for (let i = 0; i < 6; i++) tl.to(["#card", "#bug", "#feed"], { x: r.range(-14, 14), y: r.range(-10, 10), duration: 0.033, ease: "none" }, 2.33 + i * 0.033);
+      tl.to(["#card", "#bug", "#feed"], { x: 0, y: 0, duration: 0.05 }, 2.53);
+      document.querySelectorAll(".st b[data-v]").forEach((b) => {
+        const o = { v: 0 };
+        tl.to(o, { v: +b.dataset.v, duration: 0.6, ease: "power2.out", onUpdate: () => { b.textContent = Math.round(o.v); } }, 2.4);
+      });
+      tl.fromTo("#strip", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.25, ease: "power4.out" }, 2.55);
+      // the round is won: score digit rolls 11 -> 12
+      tl.to("#sa", { y: -96, duration: 0.3, ease: "power3.inOut" }, 3.1);
+      tl.fromTo("#title", { clipPath: "polygon(0 0, 0 0, 0 100%, 0 100%)" }, { clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)", duration: 0.25, ease: "power4.out" }, 2.85);
+      tl.fromTo("#foot", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 3.0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

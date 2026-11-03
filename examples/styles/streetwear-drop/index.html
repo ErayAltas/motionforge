@@ -1,0 +1,132 @@
+<!doctype html>
+<!--
+  motionforge style preview: streetwear-drop
+  © 2026 motionforge contributors, MIT
+  Signature scene: the sticker slap. Pasted type unrolls top to bottom (0.3 s power2.out) on a concrete
+  wall, the garment lands, a cobalt SKU sticker slaps on at 8° from scale 1.4 -> 1 in 3 frames with a
+  squash (scaleY 0.9 -> 1), a 4 px wall shake and a peeling corner; size chips pop with back.out(2)
+  (0.2 s, 50 ms stagger) and the drop clock ticks in Martian Mono. 2D only here: the garment is an
+  original flat illustration (the style's 3D turntable is for a user's own product model); the concrete
+  is a static SVG noise texture, not a photo. Brand, product, sizes and date are fictional.
+  Bebas Neue + Schibsted Grotesk + Martian Mono.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts: @fontsource/bebas-neue, @fontsource/schibsted-grotesk, @fontsource/martian-mono (copied from node_modules/@fontsource/<family>/files/) */
+      @font-face { font-family: "Bebas Neue"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/bebas-neue-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Bebas Neue"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/bebas-neue-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Schibsted Grotesk"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/schibsted-grotesk-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Schibsted Grotesk"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/schibsted-grotesk-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Martian Mono"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/martian-mono-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Martian Mono"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/martian-mono-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Martian Mono"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/martian-mono-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Martian Mono"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/martian-mono-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --wall: #8F8D89; --ink: #0D0D0D; --acc: #2340FF; --paper: #FFFFFF; --shade: #3A3936; --mf-grain-opacity: 0.06; }
+      html, body { background: var(--wall); }
+      #root { background: linear-gradient(135deg, rgba(255,255,255,.28) 0%, transparent 38%), var(--wall); color: var(--ink); }
+      #root::before { mix-blend-mode: multiply; }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,.28) 100%); }
+      #wallsvg { position: absolute; inset: 0; width: 1080px; height: 1920px; }
+      #wrap { position: absolute; inset: 0; }
+      .paste { position: absolute; left: 50px; background: var(--paper); padding: 18px 26px 0; font: 400 300px/0.84 "Bebas Neue"; letter-spacing: .01em; white-space: nowrap;
+               box-shadow: 2px 3px 0 rgba(0,0,0,.18); }
+      .paste::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, rgba(0,0,0,.05), transparent 30%, rgba(0,0,0,.06) 70%, transparent); }
+      #p1 { top: 220px; transform: rotate(-1.2deg); }
+      #p2 { top: 500px; left: 110px; font-size: 246px; transform: rotate(0.8deg); }
+      #tag { position: absolute; left: 60px; top: 170px; font: 600 28px/1 "Martian Mono"; letter-spacing: .1em; text-transform: uppercase; color: #1d1d1b; }
+      #prod { position: absolute; left: 90px; top: 790px; width: 900px; height: 600px; }
+      #stk { position: absolute; left: 560px; top: 930px; width: 400px; height: 150px; white-space: nowrap; background: var(--acc); color: #fff; border: 6px solid #fff; border-radius: 14px;
+             display: flex; flex-direction: column; justify-content: center; padding: 0 22px; box-shadow: 0 6px 14px rgba(0,0,0,.35); }
+      #stk b { font: 400 66px/0.9 "Bebas Neue"; letter-spacing: .02em; }
+      #stk span { font: 600 21px/1.2 "Martian Mono"; letter-spacing: .1em; }
+      #peel { position: absolute; right: -6px; bottom: -6px; width: 0; height: 0; border-style: solid; border-width: 0 0 34px 34px; border-color: transparent transparent #7d8199 #ffffff; border-radius: 0 0 12px 0; }
+      #sizes { position: absolute; left: 60px; right: 60px; top: 1410px; display: flex; gap: 14px; }
+      .sz { flex: 1; height: 86px; background: var(--paper); display: flex; align-items: center; justify-content: center; font: 700 30px/1 "Martian Mono"; position: relative; }
+      .sz.out { background: var(--shade); color: #77756f; }
+      .sz.out::after { content: ""; position: absolute; left: 14%; right: 14%; top: 50%; height: 4px; background: #77756f; transform: rotate(-18deg); }
+      #clock { position: absolute; left: 0; right: 0; top: 1530px; text-align: center; font: 700 170px/1 "Martian Mono"; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; color: var(--ink); }
+      #rel { position: absolute; left: 0; right: 0; top: 1740px; text-align: center; font: 700 44px/1 "Schibsted Grotesk"; }
+      #rel span { color: var(--acc); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage light" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <svg id="wallsvg" viewBox="0 0 1080 1920">
+        <filter id="conc" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.012 0.02" numOctaves="5" seed="27" />
+          <feColorMatrix values="0 0 0 0 .2  0 0 0 0 .2  0 0 0 0 .19  0 0 0 1.4 -.55" /></filter>
+        <filter id="pits" x="0" y="0" width="100%" height="100%"><feTurbulence type="turbulence" baseFrequency="0.35" numOctaves="1" seed="4" />
+          <feColorMatrix values="0 0 0 0 .1  0 0 0 0 .1  0 0 0 0 .1  0 0 0 -9 3.6" /></filter>
+        <rect width="1080" height="1920" filter="url(#conc)" opacity=".5" />
+        <rect width="1080" height="1920" filter="url(#pits)" opacity=".25" />
+        <path d="M0 1200 H1080" stroke="#6f6d69" stroke-width="3" opacity=".6" /><path d="M0 1203 H1080" stroke="#a6a4a0" stroke-width="2" opacity=".5" />
+      </svg>
+      <div id="wrap" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <div id="tag">Larch Supply · example drop</div>
+        <div id="p1" class="paste">Drop 04</div>
+        <div id="p2" class="paste">Night shift</div>
+        <svg id="prod" viewBox="0 0 900 600">
+          <defs><linearGradient id="hl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a3a3c" /><stop offset=".45" stop-color="#1b1b1d" /><stop offset="1" stop-color="#0e0e0f" /></linearGradient></defs>
+          <ellipse cx="450" cy="585" rx="360" ry="16" fill="#000" opacity=".28" />
+          <!-- sleeves -->
+          <path d="M250 150 C 170 180, 110 300, 70 470 L 60 540 L 150 548 L 170 470 C 190 380, 220 320, 260 290 Z" fill="url(#hl)" />
+          <path d="M650 150 C 730 180, 790 300, 830 470 L 840 540 L 750 548 L 730 470 C 710 380, 680 320, 640 290 Z" fill="url(#hl)" />
+          <path d="M60 520 L150 528 L150 560 L58 552 Z M840 520 L750 528 L750 560 L842 552 Z" fill="#111" />
+          <!-- body -->
+          <path d="M250 130 C 320 100, 580 100, 650 130 L 680 520 L 220 520 Z" fill="url(#hl)" />
+          <path d="M220 520 L680 520 L684 570 L216 570 Z" fill="#121213" />
+          <!-- hood -->
+          <path d="M330 140 C 300 40, 600 40, 570 140 C 540 190, 360 190, 330 140 Z" fill="#232325" />
+          <path d="M360 140 C 350 80, 550 80, 540 140 C 520 165, 380 165, 360 140 Z" fill="#0b0b0c" />
+          <path d="M420 165 L415 300 M480 165 L486 300" stroke="#d8d6d0" stroke-width="5" stroke-linecap="round" />
+          <!-- pocket -->
+          <path d="M320 380 L580 380 L620 500 L280 500 Z" fill="#161618" stroke="#2a2a2c" stroke-width="3" />
+          <path d="M250 130 C 230 260, 230 400, 222 520" stroke="#fff" stroke-opacity=".08" stroke-width="10" fill="none" />
+        </svg>
+        <div id="stk"><b>SKU 0427-BLK</b><span>Heavy fleece · 480 g</span><i id="peel"></i></div>
+        <div id="sizes"></div>
+        <div id="clock">02:14:09</div>
+        <div id="rel">Sat 14 Nov · <span>10:00 CET</span> · sample date</div>
+      </div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const SZ = [["XS", "out"], ["S", ""], ["M", "sel"], ["L", ""], ["XL", ""], ["XXL", "out"]];
+      const sizes = document.getElementById("sizes");
+      SZ.forEach(([s, k]) => { const d = document.createElement("div"); d.className = "sz" + (k === "out" ? " out" : ""); d.id = "s" + s; d.textContent = s; sizes.appendChild(d); });
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo("#tag", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 0.05);
+      // pasted type unrolls top to bottom with a slight paper bulge
+      [["#p1", 0.1], ["#p2", 0.4]].forEach(([id, at]) => {
+        tl.fromTo(id, { clipPath: "inset(0% 0% 100% 0%)", scaleY: 1.02 }, { clipPath: "inset(0% 0% 0% 0%)", scaleY: 1, duration: 0.3, ease: "power2.out", transformOrigin: "50% 0%" }, at);
+      });
+      tl.fromTo("#prod", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 0.75);
+      // sticker slap: 1.4 -> 1 in 3 frames, squash, 4 px wall shake, corner peel
+      tl.fromTo("#stk", { opacity: 0, scale: 1.4, rotation: 2 }, { opacity: 1, scale: 1, rotation: 8, duration: 0.1, ease: "power4.in" }, 1.2);
+      tl.fromTo("#stk", { scaleY: 0.9 }, { scaleY: 1, duration: 0.1, ease: "power2.out", immediateRender: false }, 1.3);
+      const r = MF.rng("streetwear-drop");
+      for (let i = 0; i < 4; i++) tl.to("#wrap", { x: r.range(-4, 4), y: r.range(-4, 4), duration: 0.033, ease: "none" }, 1.3 + i * 0.033);
+      tl.to("#wrap", { x: 0, y: 0, duration: 0.033 }, 1.43);
+      tl.fromTo("#peel", { borderWidth: "0 0 0px 0px" }, { borderWidth: "0 0 34px 34px", duration: 0.2, ease: "power2.out" }, 1.4);
+      // size run
+      tl.fromTo(".sz", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.2, ease: "back.out(2)", stagger: 0.05 }, 1.7);
+      tl.to("#sM", { backgroundColor: "#2340FF", color: "#ffffff", duration: 0.1 }, 2.2);
+      tl.fromTo("#sM", { scale: 1 }, { scale: 1.08, duration: 0.1, yoyo: true, repeat: 1, immediateRender: false }, 2.2);
+      // drop clock ticks once per second toward the release minute
+      const clock = document.getElementById("clock"), c = { v: 0 }, S0 = 2 * 3600 + 14 * 60 + 9;
+      tl.fromTo("#clock", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out" }, 2.3);
+      tl.to(c, { v: 2.2, duration: 2.2, ease: "none", onUpdate: () => { const s = S0 - Math.floor(c.v); clock.textContent = [Math.floor(s / 3600), Math.floor(s / 60) % 60, s % 60].map((x) => String(x).padStart(2, "0")).join(":"); } }, 2.3);
+      tl.fromTo("#rel", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 2.6);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

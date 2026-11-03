@@ -1,0 +1,110 @@
+<!doctype html>
+<!--
+  motionforge style preview: social-recap
+  © 2026 motionforge contributors, MIT
+  Signature scene: the card stack. Each post card rises from +600 px (0.5 s power4.out) while the one
+  before it scales to 0.94, lifts 40 px and dims to 70 %; counts tick to the captured value (0.8 s) and
+  one line gets a coral swipe (0.3 s). Posts, handles and counts are fictional and labelled as examples;
+  the cards are neutral, not a real platform's interface. Manrope + Red Hat Mono.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts: @fontsource/manrope, @fontsource/red-hat-mono (copied from node_modules/@fontsource/<family>/files/) */
+      @font-face { font-family: "Manrope"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/manrope-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Manrope"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/manrope-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Manrope"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/manrope-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Manrope"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/manrope-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Manrope"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/manrope-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Manrope"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/manrope-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Red Hat Mono"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/red-hat-mono-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Red Hat Mono"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/red-hat-mono-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #E3E7ED; --card: #FFFFFF; --ink: #0F1217; --acc: #FF5C3A; --sup: #6B7380; --mf-grain-opacity: 0.03; }
+      html, body { background: var(--bg); }
+      #root { background: radial-gradient(1200px 800px at 50% 0%, #F3F5F8 0%, transparent 70%), var(--bg); color: var(--ink); font-family: "Manrope", sans-serif; }
+      #root::before { mix-blend-mode: multiply; }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 65%, rgba(15,18,23,.08) 100%); }
+      .lab { font: 500 28px/1 "Red Hat Mono", monospace; letter-spacing: .1em; text-transform: uppercase; color: var(--sup); }
+      #eyebrow { position: absolute; left: 90px; top: 250px; }
+      #title { position: absolute; left: 90px; right: 90px; top: 300px; font: 800 104px/1 "Manrope", sans-serif; letter-spacing: -0.03em; }
+      #stack { position: absolute; left: 90px; width: 850px; top: 0; height: 1920px; }
+      .post { position: absolute; left: 0; width: 850px; top: 600px; background: var(--card); border-radius: 32px; padding: 52px 56px 48px;
+              box-shadow: 0 20px 50px rgba(15,18,23,.12); transform-origin: 50% 0%; }
+      .head { display: flex; align-items: center; gap: 22px; margin-bottom: 30px; }
+      .av { width: 96px; height: 96px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font: 800 34px/1 "Manrope"; color: #fff; }
+      .nm { font: 800 42px/1.1 "Manrope"; }
+      .hd { font: 500 28px/1.3 "Red Hat Mono", monospace; color: var(--sup); }
+      .tx { font: 600 56px/1.3 "Manrope"; letter-spacing: -0.01em; }
+      .ft { margin-top: 36px; font: 500 24px/1 "Red Hat Mono", monospace; color: var(--sup); letter-spacing: .06em; }
+      mark { -webkit-box-decoration-break: clone; box-decoration-break: clone; background: linear-gradient(rgba(255,92,58,.35), rgba(255,92,58,.35)) no-repeat 0 60% / 0% 78%; color: inherit; mix-blend-mode: multiply; padding: 0 4px; margin: 0 -4px; }
+      #counts { position: absolute; left: 90px; right: 90px; top: 1380px; display: flex; justify-content: space-between; }
+      .ct b { display: block; font: 800 64px/1 "Manrope"; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+      .ct span { display: block; margin-top: 12px; }
+      #c1 b { color: var(--acc); }
+      #asof { position: absolute; left: 90px; top: 1540px; }
+      #cap { position: absolute; left: 90px; right: 90px; top: 1600px; font: 700 52px/1.15 "Manrope"; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage light" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="eyebrow" class="lab clip" data-start="0" data-duration="4.5" data-track-index="0">Reactions · example posts</div>
+      <h1 id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="1">Social recap</h1>
+      <div id="stack" class="clip" data-start="0" data-duration="4.5" data-track-index="2">
+        <div class="post" id="p1">
+          <div class="head"><div class="av" style="background:#8A93A3">LV</div><div><div class="nm">Lena V.</div><div class="hd">@lena.example · 1 Nov</div></div></div>
+          <div class="tx">Tried the new night bus loop. Twenty minutes, door to door.</div>
+          <div class="ft">EXAMPLE POST</div>
+        </div>
+        <div class="post" id="p2">
+          <div class="head"><div class="av" style="background:#5C6B8A">OK</div><div><div class="nm">Orchard Kitchen</div><div class="hd">@orchard.example · 1 Nov</div></div></div>
+          <div class="tx">We're staying open until 1 a.m. on weekends now that the late route stops outside.</div>
+          <div class="ft">EXAMPLE POST</div>
+        </div>
+        <div class="post" id="p3">
+          <div class="head"><div class="av" style="background:#3E4654">RN</div><div><div class="nm">Riverside Notes</div><div class="hd">@riverside.example · 2 Nov</div></div></div>
+          <div class="tx">Week one numbers are in: <mark>ridership on the loop doubled</mark> after the timetable change.</div>
+          <div class="ft">EXAMPLE POST</div>
+        </div>
+      </div>
+      <div id="counts" class="clip" data-start="0" data-duration="4.5" data-track-index="3">
+        <div class="ct" id="c1"><b data-v="12.4" data-u="K">0</b><span class="lab">Likes</span></div>
+        <div class="ct" id="c2"><b data-v="3.1" data-u="K">0</b><span class="lab">Reposts</span></div>
+        <div class="ct" id="c3"><b data-v="842" data-u="">0</b><span class="lab">Replies</span></div>
+      </div>
+      <div id="asof" class="lab clip" data-start="0" data-duration="4.5" data-track-index="4">As of 2 Nov · sample data</div>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="5">What riders said about the late loop</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo("#eyebrow", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.05);
+      tl.fromTo("#title", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0.1);
+      // the stack: rise from +600, push the previous card back (0.94, -40 px, 70 %)
+      const rise = (id, at) => tl.fromTo(id, { y: 1450 }, { y: 0, duration: 0.5, ease: "power4.out" }, at);
+      const push = (id, at, depth) => tl.to(id, { scale: 1 - 0.06 * depth, y: -40 * depth, opacity: depth === 1 ? 0.7 : 0.4, duration: 0.5, ease: "power4.out" }, at);
+      tl.set(["#p2", "#p3"], { y: 1450 }, 0);
+      rise("#p1", 0.35);
+      rise("#p2", 1.05); push("#p1", 1.05, 1);
+      rise("#p3", 1.75); push("#p2", 1.75, 1); push("#p1", 1.75, 2);
+      // counts tick in parallel, "as of" stamp 0.3 s after
+      tl.fromTo("#counts", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }, 2.2);
+      document.querySelectorAll(".ct b").forEach((b) => {
+        const v = +b.dataset.v, u = b.dataset.u, dec = v % 1 ? 1 : 0, o = { v: 0 };
+        tl.to(o, { v, duration: 0.8, ease: "power2.out", onUpdate: () => { b.textContent = o.v.toFixed(dec) + u; } }, 2.25);
+      });
+      tl.fromTo("#asof", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 3.35);
+      // the line that matters: coral swipe left to right
+      tl.to("#p3 mark", { backgroundSize: "100% 78%", duration: 0.3, ease: "power2.out" }, 3.05);
+      tl.fromTo("#cap", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 3.4);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

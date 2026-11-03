@@ -1,0 +1,160 @@
+<!doctype html>
+<!--
+  motionforge style preview: workout-intervals
+  © 2026 motionforge contributors, MIT
+  Signature scenes "interval ring" + "next-up card": a 640 px ring (44 px stroke) empties linearly in real
+  time, digit = ceil(remaining seconds), last-3 s pulse; the rest phase (amber) ends, the ring cross-fades
+  to work mint in 0.2 s with a 0.15 s 12 % tint flash, the round dot fills, the next-up card slides out
+  and the exercise name types in at 40 chars/s. Barlow Condensed + Roboto Mono + Manrope.
+  The demo is a drawn pictogram, not footage; the session is a sample.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      @font-face { font-family: "Barlow Condensed"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/barlow-condensed-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Barlow Condensed"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/barlow-condensed-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Roboto Mono"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/roboto-mono-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Roboto Mono"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/roboto-mono-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Manrope"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/manrope-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Manrope"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/manrope-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Manrope"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/manrope-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Manrope"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/manrope-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #0c1a1f; --ink: #eaf4f2; --work: #2ee59d; --rest: #ffb84d; --track: #20343b; --mf-grain-opacity: .05; }
+      html, body { background: var(--bg); }
+      #root { background: radial-gradient(700px 700px at 50% 620px, #142328 0%, transparent 72%), var(--bg); color: var(--ink); }
+      #eyebrow { position: absolute; left: 0; right: 0; top: 170px; text-align: center; font: 800 28px/1 "Manrope", system-ui; letter-spacing: .16em; text-transform: uppercase; color: #8fa6a3; }
+      #dots { position: absolute; left: 0; right: 0; top: 232px; display: flex; justify-content: center; gap: 22px; align-items: center; }
+      #dots i { width: 30px; height: 30px; border-radius: 50%; background: var(--track); }
+      #dots b { margin-left: 18px; font: 800 28px/1 "Manrope", system-ui; letter-spacing: .16em; }
+      #ring { position: absolute; left: 220px; top: 300px; width: 640px; height: 640px; }
+      #digit { position: absolute; left: 220px; top: 300px; width: 640px; height: 640px; display: flex; align-items: center; justify-content: center; font: 700 260px/1 "Roboto Mono", monospace; font-variant-numeric: tabular-nums; padding-bottom: 40px; }
+      #tag { position: absolute; left: 0; right: 0; top: 780px; display: flex; justify-content: center; }
+      #tag span { padding: 12px 30px; border-radius: 40px; font: 800 30px/1 "Manrope", system-ui; letter-spacing: .16em; color: var(--bg); background: var(--rest); }
+      #name { position: absolute; left: 0; right: 0; top: 1000px; text-align: center; font: 800 140px/1 "Barlow Condensed", "Arial Narrow", sans-serif; text-transform: uppercase; letter-spacing: .01em; white-space: pre; }
+      .card { position: absolute; left: 90px; width: 900px; top: 1180px; height: 420px; border-radius: 40px; background: var(--track); border: 2px solid var(--track); overflow: hidden; }
+      #next { border-color: var(--rest); }
+      .card .lab { position: absolute; left: 48px; top: 44px; font: 800 28px/1 "Manrope", system-ui; letter-spacing: .16em; text-transform: uppercase; }
+      .card .nm { position: absolute; left: 48px; top: 96px; font: 800 96px/1 "Barlow Condensed", sans-serif; text-transform: uppercase; }
+      .card .rp { position: absolute; left: 48px; top: 206px; font: 600 48px/1.2 "Manrope", system-ui; color: #a9bdba; }
+      .card svg { position: absolute; right: 60px; top: 30px; width: 300px; height: 360px; overflow: visible; }
+      #cue { position: absolute; left: 0; right: 0; top: 1640px; text-align: center; font: 600 52px/1 "Manrope", system-ui; }
+      #tint { position: absolute; inset: 0; background: var(--work); opacity: 0; z-index: 5; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="eyebrow" class="clip" data-start="0" data-duration="4.5" data-track-index="0">Workout intervals · sample session</div>
+      <div id="dots" class="clip" data-start="0" data-duration="4.5" data-track-index="1"></div>
+      <svg id="ring" class="clip" viewBox="0 0 640 640" data-start="0" data-duration="4.5" data-track-index="2">
+        <circle cx="320" cy="320" r="298" fill="none" stroke="#20343b" stroke-width="44" />
+        <circle id="arc" cx="320" cy="320" r="298" fill="none" stroke="#ffb84d" stroke-width="44" transform="rotate(-90 320 320) scale(1 1)" />
+      </svg>
+      <div id="digit" class="clip" data-start="0" data-duration="4.5" data-track-index="3">3</div>
+      <div id="tag" class="clip" data-start="0" data-duration="4.5" data-track-index="4"><span>REST</span></div>
+      <div id="name" class="clip" data-start="0" data-duration="4.5" data-track-index="5"></div>
+      <div id="next" class="card clip" data-start="0" data-duration="4.5" data-track-index="6">
+        <div class="lab" style="color:#ffb84d">Next up</div><div class="nm">Jump squat</div><div class="rp">20 s · 8 reps</div>
+        <svg viewBox="0 0 300 360" class="fig"></svg>
+      </div>
+      <div id="demo" class="card clip" data-start="0" data-duration="4.5" data-track-index="7">
+        <div class="lab" style="color:#8fa6a3">Round 4 / 8</div><div class="rp" style="top:100px">Land soft,<br />stand tall</div>
+        <svg viewBox="0 0 300 360" class="fig"></svg>
+      </div>
+      <div id="cue" class="clip" data-start="0" data-duration="4.5" data-track-index="8">Knees track over toes</div>
+      <div id="tint" class="clip" data-start="0" data-duration="4.5" data-track-index="9"></div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this)
+      const dots = document.getElementById("dots");
+      for (let i = 0; i < 8; i++) { const d = document.createElement("i"); if (i < 3) d.style.background = "#eaf4f2"; dots.appendChild(d); }
+      const lab = document.createElement("b"); lab.textContent = "ROUND 3 / 8"; dots.appendChild(lab);
+
+      // the session clock: rest (10 s) has 2.6 s left at t = 0.3, then work (20 s)
+      const REST_END = 2.9, REST_LEN = 10, WORK_LEN = 20;
+      const arc = document.getElementById("arc"), digit = document.getElementById("digit");
+      const R = 298, C = 2 * Math.PI * R;
+      arc.setAttribute("stroke-dasharray", `${C} ${C}`);
+      // pictogram: a squat-jump loop driven by a phase value (0 = squat, 1 = airborne)
+      const NS = "http://www.w3.org/2000/svg";
+      const figs = [...document.querySelectorAll(".fig")].map((svg) => {
+        const mk = (tag, a) => { const e = document.createElementNS(NS, tag); for (const k in a) e.setAttribute(k, a[k]); svg.appendChild(e); return e; };
+        const st = { stroke: "#eaf4f2", "stroke-width": 26, "stroke-linecap": "round", "stroke-linejoin": "round", fill: "none" };
+        return { legs: mk("path", st), body: mk("path", st), arms: mk("path", st), head: mk("circle", { r: 26, fill: "#eaf4f2" }), floor: mk("path", { d: "M10 350 H290", stroke: "#3b5560", "stroke-width": 6, "stroke-linecap": "round" }) };
+      });
+      function pose(f, k) {
+        const lift = 70 * k, sq = 1 - k;                   // squat depth vs height in the air
+        const hipY = 250 - 60 * k - lift + 30 * sq, hipX = 150 + 18 * sq;
+        const kneeX = 150 - 50 * sq, kneeY = hipY + 60 + 10 * k;
+        const footY = 340 - lift, footX = 150 + 10 * sq;
+        const shY = hipY - 110 + 10 * sq, shX = 150 - 30 * sq;
+        f.legs.setAttribute("d", `M${hipX} ${hipY} L${kneeX} ${kneeY} L${footX} ${footY}`);
+        f.body.setAttribute("d", `M${hipX} ${hipY} L${shX} ${shY}`);
+        const handY = shY + 90 * sq - 120 * k, handX = shX - 60 * sq + 10 * k;
+        f.arms.setAttribute("d", `M${shX} ${shY + 10} L${handX} ${handY}`);
+        f.head.setAttribute("cx", shX + 4); f.head.setAttribute("cy", shY - 46);
+      }
+      const S = { t: 0 };
+      let lastDigit = null;
+      function render() {
+        const t = S.t;
+        const inRest = t < REST_END;
+        const rem = inRest ? (REST_END - t) : WORK_LEN - (t - REST_END);
+        const len = inRest ? REST_LEN : WORK_LEN;
+        arc.setAttribute("stroke-dashoffset", C * (1 - Math.max(0, rem) / len));   // linear, never eased
+        const dg = Math.max(1, Math.ceil(rem - 1e-6));
+        digit.textContent = dg;
+        // last-3 s pulse on each new second
+        const frac = rem - Math.floor(rem);
+        const pulse = inRest && rem <= 3 ? 1 + 0.08 * Math.max(0, (frac - 0.75) / 0.25) : 1;
+        digit.style.transform = `scale(${pulse.toFixed(3)})`;
+        // pictogram loop: about one jump per 0.9 s
+        const ph = (t % 0.9) / 0.9, k = Math.max(0, Math.sin(ph * Math.PI * 2));
+        figs.forEach((f) => pose(f, k));
+      }
+      tl.eventCallback("onUpdate", render);
+      tl.fromTo(S, { t: 0.3 }, { t: DUR, duration: DUR - 0.3, ease: "none" }, 0.3);   // the clock (linear)
+      tl.set(S, { t: 0.3 }, 0);
+
+      tl.fromTo("#eyebrow", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0);
+      tl.fromTo("#dots i", { scale: 0 }, { scale: 1, duration: 0.25, ease: "back.out(1.7)", stagger: 0.03 }, 0.05);
+      tl.fromTo(["#ring", "#digit", "#tag"], { opacity: 0 }, { opacity: 1, duration: 0.25 }, 0.1);
+      tl.fromTo("#next", { y: 90, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power3.out" }, 0.25);
+      // NEXT UP blinks twice (0.2 s on/off)
+      const nl = document.querySelector("#next .lab");
+      [0.9, 1.3].forEach((t) => { tl.set(nl, { opacity: 0 }, t); tl.set(nl, { opacity: 1 }, t + 0.2); });
+      tl.set("#demo", { opacity: 0 }, 0);
+      tl.set("#name", { opacity: 1 }, 0);
+      tl.set("#cue", { opacity: 0 }, 0);
+      // phase change at REST_END: card exits exactly at phase end, ring cross-fades to mint, tint flash
+      tl.to("#next", { y: 90, opacity: 0, duration: 0.25, ease: "power2.in" }, REST_END - 0.25);
+      tl.to(arc, { attr: { stroke: "#2ee59d" }, duration: 0.2 }, REST_END);
+      tl.to("#tag span", { backgroundColor: "#2ee59d", duration: 0.2 }, REST_END);
+      const tagSpan = document.querySelector("#tag span");
+      const nameEl = document.getElementById("name"), NAME = "JUMP SQUAT";
+      // the name types in by letter at 40 chars/s from the phase change; during rest it reads REST
+      const update = () => {
+        render();
+        tagSpan.textContent = S.t < REST_END ? "REST" : "WORK";
+        nameEl.textContent = S.t < REST_END ? "REST" : NAME.slice(0, Math.max(0, Math.min(NAME.length, Math.round((S.t - REST_END - 0.05) * 40))));
+        nameEl.style.color = S.t < REST_END ? "#5f7a80" : "#eaf4f2";
+      };
+      tl.eventCallback("onUpdate", update);
+      tl.fromTo("#tint", { opacity: 0 }, { opacity: 0.12, duration: 0.07, ease: "none", immediateRender: false }, REST_END);
+      tl.to("#tint", { opacity: 0, duration: 0.08, ease: "none" }, REST_END + 0.07);
+      tl.to("#dots i:nth-child(4)", { backgroundColor: "#eaf4f2", scale: 1, duration: 0.25, ease: "back.out(1.7)" }, REST_END);
+      tl.fromTo("#demo", { y: 90, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "power3.out", immediateRender: false }, REST_END + 0.1);
+      tl.to("#cue", { opacity: 1, duration: 0.3 }, REST_END + 0.4);
+      tl.seek(0);
+      update();
+    </script>
+  </body>
+</html>

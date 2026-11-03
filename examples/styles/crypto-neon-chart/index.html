@@ -1,0 +1,172 @@
+<!doctype html>
+<!--
+  motionforge style preview: crypto-neon-chart
+  © 2026 motionforge contributors, MIT
+  Signature scene "neon run": one aqua line draws over 1.6 s (power1.in, then power3.out into the peak)
+  with a glowing 24 px head, the camera follows the head and pushes 1.15x at the peak, "+38 %" pops
+  with back.out(1.7); a dark-glass token card with a three.js coin (generic disc, fictional ticker)
+  rises and flips. Unbounded 700 + Azeret Mono. Prices are sample data, labelled with a source line.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script type="importmap">{ "imports": { "three": "./assets/vendor/three.module.min.js", "three/addons/": "./assets/vendor/three-addons/" } }</script>
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      @font-face { font-family: "Unbounded"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/unbounded-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Unbounded"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/unbounded-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Azeret Mono"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/azeret-mono-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Azeret Mono"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/azeret-mono-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Azeret Mono"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/azeret-mono-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Azeret Mono"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/azeret-mono-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #07090c; --ink: #eef3f2; --mut: #6e7c80; --acc: #3cffc8; --coin: #e8b84a; --mf-grain-opacity: .06; }
+      html, body { background: var(--bg); }
+      #root { background: radial-gradient(900px 900px at 50% 46%, #0f1a1a 0%, transparent 70%), var(--bg); color: var(--ink); }
+      .mono { font-family: "Azeret Mono", ui-monospace, monospace; }
+      #eyebrow { position: absolute; left: 80px; top: 230px; font: 500 28px/1 "Azeret Mono", ui-monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--mut); }
+      #title { position: absolute; left: 80px; right: 80px; top: 280px; font: 700 96px/1.05 "Unbounded", system-ui; letter-spacing: -0.01em; color: var(--ink); }
+      #cam { position: absolute; left: 0; top: 500px; width: 1080px; height: 700px; }
+      #chart { position: absolute; left: 0; top: 0; width: 1080px; height: 700px; overflow: visible; }
+      .ax { font: 500 26px "Azeret Mono", ui-monospace; fill: #6e7c80; }
+      #peak { position: absolute; font: 600 64px/1 "Azeret Mono", ui-monospace; color: var(--acc); background: rgba(7,9,12,.85); padding: 10px 18px; border-radius: 16px; border: 2px solid rgba(60,255,200,.5); font-variant-numeric: tabular-nums; white-space: nowrap; }
+      #card { position: absolute; left: 80px; right: 80px; top: 1340px; height: 250px; border-radius: 48px; background: rgba(17,22,26,.92); border: 2px solid var(--coin); }
+      #gl { position: absolute; left: 100px; top: 1355px; width: 220px; height: 220px; }
+      #cardtx { position: absolute; left: 340px; top: 1380px; }
+      #cardtx .tk { font: 700 54px/1 "Unbounded", system-ui; color: var(--ink); }
+      #cardtx .px { margin-top: 18px; font: 600 54px/1 "Azeret Mono", ui-monospace; color: var(--ink); font-variant-numeric: tabular-nums; }
+      #cardtx .px span { font-size: 34px; color: var(--mut); margin-left: 12px; }
+      #src { position: absolute; left: 80px; top: 1640px; font: 500 26px/1.5 "Azeret Mono", ui-monospace; color: var(--mut); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="eyebrow" class="clip" data-start="0" data-duration="4.5" data-track-index="0">Token · 7 days</div>
+      <h1 id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="1">Crypto neon<br />chart</h1>
+      <div id="cam" class="clip" data-start="0" data-duration="4.5" data-track-index="2">
+        <svg id="chart" viewBox="0 0 1080 700">
+          <defs><filter id="glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="18" /></filter></defs>
+          <g id="axes"></g>
+          <path id="lineGlow" fill="none" stroke="#3cffc8" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" opacity=".6" filter="url(#glow)" />
+          <path id="line" fill="none" stroke="#3cffc8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+          <circle id="headGlow" r="34" fill="#3cffc8" opacity=".55" filter="url(#glow)" />
+          <circle id="head" r="12" fill="#eaffff" />
+        </svg>
+        <div id="peak">+38 %</div>
+      </div>
+      <div id="card" class="clip" data-start="0" data-duration="4.5" data-track-index="3"></div>
+      <canvas id="gl" class="clip" width="220" height="220" data-start="0" data-duration="4.5" data-track-index="4"></canvas>
+      <div id="cardtx" class="clip" data-start="0" data-duration="4.5" data-track-index="5"><div class="tk">LUMA</div><div class="px">$<span id="pv" style="font-size:inherit;color:inherit;margin:0">1.00</span><span>+38 %</span></div></div>
+      <div id="src" class="clip" data-start="0" data-duration="4.5" data-track-index="6">Source: sample data, fictional token<br />03 Nov 2026 · 14:00 UTC · linear scale</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this)
+
+      // sample series: rises 100 -> 138 with a mid-week dip; the last point is the peak
+      const r = MF.rng("luma-week");
+      const N = 28, V = [];
+      for (let i = 0; i < N; i++) {
+        const k = i / (N - 1);
+        let v = 100 + 38 * Math.pow(k, 1.6) + r.range(-4, 4);
+        if (i > 8 && i < 15) v -= 9 * Math.sin((i - 8) / 6 * Math.PI);
+        V.push(v);
+      }
+      V[0] = 100; V[N - 1] = 138; V[N - 2] = Math.min(V[N - 2], 133);
+      const X0 = 80, X1 = 860, Y = (v) => 620 - (v - 88) / (140 - 88) * 560;
+      const pts = V.map((v, i) => [X0 + (X1 - X0) * i / (N - 1), Y(v)]);
+      const d = pts.map((p, i) => (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" ");
+      const line = document.getElementById("line"), lineGlow = document.getElementById("lineGlow");
+      line.setAttribute("d", d); lineGlow.setAttribute("d", d);
+      const LEN = line.getTotalLength();
+      [line, lineGlow].forEach((p) => p.setAttribute("stroke-dasharray", `${LEN} ${LEN}`));
+      // axis labels only (no gridlines)
+      const axes = document.getElementById("axes");
+      const NS = "http://www.w3.org/2000/svg";
+      const lab = (x, y, t, anchor) => { const e = document.createElementNS(NS, "text"); e.setAttribute("x", x); e.setAttribute("y", y); e.setAttribute("class", "ax"); e.setAttribute("text-anchor", anchor || "start"); e.textContent = t; axes.appendChild(e); };
+      ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach((t, i) => lab(X0 + (X1 - X0) * i / 6, 680, t, "middle"));
+      [100, 120, 140].forEach((v) => lab(1000, Y(v) + 9, "$" + (v / 100).toFixed(2), "end"));
+
+      const head = document.getElementById("head"), headGlow = document.getElementById("headGlow");
+      const peak = document.getElementById("peak");
+      const pv = document.getElementById("pv");
+      const S = { draw: 0, zoom: 0 };
+      function render() {
+        const L = LEN * S.draw;
+        line.setAttribute("stroke-dashoffset", LEN - L);
+        lineGlow.setAttribute("stroke-dashoffset", LEN - L);
+        const p = line.getPointAtLength(Math.max(0.01, L));
+        [head, headGlow].forEach((c) => { c.setAttribute("cx", p.x); c.setAttribute("cy", p.y); });
+        head.style.opacity = headGlow.style.opacity = S.draw > 0.001 ? 1 : 0;
+        // camera: follows the head along x, pushes 1.15x into the peak
+        const sc = 1 + 0.15 * S.zoom;
+        const tx = -(p.x - 540) * 0.18;
+        gsap.set("#cam", { x: tx, scale: sc, transformOrigin: `${p.x}px ${p.y}px` });
+      }
+      gsap.set(peak, { left: X1 - 260, top: Y(138) - 120 });
+      tl.eventCallback("onUpdate", render);
+
+      tl.fromTo("#eyebrow", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.05);
+      tl.fromTo("#title", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0.1);
+      tl.fromTo("#axes", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.35);
+      // speed ramp: fast run, slow arrival (1.6 s in total)
+      tl.fromTo(S, { draw: 0 }, { draw: 0.72, duration: 0.8, ease: "power1.in" }, 0.5);
+      tl.to(S, { draw: 1, duration: 0.8, ease: "power3.out" }, 1.3);
+      tl.fromTo(S, { zoom: 0 }, { zoom: 1, duration: 0.9, ease: "power2.inOut" }, 1.25);
+      tl.fromTo(peak, { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.7)" }, 2.05);
+      // token card rises (120 px + fade), the coin flips in the 3D layer
+      tl.fromTo(["#card", "#gl", "#cardtx"], { y: 120, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "power3.out" }, 2.45);
+      const pc = { v: 1 };
+      tl.fromTo(pc, { v: 1 }, { v: 1.38, duration: 0.9, ease: "power2.out", onUpdate: () => { pv.textContent = pc.v.toFixed(2); } }, 2.6);
+      tl.fromTo("#src", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 3.1);
+      // the zoom eases back a little so the whole run reads at the end
+      tl.to(S, { zoom: 0.4, duration: 0.8, ease: "power2.inOut" }, 3.5);
+      tl.seek(0);
+      render();
+    </script>
+    <script type="module">
+      import * as THREE from "three";
+      import { createStage, environment, onSeek, ease, seg } from "./assets/vendor/mf-three.js";
+      const { renderer, scene, camera, render } = createStage({ width: 220, height: 220, fov: 30, shadows: false });
+      environment(renderer, scene, 0.9);
+      const key = new THREE.DirectionalLight(0xfff1d6, 2.2); key.position.set(-3, 4, 5); scene.add(key);
+      const rim = new THREE.DirectionalLight(0x3cffc8, 2.0); rim.position.set(4, -1, -3); scene.add(rim);
+
+      const ready = document.fonts.load('700 120px "Unbounded"').then(() => {
+        const c = document.createElement("canvas"); c.width = c.height = 512;
+        const x = c.getContext("2d");
+        const g = x.createRadialGradient(200, 180, 40, 256, 256, 260);
+        g.addColorStop(0, "#f3cf72"); g.addColorStop(1, "#b98a2a");
+        x.fillStyle = g; x.fillRect(0, 0, 512, 512);
+        x.strokeStyle = "rgba(90,60,10,.55)"; x.lineWidth = 14; x.beginPath(); x.arc(256, 256, 214, 0, Math.PI * 2); x.stroke();
+        x.fillStyle = "rgba(90,60,10,.75)"; x.font = '700 230px "Unbounded"'; x.textAlign = "center"; x.textBaseline = "middle";
+        x.save(); x.translate(512, 0); x.scale(-1, 1); x.fillText("L", 250, 268); x.restore();
+        const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+        const face = new THREE.MeshStandardMaterial({ map: tex, metalness: 0.85, roughness: 0.32 });
+        const edge = new THREE.MeshStandardMaterial({ color: 0xe8b84a, metalness: 1, roughness: 0.28 });
+        const coin = new THREE.Mesh(new THREE.CylinderGeometry(1, 1, 0.16, 72), [edge, face, face]);
+        coin.rotation.x = Math.PI / 2;
+        const pivot = new THREE.Group(); pivot.add(coin); scene.add(pivot);
+        return pivot;
+      });
+      let pivot = null;
+      ready.then((p) => { pivot = p; });
+      camera.position.set(0, 0, 4.6); camera.lookAt(0, 0, 0);
+      function draw(t) {
+        if (pivot) {
+          // flip 0 -> 180 deg in 0.6 s (power2.inOut), then a slow drift so the edge catches the rim light
+          const k = ease.inOutSine(seg(t, 2.45, 0.6));
+          pivot.rotation.y = Math.PI * (1 + k) + 0.35 * seg(t, 3.05, 1.45);
+          pivot.rotation.x = -0.18;
+        }
+        render();
+      }
+      onSeek(draw, ready);
+    </script>
+  </body>
+</html>

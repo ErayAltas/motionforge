@@ -1,0 +1,127 @@
+<!doctype html>
+<!--
+  motionforge style preview: unboxing-pop
+  © 2026 motionforge contributors, MIT
+  Top-down on kraft: the pink tape peels, four flaps open front, back, left, right (CSS 3D, 0.35 s,
+  0.08 s stagger), tissue slides out, an original candle jar rises with a landing squash, then the
+  signature sticker slap (1.6 -> 1, back.out(2.5), -12 -> -3 deg, hard shadow) and a yellow count sticker.
+  Product, name and price are fictional sample content. Font: Rubik (Fontsource, OFL).
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Rubik"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/rubik-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Rubik"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/rubik-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Rubik"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/rubik-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Rubik"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/rubik-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Rubik"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/rubik-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Rubik"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/rubik-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Rubik"; font-style: normal; font-weight: 900; font-display: block; src: url("assets/fonts/rubik-latin-900-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Rubik"; font-style: normal; font-weight: 900; font-display: block; src: url("assets/fonts/rubik-latin-ext-900-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      /* fonts:end */
+      :root { --kraft: #CDA77C; --st: #FFFDF7; --ink: #1E1A16; --pink: #FF3E8A; --yel: #FFD23F; --shade: #8A6F52; --mf-grain-opacity: .08;
+        --fibre: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='300' height='300'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.03 .09' numOctaves='3' seed='4'/><feColorMatrix values='0 0 0 0 .35 0 0 0 0 .24 0 0 0 0 .12 0 0 0 .35 0'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>"); }
+      html, body { background: var(--kraft); }
+      #root { background: radial-gradient(1000px 800px at 50% 10%, rgba(255,240,215,.35), transparent 70%), var(--fibre), var(--kraft); background-blend-mode: normal, multiply, normal; }
+      #root::before { mix-blend-mode: multiply; opacity: .1; }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 60%, rgba(60,40,20,.25) 100%); }
+      .stk { position: absolute; padding: 20px 34px; border-radius: 26px; background: var(--st); box-shadow: 0 0 0 10px #fff, 0 6px 0 10px rgba(0,0,0,.18); font: 900 104px/1 "Rubik", sans-serif; letter-spacing: -0.02em; color: var(--ink); white-space: nowrap; }
+      #title { left: 120px; top: 250px; }
+      #title small { display: block; margin-top: 10px; font: 500 26px/1 "Rubik", sans-serif; letter-spacing: .1em; text-transform: uppercase; color: #6d6055; }
+      #box { position: absolute; left: 260px; top: 720px; width: 560px; height: 560px; perspective: 1600px; }
+      #shadow { position: absolute; left: 274px; top: 744px; width: 560px; height: 560px; border-radius: 12px; background: rgba(70,48,25,.35); filter: blur(14px); }
+      #inner { position: absolute; inset: 0; border-radius: 8px; background: radial-gradient(ellipse at 50% 40%, #9b7d5d, var(--shade) 70%, #6e5640); box-shadow: inset 0 0 0 26px #b38d63, inset 0 0 60px 30px rgba(50,35,20,.55); transform-style: preserve-3d; }
+      .flap { position: absolute; transform-style: preserve-3d; }
+      .flap i { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 4px; }
+      .flap i.a { background: linear-gradient(135deg, #d8b48a, #c49c70); box-shadow: inset 0 0 0 2px rgba(120,86,50,.35); }
+      .flap i.b { background: linear-gradient(135deg, #b8946b, #a7835d); transform: rotateX(180deg); }
+      .flap.lr i.b { transform: rotateY(180deg); }
+      #fF { left: 0; top: 280px; width: 560px; height: 280px; transform-origin: 50% 100%; transform: translateZ(3px); }
+      #fB { left: 0; top: 0; width: 560px; height: 280px; transform-origin: 50% 0%; transform: translateZ(3px); }
+      #fL { left: 0; top: 0; width: 280px; height: 560px; transform-origin: 0% 50%; transform: translateZ(1px); }
+      #fR { left: 280px; top: 0; width: 280px; height: 560px; transform-origin: 100% 50%; transform: translateZ(1px); }
+      #tape { position: absolute; left: 330px; top: 965px; width: 420px; height: 70px; background: rgba(255,62,138,.7); transform-origin: right; z-index: 3; }
+      #tissue { position: absolute; left: 290px; top: 760px; width: 500px; height: 480px; background: radial-gradient(circle at 30% 30%, rgba(255,255,255,.95), rgba(246,240,232,.85)); clip-path: polygon(4% 8%, 30% 0%, 62% 6%, 96% 2%, 100% 40%, 94% 78%, 100% 98%, 60% 94%, 28% 100%, 0% 92%, 5% 55%); opacity: .85; }
+      #item { position: absolute; left: 390px; top: 760px; width: 300px; height: 420px; transform-origin: 50% 100%; }
+      #itemShadow { position: absolute; left: 400px; top: 1120px; width: 280px; height: 70px; border-radius: 50%; background: rgba(40,25,10,.35); filter: blur(12px); }
+      #pink { left: 690px; top: 1010px; background: var(--pink); box-shadow: 0 0 0 10px #fff, 0 6px 0 10px rgba(0,0,0,.18); color: #fff; font-size: 50px; font-weight: 700; padding: 18px 28px; }
+      #count { left: 170px; top: 1150px; background: var(--yel); font-size: 52px; font-weight: 700; padding: 16px 26px; border-radius: 50%; width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; }
+      #cap { position: absolute; left: 0; right: 0; top: 1590px; text-align: center; }
+      #cap span { display: inline-block; padding: 14px 28px; border-radius: 18px; background: var(--st); font: 600 54px/1 "Rubik", sans-serif; color: var(--ink); box-shadow: 0 6px 0 rgba(0,0,0,.14); }
+      #price { position: absolute; left: -40px; top: 1710px; width: 1160px; height: 110px; background: rgba(255,62,138,.92); transform: rotate(-2deg); display: flex; align-items: center; justify-content: center; gap: 22px; font: 700 52px/1 "Rubik", sans-serif; color: #fff; clip-path: polygon(0 0, 100% 6%, 99% 30%, 100% 55%, 99% 80%, 100% 100%, 0 94%, 1% 70%, 0 45%, 1% 20%); transform-origin: left; }
+      #price small { font: 500 26px/1 "Rubik", sans-serif; letter-spacing: .1em; text-transform: uppercase; opacity: .9; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="shadow"></div>
+      <div id="box" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <div id="inner">
+          <div id="fL" class="flap lr"><i class="a"></i><i class="b"></i></div>
+          <div id="fR" class="flap lr"><i class="a"></i><i class="b"></i></div>
+          <div id="fB" class="flap"><i class="a"></i><i class="b"></i></div>
+          <div id="fF" class="flap"><i class="a"></i><i class="b"></i></div>
+        </div>
+      </div>
+      <div id="tape" class="clip" data-start="0" data-duration="4.5" data-track-index="1"></div>
+      <div id="tissue" class="clip" data-start="0" data-duration="4.5" data-track-index="2"></div>
+      <div id="itemShadow"></div>
+      <svg id="item" class="clip" viewBox="0 0 300 420" data-start="0" data-duration="4.5" data-track-index="3" aria-hidden="true">
+        <defs>
+          <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7a3f1c"/><stop offset=".3" stop-color="#c0743a"/><stop offset=".55" stop-color="#a65a28"/><stop offset="1" stop-color="#5e2f14"/></linearGradient>
+          <linearGradient id="lid" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#3d342c"/><stop offset=".4" stop-color="#6b5e52"/><stop offset="1" stop-color="#2e2620"/></linearGradient>
+        </defs>
+        <rect x="20" y="70" width="260" height="340" rx="40" fill="url(#glass)"/>
+        <rect x="44" y="96" width="20" height="290" rx="10" fill="#fff" opacity=".25"/>
+        <rect x="40" y="180" width="220" height="150" rx="10" fill="#f4ede0"/>
+        <text x="150" y="240" text-anchor="middle" font-family="Rubik" font-weight="700" font-size="28" fill="#1E1A16">FIG &amp; CEDAR</text>
+        <text x="150" y="282" text-anchor="middle" font-family="Rubik" font-weight="500" font-size="16" letter-spacing="2" fill="#6d6055">SOY CANDLE · 220 G</text>
+        <rect x="10" y="20" width="280" height="70" rx="20" fill="url(#lid)"/>
+        <rect x="10" y="78" width="280" height="10" fill="#211b16" opacity=".6"/>
+      </svg>
+      <div id="title" class="stk clip" data-start="0" data-duration="4.5" data-track-index="4">Unboxing pop<small>style · sample order</small></div>
+      <div id="pink" class="stk clip" data-start="0" data-duration="4.5" data-track-index="5">New scent</div>
+      <div id="count" class="stk clip" data-start="0" data-duration="4.5" data-track-index="6">×2</div>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="7"><span>first thing in the box</span></div>
+      <div id="price" class="clip" data-start="0" data-duration="4.5" data-track-index="8">€ 24 <small>sample price</small></div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      const slap = (sel, at, rot = -3) => {
+        tl.fromTo(sel, { opacity: 0, scale: 1.6, rotation: -12, boxShadow: "0 0 0 10px #fff, 0 8px 0 10px rgba(0,0,0,.18)" },
+          { opacity: 1, scale: 1, rotation: rot, boxShadow: "0 0 0 10px #fff, 0 6px 0 10px rgba(0,0,0,.18)", duration: 0.22, ease: "back.out(2.5)" }, at);
+        tl.set(sel, { opacity: 1 }, at + 0.01);
+      };
+      slap("#title", 0.1, -3);
+      // tape tears off, then the flaps open in order front, back, left, right
+      tl.to("#tape", { scaleX: 0, duration: 0.25, ease: "power2.in" }, 0.45);
+      [["#fF", { rotationX: -170 }], ["#fB", { rotationX: 170 }], ["#fL", { rotationY: -170 }], ["#fR", { rotationY: 170 }]].forEach(([id, to], i) =>
+        tl.to(id, { ...to, duration: 0.35, ease: "power2.out" }, 0.7 + i * 0.08));
+      gsap.set(["#tissue", "#item", "#itemShadow"], { opacity: 0 });
+      tl.fromTo("#tissue", { opacity: 0, x: 0, rotation: 0 }, { opacity: 0.85, duration: 0.15 }, 1.05);
+      tl.to("#tissue", { x: -900, y: -60, rotation: -14, opacity: 0, duration: 0.4, ease: "power2.inOut" }, 1.25);
+      // the item rises 220 px with back.out(1.8), then a 0.1 s landing squash
+      tl.fromTo("#item", { opacity: 0, y: 220, scale: 0.85 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.8)" }, 1.45);
+      tl.fromTo("#itemShadow", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 1.5);
+      tl.to("#item", { scaleX: 1.08, scaleY: 0.92, duration: 0.05, ease: "power1.out" }, 1.9);
+      tl.to("#item", { scaleX: 1, scaleY: 1, duration: 0.05, ease: "power1.in" }, 1.95);
+      slap("#pink", 2.1, -5);
+      slap("#count", 2.25, 6);
+      tl.fromTo("#cap", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.25, ease: "back.out(1.8)" }, 2.6);
+      tl.fromTo("#price", { clipPath: "polygon(0 0, 0% 6%, 0% 30%, 0% 55%, 0% 80%, 0% 100%, 0 94%, 0% 70%, 0 45%, 0% 20%)" },
+        { clipPath: "polygon(0 0, 100% 6%, 99% 30%, 100% 55%, 99% 80%, 100% 100%, 0 94%, 1% 70%, 0 45%, 1% 20%)", duration: 0.25, ease: "power2.out" }, 3.2);
+      tl.to("#item", { scale: 1.06, duration: 0.8, ease: "power1.inOut" }, 3.4);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,203 @@
+<!doctype html>
+<!--
+  motionforge style preview: athlete-hype-reel
+  © 2026 motionforge contributors, MIT
+  Signature scenes "freeze slam" + "chip stack" + "bio end card": the live shot (natural colour) ramps
+  100 -> 25 % over 6 frames into the decisive frame and freezes; one 30 % white frame as the frame turns
+  to a crushed-black duotone, the athlete stays in full colour with an electric-blue rim, the surname
+  slams in behind the body (scale 1.6, blur 20 -> 0, 0.18 s power4.out, 2-frame seeded shake), three
+  skewed chips snap in 0.07 s apart and count; the play resumes, then the end card holds.
+  No footage or photos: the runner and the stadium are vector illustrations standing in for the
+  athlete's own clips; name, club and numbers are fictional sample data. Unbounded + Exo 2.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Unbounded"; font-style: normal; font-weight: 900; font-display: block; src: url("assets/fonts/unbounded-latin-900-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Unbounded"; font-style: normal; font-weight: 900; font-display: block; src: url("assets/fonts/unbounded-latin-ext-900-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Exo 2"; font-style: italic; font-weight: 600; font-display: block; src: url("assets/fonts/exo-2-latin-600-italic.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Exo 2"; font-style: italic; font-weight: 600; font-display: block; src: url("assets/fonts/exo-2-latin-ext-600-italic.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Exo 2"; font-style: italic; font-weight: 700; font-display: block; src: url("assets/fonts/exo-2-latin-700-italic.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Exo 2"; font-style: italic; font-weight: 700; font-display: block; src: url("assets/fonts/exo-2-latin-ext-700-italic.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Exo 2"; font-style: italic; font-weight: 800; font-display: block; src: url("assets/fonts/exo-2-latin-800-italic.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Exo 2"; font-style: italic; font-weight: 800; font-display: block; src: url("assets/fonts/exo-2-latin-ext-800-italic.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Exo 2"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/exo-2-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Exo 2"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/exo-2-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Exo 2"; font-style: normal; font-weight: 800; font-display: block; src: url("assets/fonts/exo-2-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Exo 2"; font-style: normal; font-weight: 800; font-display: block; src: url("assets/fonts/exo-2-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      /* fonts:end */
+      :root { --mf-bg: #08090b; --light: #dce3ec; --ink: #ffffff; --acc: #2d7bff; --sup: #3a3f47; --mf-grain-opacity: 0;
+        --u: "Unbounded", "Arial Black", sans-serif; --e: "Exo 2", "Arial Black", sans-serif; }
+      #root { background: var(--mf-bg); }
+      #root::after { display: none; }
+      #bg { position: absolute; left: 0; top: 0; }
+      #tint { position: absolute; inset: 0; background: #dce3ec; mix-blend-mode: multiply; opacity: 0; }
+      #grain { position: absolute; inset: 0; background-image: var(--mf-grain); opacity: 0; mix-blend-mode: screen; }
+      #flash { position: absolute; inset: 0; background: #fff; opacity: 0; }
+      #nameWrap { position: absolute; left: 0; right: 0; top: 700px; height: 460px; }
+      #first { position: absolute; left: 70px; top: 0; font: 600 italic 64px/1 var(--e); color: var(--ink); letter-spacing: .02em; }
+      #sur { position: absolute; left: 0; right: 0; top: 70px; text-align: center; font: 900 270px/1 var(--u); letter-spacing: -0.03em; color: var(--ink); text-transform: uppercase; }
+      #sur span { display: inline-block; transform: skewX(-8deg); }
+      #under { position: absolute; left: 110px; top: 400px; width: 860px; height: 12px; background: var(--acc); transform: skewX(-8deg); transform-origin: left; }
+      #fig { position: absolute; left: 0; top: 0; overflow: visible; }
+      #pos { position: absolute; left: 60px; top: 262px; font: 600 26px/1 var(--e); letter-spacing: .14em; color: rgba(255,255,255,.9); text-transform: uppercase; }
+      #pos b { color: var(--acc); font-weight: 600; }
+      #tag { position: absolute; left: 60px; top: 210px; font: 900 34px/1 var(--u); color: var(--ink); letter-spacing: -0.01em; text-transform: uppercase; }
+      .chip { position: absolute; left: 60px; height: 82px; display: flex; align-items: center; gap: 18px; padding: 0 30px 0 26px; background: var(--sup);
+        border-left: 4px solid var(--acc); transform: skewX(-12deg); font: 700 italic 44px/1 var(--e); color: var(--ink); text-transform: uppercase; white-space: nowrap; }
+      .chip > span { display: inline-block; transform: skewX(12deg); }
+      .chip small { font: 600 26px/1 var(--e); letter-spacing: .14em; color: #b9c1cc; font-style: normal; }
+      .chip b { font: 800 46px/1 var(--e); font-variant-numeric: tabular-nums; }
+      #end { position: absolute; inset: 0; background: #08090b; opacity: 0; }
+      #end .nm { position: absolute; left: 70px; top: 1160px; font: 900 150px/0.95 var(--u); color: var(--ink); text-transform: uppercase; letter-spacing: -0.03em; }
+      #end .nm span { display: inline-block; transform: skewX(-8deg); }
+      #end .ln { position: absolute; left: 76px; top: 1470px; font: 600 italic 44px/1.35 var(--e); color: #b9c1cc; }
+      #end .ln b { color: var(--ink); font-weight: 700; }
+      #end .bar { position: absolute; left: 76px; top: 1450px; width: 300px; height: 8px; background: var(--acc); transform: skewX(-8deg); }
+      #end svg { position: absolute; left: 0; top: 0; filter: grayscale(1) contrast(1.3) brightness(1.15); }
+      #sample { position: absolute; left: 60px; top: 1700px; font: 600 24px/1 var(--e); letter-spacing: .14em; color: rgba(255,255,255,.55); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <svg id="bg" class="clip" width="1080" height="1920" viewBox="0 0 1080 1920" data-start="0" data-duration="4.5" data-track-index="0"></svg>
+      <div id="tint" class="clip" data-start="0" data-duration="4.5" data-track-index="1"></div>
+      <div id="grain" class="clip" data-start="0" data-duration="4.5" data-track-index="2"></div>
+      <div id="nameWrap" class="clip" data-start="0" data-duration="4.5" data-track-index="3"><div id="first">Mara</div><div id="sur"><span>Vale</span></div><div id="under"></div></div>
+      <svg id="fig" class="clip" width="1080" height="1920" viewBox="0 0 1080 1920" data-start="0" data-duration="4.5" data-track-index="4"></svg>
+      <div id="flash" class="clip" data-start="0" data-duration="4.5" data-track-index="5"></div>
+      <div id="chips" class="clip" data-start="0" data-duration="4.5" data-track-index="6">
+        <div class="chip" id="c0" style="top:1220px"><span><small>100 M</small> <b id="n0">11.02</b> S</span></div>
+        <div class="chip" id="c1" style="top:1322px"><span><small>Top speed</small> <b id="n1">36.2</b> KM/H</span></div>
+        <div class="chip" id="c2" style="top:1424px"><span><small>Reaction</small> <b id="n2">0.141</b> S</span></div>
+      </div>
+      <div id="tag" class="clip" data-start="0" data-duration="4.5" data-track-index="7">Athlete hype reel</div>
+      <div id="pos" class="clip" data-start="0" data-duration="4.5" data-track-index="8">Sprinter · <b>Riverside AC</b> · 100 m / 200 m</div>
+      <div id="end" class="clip" data-start="0" data-duration="4.5" data-track-index="9">
+        <svg id="endFig" width="1080" height="1920" viewBox="0 0 1080 1920"></svg>
+        <div class="nm"><span>Mara<br />Vale</span></div><div class="bar"></div>
+        <div class="ln"><b>Sprinter · 1.74 m</b><br />Riverside AC · class of 2027</div>
+      </div>
+      <div id="sample" class="clip" data-start="0" data-duration="4.5" data-track-index="10">ILLUSTRATION · FICTIONAL ATHLETE · SAMPLE DATA</div>
+    </div>
+
+    <script>
+      const DUR = 4.5, NS = "http://www.w3.org/2000/svg";
+      const mk = (p, tag, at) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); p.appendChild(e); return e; };
+      const D = Math.PI / 180;
+      // ---- time remap: live -> ramp 100 -> 25 % over 6 frames -> freeze -> resume ramp 25 -> 100 % in 0.3 s ----
+      const F0 = 0.7, F1 = 0.9, U0 = 2.5, U1 = 2.8;
+      function speed(t) { if (t < F0) return 1; if (t < F1) return 1 - 0.75 * (t - F0) / (F1 - F0); if (t < U0) return 0; if (t < U1) return 0.25 + 0.75 * (t - U0) / (U1 - U0); return 1; }
+      function playT(t) { let s = 0; const n = Math.ceil(t * 120); for (let i = 0; i < n; i++) { const a = i / 120; s += speed(a) * Math.min(1 / 120, t - a); } return s; }
+      // ---- live background: stand, crowd, track (natural colour) ----
+      const bg = document.getElementById("bg"), rng = MF.rng("athlete-hype-reel");
+      const crowd = []; for (let i = 0; i < 900; i++) crowd.push([rng.range(0, 2400), rng.range(120, 1000), rng.pick(["#d9473f", "#f2c14e", "#3a8fd9", "#e8e8e8", "#2f2f38", "#6b7280", "#1f8a5b", "#f08a4b"]), rng.range(10, 18)]);
+      const gStand = mk(bg, "g", {}), gTrack = mk(bg, "g", {});
+      mk(bg, "rect", { x: 0, y: 0, width: 1080, height: 1920, fill: "#15171c" }); bg.appendChild(gStand); bg.appendChild(gTrack);
+      const crowdEls = crowd.map(([x, y, c, s]) => mk(gStand, "rect", { y, width: s, height: s * 1.3, rx: s / 2, fill: c }));
+      mk(gStand, "rect", { x: 0, y: 1000, width: 1080, height: 60, fill: "#2a2d34" });
+      mk(gTrack, "rect", { x: 0, y: 1060, width: 1080, height: 860, fill: "#b84a32" });
+      [1060, 1250, 1480, 1760].forEach((y) => mk(gTrack, "rect", { x: 0, y, width: 1080, height: 8, fill: "rgba(255,255,255,.85)" }));
+      const marks = []; for (let i = 0; i < 6; i++) marks.push(mk(gTrack, "rect", { y: 1068, width: 14, height: 852, fill: "rgba(255,255,255,.35)", transform: "skewX(-24)" }));
+      const laneNo = mk(gTrack, "text", { y: 1440, "font-family": "Exo 2", "font-weight": 800, "font-size": 140, fill: "rgba(255,255,255,.75)" }); laneNo.textContent = "4";
+      function drawBg(p) {
+        const off = p * 1300;
+        crowdEls.forEach((e, i) => e.setAttribute("x", ((crowd[i][0] - off * 0.35) % 2400 + 2400) % 2400 - 600));
+        marks.forEach((e, i) => e.setAttribute("x", ((i * 420 - off) % 2520 + 2520) % 2520 - 600));
+        laneNo.setAttribute("x", ((300 - off) % 2400 + 2400) % 2400 - 300);
+      }
+      // ---- the runner: a vector figure posed from joint angles (0° = straight down, + = forward) ----
+      const SKIN = "#8d5a3b", SINGLET = "#c9343b", SHORTS = "#16181d", SHOE = "#f2f2f2";
+      function figure(parent, rim) {
+        const g = mk(parent, "g", {}), L = {};
+        const seg = (k, w, c) => { if (rim) L[k + "_rim"] = mk(g, "line", { stroke: "#2d7bff", "stroke-opacity": 0.4, "stroke-width": w + 16, "stroke-linecap": "round" }); L[k] = mk(g, "line", { stroke: c, "stroke-width": w, "stroke-linecap": "round" }); };
+        // draw order: far arm, far leg, torso, head, near leg, near arm
+        seg("uaR", 54, "#74482f"); seg("faR", 46, "#74482f"); seg("thR", 92, "#101215"); seg("shR", 66, "#74482f"); seg("ftR", 34, "#d9d9d9");
+        seg("tor", 150, SINGLET); seg("shorts", 128, SHORTS); seg("neck", 46, SKIN);
+        if (rim) L.head_rim = mk(g, "circle", { fill: "none", stroke: "#2d7bff", "stroke-opacity": 0.4, "stroke-width": 16 });
+        L.head = mk(g, "circle", { fill: SKIN }); L.hair = mk(g, "path", { fill: "#1a1210" });
+        seg("thL", 94, SHORTS); seg("shL", 68, SKIN); seg("ftL", 36, SHOE); seg("uaL", 56, SKIN); seg("faL", 48, SKIN);
+        L.num = mk(g, "text", { "font-family": "Exo 2", "font-weight": 800, "font-size": 64, fill: "#ffffff", "text-anchor": "middle" }); L.num.textContent = "4";
+        return { g, L };
+      }
+      function pose(F, hx, hy, ph, s) {
+        const L = F.L, P = (x, y, a, len) => [x + Math.sin(a * D) * len * s, y + Math.cos(a * D) * len * s];
+        const set = (k, a, b) => { for (const kk of [k, k + "_rim"]) if (L[kk]) { L[kk].setAttribute("x1", a[0]); L[kk].setAttribute("y1", a[1]); L[kk].setAttribute("x2", b[0]); L[kk].setAttribute("y2", b[1]); L[kk].setAttribute("stroke-width", (+L[k].dataset.w || (L[k].dataset.w = L[k].getAttribute("stroke-width"))) * s + (kk.endsWith("_rim") ? 16 : 0)); } };
+        const hip = [hx, hy], neck = P(hx, hy, 166, 300), head = P(neck[0], neck[1], 160, 92);
+        const leg = (k, phase) => {
+          const th = 52 * Math.sin(phase), bend = 18 + 70 * Math.max(0, Math.cos(phase));
+          const knee = P(hip[0], hip[1], th, 250), ank = P(knee[0], knee[1], th - bend, 250), toe = P(ank[0], ank[1], th - bend + 95, 46);
+          set("th" + k, hip, knee); set("sh" + k, knee, ank); set("ft" + k, ank, toe);
+        };
+        const arm = (k, phase) => {
+          const ua = -48 * Math.sin(phase), fa = ua + 95;
+          const sh = P(neck[0], neck[1], 0, 26), el = P(sh[0], sh[1], ua, 170), wr = P(el[0], el[1], fa, 150);
+          set("ua" + k, sh, el); set("fa" + k, el, wr);
+        };
+        leg("R", ph + Math.PI); arm("R", ph + Math.PI);
+        set("tor", P(hip[0], hip[1], 166, 40), P(hip[0], hip[1], 166, 250)); set("shorts", P(hip[0], hip[1], 166, -10), P(hip[0], hip[1], 166, 40));
+        set("neck", P(hip[0], hip[1], 166, 270), head);
+        for (const k of ["head", "head_rim"]) if (L[k]) { L[k].setAttribute("cx", head[0]); L[k].setAttribute("cy", head[1]); L[k].setAttribute("r", 58 * s); }
+        L.hair.setAttribute("d", `M${head[0] - 60 * s} ${head[1] - 6 * s} a${60 * s} ${60 * s} 0 0 1 ${118 * s} ${-14 * s} l${-10 * s} ${22 * s} Z`);
+        leg("L", ph); arm("L", ph);
+        const c = P(hip[0], hip[1], 166, 160); L.num.setAttribute("x", c[0]); L.num.setAttribute("y", c[1] + 22 * s); L.num.setAttribute("font-size", 64 * s);
+      }
+      const runner = figure(document.getElementById("fig"), true);
+      const endRunner = figure(document.getElementById("endFig"), false);
+      const PH0 = 1.25;   // stride phase at the freeze: front knee high, back leg extended
+      pose(endRunner, 700, 820, PH0, 0.78);
+      const rims = Object.keys(runner.L).filter((k) => k.endsWith("_rim")).map((k) => runner.L[k]);
+
+      function frame(t) {
+        const p = playT(t), frozen = t >= F1 && t < U0;
+        drawBg(p);
+        const pPh = PH0 + (p - playT(F1)) * 11;          // stride frequency ~1.75 Hz of the illustration
+        const bob = Math.abs(Math.cos(pPh)) * 14;
+        const sc = t >= F1 + 0.05 && t < U0 ? 1 + 0.06 * Math.min(1, 1 - Math.pow(1 - (t - F1 - 0.05) / 0.25, 3)) : 1;
+        pose(runner, 700, 1010 - bob, pPh, 1.12 * sc);
+        rims.forEach((r) => r.setAttribute("stroke-opacity", frozen ? 0.4 : 0));
+        document.getElementById("bg").style.filter = frozen ? "grayscale(1) contrast(1.5) brightness(.8)" : "none";
+      }
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      const clock = { t: 0 };
+      tl.fromTo(clock, { t: 0 }, { t: DUR, duration: DUR, ease: "none", onUpdate: () => frame(clock.t) }, 0);
+      tl.fromTo(["#tag", "#pos", "#sample"], { opacity: 0 }, { opacity: 1, duration: 0.01 }, 0.05);
+      // freeze: duotone + one 30 % white frame + static grain
+      tl.set("#tint", { opacity: 1 }, F1); tl.set("#grain", { opacity: 0.08 }, F1);
+      tl.set("#flash", { opacity: 0.3 }, F1); tl.set("#flash", { opacity: 0 }, F1 + 1 / 30);
+      // name slam behind the body + 2-frame shake
+      const SL = F1 + 0.15;
+      tl.fromTo("#sur", { opacity: 0, scale: 1.6, filter: "blur(20px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out" }, SL);
+      tl.fromTo("#first", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.18, ease: "power4.out" }, SL + 0.08);
+      tl.fromTo("#under", { scaleX: 0 }, { scaleX: 1, duration: 0.25, ease: "power4.out" }, SL + 0.12);
+      const sh = MF.rng("slam");
+      tl.set("#nameWrap", { x: sh.range(-8, 8), y: sh.range(-8, 8) }, SL + 0.18);
+      tl.set("#nameWrap", { x: sh.range(-8, 8), y: sh.range(-8, 8) }, SL + 0.18 + 1 / 30);
+      tl.set("#nameWrap", { x: 0, y: 0 }, SL + 0.18 + 2 / 30);
+      // chips snap from 120 px left, 0.07 s apart, numbers count 0.4 s
+      tl.fromTo(".chip", { opacity: 0, x: -120 }, { opacity: 1, x: 0, duration: 0.16, ease: "power4.out", stagger: 0.07 }, SL + 0.3);
+      [[0, 11.02, 2], [1, 36.2, 1], [2, 0.141, 3]].forEach(([i, v, d]) => {
+        const o = { v: 0 }, el = document.getElementById("n" + i);
+        tl.fromTo(o, { v: i === 0 ? 14 : 0 }, { v, duration: 0.4, ease: "power2.out", onUpdate: () => (el.textContent = o.v.toFixed(d)) }, SL + 0.3 + i * 0.07);
+      });
+      // resume: graphics cut off hard on the resume frame
+      tl.set(["#nameWrap", "#chips", "#tint", "#grain"], { opacity: 0 }, U0);
+      // end card
+      tl.set("#end", { opacity: 1 }, 3.35);
+      tl.set(["#tag", "#pos"], { opacity: 0 }, 3.35);
+      tl.fromTo("#end .nm", { opacity: 0, scale: 1.4, filter: "blur(14px)" }, { opacity: 1, scale: 1, filter: "blur(0px)", duration: 0.18, ease: "power4.out", transformOrigin: "left center" }, 3.4);
+      tl.fromTo("#end .bar", { scaleX: 0 }, { scaleX: 1, duration: 0.25, ease: "power4.out", transformOrigin: "left center" }, 3.5);
+      tl.fromTo("#end .ln", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.2, ease: "power4.out" }, 3.55);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

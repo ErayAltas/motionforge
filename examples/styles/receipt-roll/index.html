@@ -1,0 +1,139 @@
+<!doctype html>
+<!--
+  motionforge style preview: receipt-roll
+  © 2026 motionforge contributors, MIT
+  Signature scene "total and stamp": the paper advances one 52 px line at a time with a small judder,
+  each line reveals left to right in 0.06 s, a dashed rule prints, a 0.4 s pause, TOTAL prints at half
+  speed, and the blue rubber stamp slams (scale 1.4 -> 1, -14 -> -8 deg, 0.18 s power4.in, 6 px shake).
+  Courier Prime + Space Mono + Archivo Black. Items and prices are sample data; no store name.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      @font-face { font-family: "Courier Prime"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/courier-prime-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Courier Prime"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/courier-prime-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Space Mono"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/space-mono-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Space Mono"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/space-mono-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Archivo Black"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/archivo-black-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Archivo Black"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/archivo-black-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #26221f; --paper: #f7f6f1; --ink: #2a2a2e; --mut: #8e8a83; --acc: #2f4bbf; --head: #f2eee6; --mf-grain-opacity: .07; }
+      html, body { background: var(--bg); }
+      #root { background: radial-gradient(760px 900px at 50% 38%, #3a342f 0%, transparent 72%), var(--bg); }
+      #root::after { background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0,0,0,.5) 100%); }
+      #title { position: absolute; left: 0; right: 0; top: 270px; text-align: center; font: 400 104px/1 "Archivo Black", system-ui; text-transform: uppercase; letter-spacing: -0.01em; color: var(--head); }
+      #sub { position: absolute; left: 0; right: 0; top: 392px; text-align: center; font: 400 32px/1 "Courier Prime", monospace; color: #b9b2a7; letter-spacing: .04em; }
+      #printer { position: absolute; left: 110px; width: 860px; top: 500px; height: 96px; border-radius: 26px; background: linear-gradient(#3b3632, #1c1917); box-shadow: 0 16px 30px rgba(0,0,0,.45), inset 0 2px 0 rgba(255,255,255,.08); z-index: 3; }
+      #printer::after { content: ""; position: absolute; left: 40px; right: 40px; bottom: 18px; height: 10px; border-radius: 5px; background: #0b0a09; }
+      #paperwrap { position: absolute; left: 160px; width: 760px; top: 570px; height: 1300px; z-index: 2; filter: drop-shadow(0 20px 22px rgba(0,0,0,.5)); }
+      #world { position: absolute; inset: 0; transform-origin: 540px 1240px; }
+      #paper { position: absolute; left: 0; top: 0; width: 760px; height: 40px; background: var(--paper); transform-origin: 50% 0; transform: perspective(1400px) rotateX(6deg); }
+      #teeth { position: absolute; left: 0; width: 760px; height: 18px; bottom: -17px; }
+      #lines { position: absolute; left: 0; right: 0; top: 0; bottom: 0; overflow: hidden; }
+      .ln { position: absolute; left: 34px; right: 34px; height: 52px; display: flex; justify-content: space-between; align-items: center; font: 400 36px/1 "Courier Prime", monospace; text-transform: uppercase; color: var(--ink); white-space: pre; }
+      .ln.c { justify-content: center; }
+      .ln.m { color: var(--mut); font-size: 30px; }
+      .band { position: absolute; left: 0; right: 0; height: 3px; background: rgba(42,42,46,.02); }
+      #total { height: 84px; font: 700 64px/1 "Space Mono", monospace; }
+      #stamp { position: absolute; z-index: 4; left: 310px; top: 1250px; padding: 14px 26px; border: 6px double var(--acc); border-radius: 10px; font: 400 66px/1 "Archivo Black", system-ui; color: var(--acc); text-transform: uppercase; white-space: nowrap; opacity: .86; mix-blend-mode: multiply;
+        -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='200'><filter id='m'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' seed='7'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 -2.6 2.2'/></filter><rect width='100%' height='100%' filter='url(%23m)'/></svg>");
+        -webkit-mask-size: 400px 200px; }
+      #note { position: absolute; left: 0; right: 0; top: 1640px; text-align: center; font: 400 28px/1 "Courier Prime", monospace; color: #8e8a83; z-index: 4; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="world" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+      <h1 id="title">Receipt roll</h1>
+      <div id="sub">every line counted</div>
+      <div id="printer"></div>
+      <div id="paperwrap">
+        <div id="paper">
+          <div id="lines"></div>
+          <svg id="teeth" viewBox="0 0 760 18" preserveAspectRatio="none"></svg>
+        </div>
+      </div>
+      <div id="stamp">+€7.50 fees</div>
+      <div id="note">sample receipt · prices in €</div>
+      </div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this)
+      const r = MF.rng("receipt-roll");
+      const LH = 52, TOP = 40;
+      // [left, right, class]; prices right-aligned to column 32
+      const ROWS = [
+        ["SAMPLE RECEIPT", "", "c"],
+        ["03.11.2026   14:02   #0418", "", "c m"],
+        ["", "", ""],
+        ["OAT MILK 1L", "2.40", ""],
+        ["SOURDOUGH LOAF", "4.10", ""],
+        ["COFFEE BEANS 250G", "8.90", ""],
+        ["APPLES 1KG", "3.00", ""],
+        ["SUBTOTAL", "18.40", "m"],
+        ["DELIVERY FEE", "3.50", ""],
+        ["SERVICE CHARGE", "4.00", ""],
+        ["- - - - - - - - - - - - - - - -", "", "c"],
+      ];
+      const lines = document.getElementById("lines");
+      const els = ROWS.map(([a, b, cls], i) => {
+        const e = document.createElement("div");
+        e.className = "ln " + cls;
+        e.style.top = (TOP + i * LH) + "px";
+        e.innerHTML = `<span>${a}</span>` + (b ? `<span>${b}</span>` : "");
+        e.style.opacity = (0.85 + 0.15 * r()).toFixed(2);   // seeded thermal density per line
+        lines.appendChild(e);
+        return e;
+      });
+      const tot = document.createElement("div");
+      tot.className = "ln"; tot.id = "total";
+      tot.style.top = (TOP + ROWS.length * LH + 10) + "px";
+      tot.innerHTML = "<span>TOTAL</span><span>25.90</span>";
+      lines.appendChild(tot);
+      // faint thermal banding, seeded
+      for (let i = 0; i < 14; i++) { const b = document.createElement("div"); b.className = "band"; b.style.top = Math.round(r.range(20, 900)) + "px"; lines.appendChild(b); }
+      // torn zig-zag bottom edge (18 px teeth)
+      let tp = "M0 0 "; for (let x = 0; x <= 760; x += 19) tp += `L${x + 9.5} 18 L${x + 19} 0 `;
+      document.getElementById("teeth").innerHTML = `<path d="${tp} Z" fill="#f7f6f1"/>`;
+
+      const paper = document.getElementById("paper");
+      tl.fromTo("#title", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 0.05);
+      tl.fromTo("#sub", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.25);
+      tl.fromTo("#printer", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }, 0.1);
+      tl.set(els.concat(tot), { clipPath: "inset(0% 100% 0% 0%)" }, 0);
+      // feed: each step advances the paper one line (0.1 s, small judder) and reveals the line left to right
+      let t = 0.45, h = TOP;
+      const step = (el, adv, revealDur) => {
+        h += adv;
+        tl.to(paper, { height: h + 14, duration: 0.1, ease: "back.out(4)" }, t);
+        tl.to(el, { clipPath: "inset(0% 0% 0% 0%)", duration: revealDur, ease: "none" }, t + 0.05);
+      };
+      tl.set(paper, { height: TOP + 14 }, 0);
+      els.forEach((el, i) => { step(el, LH, 0.06); t += i < 3 ? 0.15 : 0.2; });
+      t += 0.4;                       // the pause before the total
+      step(tot, LH + 44, 0.3);        // TOTAL prints at half speed
+      t += 0.5;
+      h += 40; tl.to(paper, { height: h, duration: 0.15, ease: "power2.out" }, t - 0.1);
+      // the stamp slams
+      const ts = t + 0.1;
+      tl.fromTo("#stamp", { opacity: 0, scale: 1.4, rotation: -14 }, { opacity: 0.86, scale: 1, rotation: -8, duration: 0.18, ease: "power4.in" }, ts);
+      const sh = MF.rng("shake");
+      const shake = gsap.timeline();
+      for (let i = 0; i < 4; i++) shake.to("#paperwrap, #stamp", { x: sh.range(-6, 6), y: sh.range(-6, 6), duration: 0.03, ease: "none" });
+      shake.to("#paperwrap, #stamp", { x: 0, y: 0, duration: 0.03 });
+      tl.add(shake, ts + 0.18);
+      tl.fromTo("#note", { opacity: 0 }, { opacity: 1, duration: 0.4 }, ts + 0.3);
+      // 2x-style punch-in on the key line (kept at 1.18x so the whole receipt stays readable)
+      tl.fromTo("#world", { scale: 1 }, { scale: 1.18, duration: 0.3, ease: "power2.out" }, ts + 0.45);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

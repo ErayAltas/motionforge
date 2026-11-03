@@ -1,0 +1,99 @@
+<!doctype html>
+<!--
+  motionforge style preview: wedding-elegant
+  © 2026 motionforge contributors, MIT
+  Signature scenes "vine frame" + "foil sweep": a single sage line grows around the names in 3 s with leaf
+  pairs at 40 % and 70 % of the path, the script names write on (a soft mask travelling along each line,
+  power1.inOut), serif text fades in 0.8 s with a 12 px rise, and a 160 px light band crosses the gold
+  script once in 1.4 s, clipped to the glyphs. Pinyon Script + Cormorant Garamond. Names are fictional.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      @font-face { font-family: "Pinyon Script"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/pinyon-script-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Pinyon Script"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/pinyon-script-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Cormorant Garamond"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/cormorant-garamond-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Cormorant Garamond"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/cormorant-garamond-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Cormorant Garamond"; font-weight: 500; font-style: italic; font-display: block; src: url("assets/fonts/cormorant-garamond-latin-500-italic.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Cormorant Garamond"; font-weight: 500; font-style: italic; font-display: block; src: url("assets/fonts/cormorant-garamond-latin-ext-500-italic.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Cormorant Garamond"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/cormorant-garamond-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Cormorant Garamond"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/cormorant-garamond-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #faf6ef; --ink: #3b3530; --acc: #b8945a; --sup: #e9d5cc; --line: #a7b39c; --mf-grain-opacity: .05; }
+      html, body { background: var(--bg); }
+      #root { background: radial-gradient(1100px 900px at 15% 5%, #fffdf8 0%, transparent 65%), var(--bg); color: var(--ink); }
+      #root::before { mix-blend-mode: multiply; opacity: .08; }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 65%, rgba(59,53,48,.07) 100%); }
+      #label { position: absolute; left: 0; right: 0; top: 230px; text-align: center; font: 600 30px/1 "Cormorant Garamond", Georgia; letter-spacing: .24em; text-transform: uppercase; color: var(--ink); }
+      #vine { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: visible; }
+      #intro { position: absolute; left: 0; right: 0; top: 540px; text-align: center; font: italic 500 52px/1.35 "Cormorant Garamond", Georgia; color: var(--ink); }
+      .nm { position: absolute; left: 0; right: 0; text-align: center; font: 400 190px/1.25 "Pinyon Script", "Snell Roundhand", cursive; padding: 0 60px;
+        background: linear-gradient(100deg, #b8945a 0%, #b8945a 42%, #e6d3a8 50%, #b8945a 58%, #b8945a 100%); background-size: 300% 100%; background-position: 100% 0;
+        -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+        -webkit-mask-image: linear-gradient(90deg, #000 45%, transparent 55%); -webkit-mask-size: 220% 100%; -webkit-mask-repeat: no-repeat; -webkit-mask-position: 100% 0; }
+      #n1 { top: 630px; }
+      #amp { position: absolute; left: 0; right: 0; top: 850px; text-align: center; font: italic 500 120px/1 "Cormorant Garamond", Georgia; color: var(--acc); }
+      #n2 { top: 920px; }
+      #date { position: absolute; left: 0; right: 0; top: 1220px; text-align: center; font: 600 30px/1 "Cormorant Garamond", Georgia; letter-spacing: .24em; color: var(--acc); }
+      #venue { position: absolute; left: 0; right: 0; top: 1290px; text-align: center; font: 500 54px/1.35 "Cormorant Garamond", Georgia; color: var(--ink); text-shadow: 0 1px 0 rgba(255,255,255,.8), 0 -1px 0 rgba(59,53,48,.12); }
+      #rsvp { position: absolute; left: 0; right: 0; top: 1560px; text-align: center; font: 600 28px/1 "Cormorant Garamond", Georgia; letter-spacing: .24em; color: var(--ink); opacity: .7; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="label" class="clip" data-start="0" data-duration="4.5" data-track-index="0">Wedding elegant</div>
+      <svg id="vine" class="clip" viewBox="0 0 1080 1920" data-start="0" data-duration="4.5" data-track-index="1">
+        <path id="vp" fill="none" stroke="#a7b39c" stroke-width="2.5" stroke-linecap="round"
+          d="M190 1420 C120 1300 140 1150 128 1000 C116 840 150 640 220 520 C300 390 440 350 540 352 C660 354 800 380 880 480 C960 580 950 760 952 920 C954 1080 970 1250 900 1380 C840 1470 700 1470 600 1440" />
+        <g id="leaves"></g>
+      </svg>
+      <div id="intro" class="clip" data-start="0" data-duration="4.5" data-track-index="2">together with their families</div>
+      <div id="n1" class="nm clip" data-start="0" data-duration="4.5" data-track-index="3">Mira</div>
+      <div id="amp" class="clip" data-start="0" data-duration="4.5" data-track-index="4">&amp;</div>
+      <div id="n2" class="nm clip" data-start="0" data-duration="4.5" data-track-index="5">Julian</div>
+      <div id="date" class="clip" data-start="0" data-duration="4.5" data-track-index="6">SATURDAY · 12 SEPTEMBER 2026</div>
+      <div id="venue" class="clip" data-start="0" data-duration="4.5" data-track-index="7">Hollyfield Barn<br />Ashby Vale</div>
+      <div id="rsvp" class="clip" data-start="0" data-duration="4.5" data-track-index="8">Save the date · sample invitation</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this)
+      const vp = document.getElementById("vp"), VL = vp.getTotalLength();
+      vp.style.strokeDasharray = VL;
+      // leaf pairs at 40 % and 70 % of the path (and two small sprigs at the ends)
+      const NS = "http://www.w3.org/2000/svg", lv = document.getElementById("leaves");
+      const leafPair = (frac) => {
+        const p = vp.getPointAtLength(VL * frac), q = vp.getPointAtLength(VL * frac + 2);
+        const a = Math.atan2(q.y - p.y, q.x - p.x) * 180 / Math.PI;
+        const g = document.createElementNS(NS, "g");
+        g.setAttribute("transform", `translate(${p.x.toFixed(1)} ${p.y.toFixed(1)}) rotate(${a.toFixed(1)})`);
+        g.innerHTML = `<g class="lp"><path d="M0 0 C14 -30 44 -38 60 -34 C50 -14 26 0 0 0 Z" fill="none" stroke="#a7b39c" stroke-width="2.5"/><path d="M0 0 C14 30 44 38 60 34 C50 14 26 0 0 0 Z" fill="none" stroke="#a7b39c" stroke-width="2.5"/><path d="M0 0 L40 0" stroke="#a7b39c" stroke-width="2"/></g>`;
+        lv.appendChild(g);
+        return g.querySelector(".lp");
+      };
+      const l40 = leafPair(0.4), l70 = leafPair(0.7), l15 = leafPair(0.15), l90 = leafPair(0.9);
+
+      tl.fromTo("#label", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.8, ease: "sine.out" }, 0.0);
+      tl.fromTo(vp, { strokeDashoffset: VL }, { strokeDashoffset: 0, duration: 3.0, ease: "sine.inOut" }, 0.2);
+      [[l15, 0.15], [l40, 0.4], [l70, 0.7], [l90, 0.9]].forEach(([e, f]) => tl.fromTo(e, { scale: 0, transformOrigin: "0 0" }, { scale: 1, duration: 0.5, ease: "back.out(1.4)" }, 0.2 + 3.0 * f));
+      tl.fromTo("#intro", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.8, ease: "sine.out" }, 0.35);
+      // script names write on
+      tl.fromTo("#n1", { webkitMaskPosition: "100% 0" }, { webkitMaskPosition: "0% 0", duration: 1.2, ease: "power1.inOut" }, 0.7);
+      tl.fromTo("#amp", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.8, ease: "sine.out" }, 1.6);
+      tl.fromTo("#n2", { webkitMaskPosition: "100% 0" }, { webkitMaskPosition: "0% 0", duration: 1.4, ease: "power1.inOut" }, 1.8);
+      tl.fromTo("#date", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.8, ease: "sine.out" }, 2.6);
+      tl.fromTo("#venue", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.8, ease: "sine.out" }, 2.85);
+      tl.fromTo("#rsvp", { opacity: 0 }, { opacity: 0.7, duration: 0.8, ease: "sine.out" }, 3.2);
+      // foil sweep: one bright band across the gold script, clipped to the glyphs
+      tl.fromTo(".nm", { backgroundPosition: "100% 0" }, { backgroundPosition: "0% 0", duration: 1.4, ease: "sine.inOut" }, 3.05);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

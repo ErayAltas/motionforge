@@ -1,0 +1,103 @@
+<!doctype html>
+<!--
+  motionforge style preview: festival-lineup
+  © 2026 motionforge contributors, MIT
+  Signature scene "tier build": the bill assembles bottom-up — tier 4 names fade and rise 20 px with a
+  25 ms stagger, tier 3 at 40 ms, tier 2 from scale 0.9 at 70 ms — and the headliner drops 60 px with
+  back.out(1.6) in 0.45 s before its sun-yellow underline draws in 0.3 s; then a 4 % pull-back.
+  Big Shoulders Display + Bricolage Grotesque + Red Hat Mono. Festival and acts are fictional.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      @font-face { font-family: "Big Shoulders Display"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/big-shoulders-display-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Big Shoulders Display"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/big-shoulders-display-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Big Shoulders Display"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/big-shoulders-display-latin-900-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Big Shoulders Display"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/big-shoulders-display-latin-ext-900-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Bricolage Grotesque"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/bricolage-grotesque-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Bricolage Grotesque"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/bricolage-grotesque-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Red Hat Mono"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/red-hat-mono-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Red Hat Mono"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/red-hat-mono-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #123c69; --ink: #fff7e6; --acc: #ffc145; --sup: #6fb7c9; --mf-grain-opacity: .06; }
+      html, body { background: var(--bg); }
+      #root { background: radial-gradient(1300px 700px at 50% 1950px, #1e4f80 0%, transparent 75%), var(--bg); color: var(--ink); }
+      #poster { position: absolute; inset: 0; transform-origin: 50% 45%; }
+      #eyebrow { position: absolute; left: 0; right: 0; top: 214px; text-align: center; font: 500 28px/1 "Red Hat Mono", monospace; letter-spacing: .16em; text-transform: uppercase; color: var(--sup); }
+      #fest { position: absolute; left: 0; right: 0; top: 258px; text-align: center; font: 900 120px/1 "Big Shoulders Display", "Arial Narrow", sans-serif; text-transform: uppercase; letter-spacing: .01em; }
+      #dates { position: absolute; left: 0; right: 0; top: 388px; text-align: center; font: 500 28px/1 "Red Hat Mono", monospace; letter-spacing: .16em; color: var(--ink); }
+      #tabs { position: absolute; left: 0; right: 0; top: 460px; display: flex; justify-content: center; gap: 20px; }
+      #tabs span { width: 200px; height: 76px; border-radius: 40px; border: 3px solid var(--sup); display: flex; align-items: center; justify-content: center; font: 500 28px/1 "Red Hat Mono", monospace; letter-spacing: .16em; color: var(--sup); }
+      #tabs span.on { background: var(--acc); border-color: var(--acc); color: var(--bg); }
+      #stack { position: absolute; left: 70px; right: 70px; top: 610px; display: flex; flex-direction: column; align-items: center; gap: 34px; }
+      .tier { display: flex; flex-direction: column; align-items: center; row-gap: 4px; font-family: "Big Shoulders Display", "Arial Narrow", sans-serif; text-transform: uppercase; text-align: center; }
+      .tier .row { display: flex; align-items: center; justify-content: center; column-gap: 22px; white-space: nowrap; }
+      .tier i { width: 14px; height: 14px; border-radius: 50%; background: var(--sup); display: inline-block; }
+      .t1 { font-weight: 900; font-size: 230px; line-height: .9; letter-spacing: .01em; position: relative; }
+      .t2 { font-weight: 800; font-size: 110px; line-height: 1; }
+      .t3 { font-weight: 800; font-size: 76px; line-height: 1.05; }
+      .t4 { font-weight: 800; font-size: 56px; line-height: 1.1; color: #d9e6ec; }
+      #ul { position: absolute; left: 6%; right: 6%; bottom: -10px; height: 14px; background: var(--acc); transform-origin: left; border-radius: 7px; }
+      #ticket { position: absolute; left: 0; right: 0; top: 1600px; text-align: center; font: 600 48px/1.2 "Bricolage Grotesque", system-ui; }
+      #note { position: absolute; left: 0; right: 0; top: 1680px; text-align: center; font: 500 26px/1 "Red Hat Mono", monospace; letter-spacing: .16em; color: var(--sup); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="poster" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <div id="eyebrow">Festival lineup</div>
+        <div id="fest">Lowtide Weekend</div>
+        <div id="dates">11 – 13 JUNE · NORTH PIER</div>
+        <div id="tabs"><span>FRI</span><span class="on">SAT</span><span>SUN</span></div>
+        <div id="stack">
+          <div class="tier t1"><span>Northpaw</span><div id="ul"></div></div>
+          <div class="tier t2"></div>
+          <div class="tier t3"></div>
+          <div class="tier t4"></div>
+        </div>
+        <div id="ticket">Day tickets on sale 1 March</div>
+        <div id="note">Sample line-up · fictional acts</div>
+      </div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this)
+      // balanced rows per tier; dots only between names on the same row
+      const TIERS = {
+        t2: [["Glass Harbor"], ["Velvet Static"]],
+        t3: [["The Quiet Ferns", "Solenne"], ["Marrow & Moth", "Okapi Drive"]],
+        t4: [["Lumen Kids", "Duskwave", "Hollow Pine"], ["Brass Atlas", "Nine Lakes", "Juno Park"], ["Saltmarsh", "Ivo Kessel", "Pale Comet"]],
+      };
+      for (const k in TIERS) {
+        const el = document.querySelector("." + k);
+        el.innerHTML = TIERS[k].map((row) => `<div class="row">${row.map((n) => `<span class="nm">${n}</span>`).join("<i></i>")}</div>`).join("");
+      }
+      tl.fromTo("#eyebrow", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.0);
+      tl.fromTo("#fest", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 0.05);
+      tl.fromTo("#dates", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.2);
+      tl.fromTo("#tabs span", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: 0.06 }, 0.25);
+      // bottom-up build
+      tl.set([".t1", ".t2 .nm", ".t3 .nm", ".t4 .nm", ".tier i"], { opacity: 0 }, 0);
+      tl.fromTo(".t4 .nm", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: 0.025 }, 0.6);
+      tl.to(".t4 i", { opacity: 1, duration: 0.2, stagger: 0.025 }, 0.65);
+      tl.fromTo(".t3 .nm", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out", stagger: 0.04 }, 1.1);
+      tl.to(".t3 i", { opacity: 1, duration: 0.2, stagger: 0.04 }, 1.15);
+      tl.fromTo(".t2 .nm", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.35, ease: "power2.out", stagger: 0.07 }, 1.6);
+      tl.to(".t2 i", { opacity: 1, duration: 0.2, stagger: 0.07 }, 1.65);
+      tl.fromTo(".t1", { opacity: 0, y: -60 }, { opacity: 1, y: 0, duration: 0.45, ease: "back.out(1.6)" }, 2.2);
+      tl.fromTo("#ul", { scaleX: 0 }, { scaleX: 1, duration: 0.3, ease: "power2.out" }, 2.65);
+      tl.fromTo("#ticket", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 3.0);
+      tl.fromTo("#note", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 3.15);
+      // 4 % pull-back as the full poster completes
+      tl.fromTo("#poster", { scale: 1.04 }, { scale: 1, duration: 1.6, ease: "power2.inOut" }, 2.8);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

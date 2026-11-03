@@ -1,0 +1,165 @@
+<!doctype html>
+<!--
+  motionforge style preview: newspaper-print
+  © 2026 motionforge contributors, MIT
+  Signature scenes "headline dive" + "pencil circle" + "halftone develop": the page rolls in, a halftone
+  photo resolves from a 24 px to a 6 px dot cell (45 deg, from luminance), the camera dives from the page
+  to the headline (2.2x, power3.inOut) and into one column (3.0x) landing on the quoted sentence, where a
+  blue pencil draws a loose ellipse, an arrow to the margin and a note at 16 chars/s.
+  Playfair Display + Gelasio + Libre Franklin + Kalam. Paper, story and quote are fictional.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      @font-face { font-family: "Playfair Display"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/playfair-display-latin-900-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Playfair Display"; font-weight: 900; font-style: normal; font-display: block; src: url("assets/fonts/playfair-display-latin-ext-900-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Playfair Display"; font-weight: 900; font-style: italic; font-display: block; src: url("assets/fonts/playfair-display-latin-900-italic.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Playfair Display"; font-weight: 900; font-style: italic; font-display: block; src: url("assets/fonts/playfair-display-latin-ext-900-italic.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Gelasio"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/gelasio-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Gelasio"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/gelasio-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Gelasio"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/gelasio-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Gelasio"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/gelasio-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Libre Franklin"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/libre-franklin-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Libre Franklin"; font-weight: 800; font-style: normal; font-display: block; src: url("assets/fonts/libre-franklin-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Kalam"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/kalam-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Kalam"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/kalam-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #e2ded2; --ink: #151515; --acc: #2f63c4; --sup: #8a877e; --mf-grain-opacity: .08; }
+      html, body { background: #2a2925; }
+      #root { background: #2a2925; }
+      #root::after { display: none; }
+      #page { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 0 0; color: var(--ink);
+        background: radial-gradient(ellipse at 50% 50%, #e6e2d7 55%, #d9d0b8 100%); }
+      /* newsprint fibre: a very faint static tile (strong grain on a moving camera makes every frame unique) */
+      #page::before { content: ""; position: absolute; inset: 0; background-image: var(--mf-grain); opacity: .04; mix-blend-mode: multiply; }
+      #crease { position: absolute; left: 0; right: 0; top: 1240px; height: 2px; background: linear-gradient(rgba(255,255,255,.5), rgba(0,0,0,.12)); }
+      #mast { position: absolute; left: 0; right: 0; top: 96px; text-align: center; font: 900 72px/1 "Playfair Display", Georgia; letter-spacing: -0.01em; }
+      #dateline { position: absolute; left: 80px; right: 80px; top: 196px; padding: 10px 0; border-top: 1.5px solid var(--ink); border-bottom: 4px double var(--ink); display: flex; justify-content: space-between; font: 800 20px/1 "Libre Franklin", system-ui; letter-spacing: .12em; text-transform: uppercase; }
+      #kicker { position: absolute; left: 80px; top: 268px; font: 800 30px/1 "Libre Franklin", system-ui; letter-spacing: .12em; text-transform: uppercase; }
+      #kicker span { color: var(--sup); }
+      #head { position: absolute; left: 76px; right: 70px; top: 312px; font: 900 128px/0.95 "Playfair Display", Georgia; letter-spacing: -0.015em; }
+      #deck { position: absolute; left: 80px; right: 80px; top: 570px; font: italic 900 34px/1.2 "Playfair Display", Georgia; color: #333; }
+      .col { position: absolute; top: 640px; width: 280px; height: 860px; overflow: hidden; font: 400 26px/1.34 "Gelasio", Georgia; text-align: justify; hyphens: auto; -webkit-hyphens: auto; }
+      .col p { text-indent: 1.2em; }
+      .col p.first { text-indent: 0; }
+      #c1 { left: 80px; } #c2 { left: 400px; } #c3 { left: 720px; }
+      .rule { position: absolute; top: 640px; width: 1.5px; height: 860px; background: var(--sup); }
+      #photo { width: 280px; height: 300px; display: block; margin-bottom: 8px; }
+      .pcap { font: 800 17px/1.3 "Libre Franklin", system-ui; letter-spacing: .04em; margin-bottom: 14px; color: #333; }
+      #quote { }
+      #pencil { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: visible; pointer-events: none; }
+      #note { position: absolute; left: 540px; top: 1078px; font: 700 28px/1 "Kalam", cursive; color: var(--acc); white-space: nowrap; transform: rotate(-4deg); }
+      #strip { position: absolute; left: 80px; right: 80px; top: 1540px; padding-top: 14px; border-top: 4px double var(--ink); font: 600 40px/1.2 "Gelasio", Georgia; }
+      #strip span { font: 800 22px/1 "Libre Franklin", system-ui; letter-spacing: .12em; color: var(--sup); display: block; margin-bottom: 10px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="page" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <div id="mast">The Harbour Ledger</div>
+        <div id="dateline"><span>Tuesday 3 November 2026</span><span>Sample edition</span></div>
+        <div id="kicker">Newspaper print <span>· City</span></div>
+        <div id="head">Night trams are back</div>
+        <div id="deck">Service resumes after a year of track work</div>
+        <div id="c1" class="col"><canvas id="photo" width="280" height="300"></canvas><div class="pcap">The repaired line near Pier Square. Illustration for this preview.</div><p class="first">The night service across the old town will run again from Friday, the city transport office said, ending a year in which late workers and students relied on two crowded bus routes.</p><p>Crews replaced the worn rails on the hill section in the spring and tested the new overhead wire through the summer. The final inspection was signed on Monday.</p><p>Traders on the harbour front welcomed the news.</p></div>
+        <div id="c2" class="col"><p class="first">Trams will leave the depot every twenty minutes between midnight and five, with an extra car on Saturdays. Fares stay the same as the day service.</p><p>Officials had promised a return before the winter. <span id="quote">“We expect the first tram at 23:40 on Friday,” a spokesperson said,</span> adding that the timetable would be printed at every stop by Thursday.</p><p>Residents of the upper streets asked for quieter wheels on the curve by the school. The office said new dampers were fitted in August and that noise readings would be published next month.</p><p>A ferry link at the north pier will wait for the last tram on weekends.</p></div>
+        <div id="c3" class="col"><p class="first">Night travel in the city has grown since the harbour bars were allowed to open later, according to the office's own counts. The bus routes that replaced the trams carried twice their planned load on some weekends.</p><p>Drivers for the new service were hired in the summer and trained on the hill section after dark. Two extra cars were borrowed from the depot in the east.</p><p>The office will review the timetable in the spring and has asked riders to send comments through the stop boards and the city website.</p><p>Repairs to the bridge spur are planned for next year.</p></div>
+        <div class="rule" style="left:380px"></div><div class="rule" style="left:700px"></div>
+        <div id="crease"></div>
+        <div id="strip"><span>From the editor</span>Late trains matter as much as early ones.</div>
+        <svg id="pencil" viewBox="0 0 1080 1920"><path id="ell" fill="none" stroke="#2f63c4" stroke-width="2.6" stroke-linecap="round" /><path id="arr" fill="none" stroke="#2f63c4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+        <div id="note">says who?</div>
+      </div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this)
+      const r = MF.rng("ledger");
+      // halftone photo: a drawn scene (tram on a street at dusk), dots from luminance on a 45 deg screen
+      const cv = document.getElementById("photo"), cx = cv.getContext("2d");
+      const src = document.createElement("canvas"); src.width = 280; src.height = 300;
+      const s = src.getContext("2d");
+      const g = s.createLinearGradient(0, 0, 0, 300); g.addColorStop(0, "#eee"); g.addColorStop(0.55, "#b5b5b5"); g.addColorStop(1, "#555");
+      s.fillStyle = g; s.fillRect(0, 0, 280, 300);
+      s.fillStyle = "#555"; s.fillRect(0, 60, 60, 180); s.fillRect(220, 40, 60, 200);
+      s.fillStyle = "#2a2a2a"; s.beginPath(); s.roundRect(40, 120, 200, 120, 18); s.fill();
+      s.fillStyle = "#ddd"; for (let i = 0; i < 4; i++) s.fillRect(56 + i * 44, 140, 34, 40);
+      s.fillStyle = "#111"; s.fillRect(0, 240, 280, 60);
+      s.strokeStyle = "#333"; s.lineWidth = 3; s.beginPath(); s.moveTo(140, 120); s.lineTo(120, 70); s.lineTo(160, 70); s.moveTo(0, 66); s.lineTo(280, 74); s.stroke();
+      s.fillStyle = "#fff"; s.beginPath(); s.arc(70, 222, 8, 0, 7); s.arc(210, 222, 8, 0, 7); s.fill();
+      const img = s.getImageData(0, 0, 280, 300).data;
+      const lumAt = (x, y) => { x = Math.max(0, Math.min(279, x | 0)); y = Math.max(0, Math.min(299, y | 0)); return img[(y * 280 + x) * 4] / 255; };
+      let lastCell = 0;
+      function halftone(cell) {
+        cell = Math.round(cell);
+        if (cell === lastCell) return; lastCell = cell;
+        cx.fillStyle = "#e4e0d5"; cx.fillRect(0, 0, 280, 300);
+        cx.fillStyle = "#151515";
+        const a = Math.PI / 4, ca = Math.cos(a), sa = Math.sin(a);
+        for (let u = -420; u < 420; u += cell) for (let v = -420; v < 420; v += cell) {
+          const x = 140 + u * ca - v * sa, y = 150 + u * sa + v * ca;
+          if (x < -cell || x > 280 + cell || y < -cell || y > 300 + cell) continue;
+          const d = 1 - lumAt(x, y);
+          const rad = Math.min(cell * 0.72, cell * 0.5 * Math.sqrt(d) * 1.08);   // ~8 % dot gain
+          if (rad > 0.3) { cx.beginPath(); cx.arc(x, y, rad, 0, 6.2832); cx.fill(); }
+        }
+      }
+      // pencil marks around the quoted sentence (placed from its layout)
+      const page = document.getElementById("page");
+      const qr = () => { const rs = document.getElementById("quote").getClientRects(); return [...rs]; };
+      let ellLen = 0, arrLen = 0;
+      let FQ = [540, 1100];
+      function placePencil() {
+        const saved = page.style.transform; page.style.transform = "none";
+        const rects = qr(); page.style.transform = saved; if (!rects.length) return FQ;
+        const top = Math.min(...rects.map((q) => q.top)), bot = Math.max(...rects.map((q) => q.bottom));
+        const cxm = 540, cym = (top + bot) / 2, rx = 168, ry = (bot - top) / 2 + 4;
+        let d = "";
+        for (let i = 0; i <= 72; i++) { const t = -2.4 + i / 72 * Math.PI * 2.12; const w = 1 + 0.04 * Math.sin(i * 0.9); d += (i ? " L" : "M") + (cxm + Math.cos(t) * rx * w).toFixed(1) + " " + (cym + Math.sin(t) * ry * w + i * 0.12).toFixed(1); }
+        const ell = document.getElementById("ell"); ell.setAttribute("d", d); ellLen = ell.getTotalLength(); ell.style.strokeDasharray = ellLen; ell.style.strokeDashoffset = ellLen;
+        const arr = document.getElementById("arr");
+        const ax = cxm + 60, ay = cym + ry + 2;
+        arr.setAttribute("d", `M${ax} ${ay} C ${ax + 6} ${ay + 14}, ${ax + 4} ${ay + 26}, ${ax - 4} ${ay + 38} M${ax - 4} ${ay + 38} L${ax - 6} ${ay + 24} M${ax - 4} ${ay + 38} L${ax + 8} ${ay + 30}`);
+        arrLen = arr.getTotalLength(); arr.style.strokeDasharray = arrLen; arr.style.strokeDashoffset = arrLen;
+        const note = document.getElementById("note"); note.style.left = (cxm - 40) + "px"; note.style.top = (cym + ry + 44) + "px";
+        FQ = [cxm, cym];
+        return FQ;
+      }
+      placePencil();
+
+      // camera: page -> headline (2.2x) -> column (3.0x) on the quote; s = scale, (fx, fy) = page point at screen centre
+      const C = { s: 1, fx: 540, fy: 960, y: 0, b: 0 };
+      function cam() {
+        const tx = 540 - C.s * C.fx, ty = 960 - C.s * C.fy + C.y;
+        page.style.transform = `translate(${tx.toFixed(2)}px, ${ty.toFixed(2)}px) scale(${C.s.toFixed(4)})`;
+        page.style.filter = C.b > 0.05 ? `blur(${C.b.toFixed(2)}px)` : "none";   // motion blur while the camera moves
+      }
+      const HT = { cell: 24 };
+      tl.eventCallback("onUpdate", () => { cam(); halftone(HT.cell); });
+      // press roll: the page slides up with blur and stops
+      tl.fromTo(C, { y: 1400 }, { y: 0, duration: 0.4, ease: "power3.out" }, 0);
+      tl.fromTo(C, { b: 12 }, { b: 0, duration: 0.4, ease: "power2.in" }, 0);
+      [[1.0, 1.2], [2.3, 0.9]].forEach(([at, d]) => {
+        tl.to(C, { b: 4, duration: d / 2, ease: "sine.inOut" }, at);
+        tl.to(C, { b: 0, duration: d / 2, ease: "sine.inOut" }, at + d / 2);
+      });
+      tl.fromTo(HT, { cell: 24 }, { cell: 6, duration: 0.8, ease: "power2.inOut" }, 0.55);
+      tl.to(C, { s: 2.2, fx: 470, fy: 430, duration: 1.2, ease: "power3.inOut" }, 1.0);
+      tl.to(C, { s: 3.0, fx: () => FQ[0] + 20, fy: () => FQ[1] + 40, duration: 0.9, ease: "power3.inOut" }, 2.3);
+      tl.to("#ell", { strokeDashoffset: 0, duration: 0.5, ease: "power1.inOut" }, 3.15);
+      tl.to("#arr", { strokeDashoffset: 0, duration: 0.3, ease: "power1.inOut" }, 3.6);
+      const TXT = "says who?";
+      tl.fromTo("#note", { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: TXT.length / 16, ease: "none" }, 3.85);
+      tl.seek(0);
+      cam(); halftone(24);
+      MF.ready().then(() => { placePencil(); tl.seek(tl.time()); });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,109 @@
+<!doctype html>
+<!--
+  motionforge style preview: cause-documentary
+  © 2026 motionforge contributors, MIT
+  Signature scene: the testimony card. On warm black the apricot quote mark appears, the quote builds line
+  by line in italic serif (12 px rise, 0.5 s power2.out, 0.35 s apart), first name and place appear
+  beneath, then the card dissolves (0.5 s) back to the "footage": a handheld, warm-graded scene with a
+  small name super and a verbatim subtitle. The footage is an original illustration standing in for the
+  user's consented film; the person, quote and place are fictional. Newsreader + Figtree.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts: @fontsource/newsreader, @fontsource/figtree (copied from node_modules/@fontsource/<family>/files/) */
+      @font-face { font-family: "Newsreader"; font-weight: 500; font-style: italic; font-display: block; src: url("assets/fonts/newsreader-latin-500-italic.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Newsreader"; font-weight: 500; font-style: italic; font-display: block; src: url("assets/fonts/newsreader-latin-ext-500-italic.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Figtree"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/figtree-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Figtree"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/figtree-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Figtree"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/figtree-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Figtree"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/figtree-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #181512; --ink: #F2ECE2; --acc: #F4A259; --sup: #9A8F82; --mf-grain-opacity: 0.07; }
+      html, body { background: var(--bg); }
+      #root { background: var(--bg); color: var(--ink); }
+      .lab { font: 700 32px/1 "Figtree"; letter-spacing: .12em; text-transform: uppercase; color: var(--sup); }
+      #foot { position: absolute; inset: -40px; }
+      #foot svg { width: 1160px; height: 2000px; }
+      #card { position: absolute; inset: 0; background: var(--bg); }
+      #qm { position: absolute; left: 92px; top: 470px; font: italic 500 240px/1 "Newsreader"; color: var(--acc); height: 140px; }
+      #q { position: absolute; left: 100px; right: 140px; top: 640px; font: italic 500 76px/1.2 "Newsreader"; color: var(--ink); }
+      #q div { display: block; }
+      #att { position: absolute; left: 100px; top: 1110px; }
+      #att b { color: var(--ink); }
+      #eyebrow { position: absolute; left: 100px; top: 262px; }
+      #super { position: absolute; left: 60px; top: 1330px; font: 700 32px/1.3 "Figtree"; letter-spacing: .12em; text-transform: uppercase; color: var(--ink);
+               text-shadow: 0 2px 10px rgba(0,0,0,.5); }
+      #super span { display: block; color: #e2d7c8; font-weight: 600; }
+      #sub { position: absolute; left: 80px; right: 80px; top: 1480px; text-align: center; font: 600 46px/1.3 "Figtree"; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,.8), 0 0 18px rgba(0,0,0,.5); }
+      #note { position: absolute; left: 0; right: 0; top: 1690px; text-align: center; font: 700 24px/1 "Figtree"; letter-spacing: .12em; color: #cbbfb0; text-transform: uppercase; text-shadow: 0 1px 6px rgba(0,0,0,.6); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="foot" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <svg viewBox="0 0 1160 2000">
+          <defs>
+            <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5b4636" /><stop offset=".35" stop-color="#c98a52" /><stop offset=".55" stop-color="#e8b47a" /><stop offset=".62" stop-color="#b98a5e" /><stop offset="1" stop-color="#3a2c22" /></linearGradient>
+            <radialGradient id="sun" cx=".7" cy=".52" r=".35"><stop offset="0" stop-color="#ffe2b0" stop-opacity=".9" /><stop offset="1" stop-color="#ffe2b0" stop-opacity="0" /></radialGradient>
+            <linearGradient id="field" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a5a3c" /><stop offset="1" stop-color="#2a2018" /></linearGradient>
+            <filter id="soft"><feGaussianBlur stdDeviation="2.2" /></filter>
+            <radialGradient id="vig" cx=".5" cy=".5" r=".75"><stop offset=".55" stop-color="#000" stop-opacity="0" /><stop offset="1" stop-color="#000" stop-opacity=".65" /></radialGradient>
+          </defs>
+          <g filter="url(#soft)">
+            <rect width="1160" height="2000" fill="url(#sky)" />
+            <rect width="1160" height="2000" fill="url(#sun)" />
+            <path d="M0 1130 C 200 1090, 380 1120, 560 1095 C 760 1070, 940 1110, 1160 1090 L1160 1240 L0 1240 Z" fill="#6e5440" opacity=".85" />
+            <path d="M0 1200 C 300 1170, 700 1210, 1160 1180 L1160 2000 L0 2000 Z" fill="url(#field)" />
+            <g fill="#20180f" opacity=".75"><path d="M90 1180 l10 -160 l12 160 z" /><circle cx="100" cy="1010" r="70" /><circle cx="150" cy="1050" r="50" /></g>
+            <!-- standpipe and a figure seen from behind -->
+            <rect x="760" y="1080" width="26" height="300" fill="#2b231c" /><rect x="740" y="1080" width="80" height="18" rx="6" fill="#2b231c" />
+            <path d="M812 1098 l0 40" stroke="#7fb3c9" stroke-width="5" opacity=".8" />
+            <ellipse cx="814" cy="1190" rx="38" ry="12" fill="#3a3027" /><path d="M776 1190 L786 1260 L842 1260 L852 1190 Z" fill="#8a4f2b" />
+            <g transform="translate(183 480) scale(0.7)"><g fill="#2a2018"><ellipse cx="610" cy="900" rx="54" ry="64" /><path d="M540 970 C 520 1030, 515 1150, 525 1260 L 560 1600 L 600 1600 L 612 1300 L 626 1600 L 668 1600 L 698 1260 C 708 1150, 702 1030, 680 970 C 650 950, 570 950, 540 970 Z" />
+              <path d="M690 1000 C 730 1040, 750 1090, 760 1120 L 745 1128 C 730 1100, 700 1060, 676 1040 Z" /></g>
+            <path d="M560 905 C 560 850, 660 850, 662 905 C 650 880, 575 880, 560 905 Z" fill="#a8563a" />
+          </g></g>
+          <rect width="1160" height="2000" fill="url(#vig)" />
+        </svg>
+      </div>
+      <div id="super" class="clip" data-start="0" data-duration="4.5" data-track-index="1">Amara<span>River district</span></div>
+      <div id="sub" class="clip" data-start="0" data-duration="4.5" data-track-index="2">“Now the water is ten minutes away.”</div>
+      <div id="note" class="clip" data-start="0" data-duration="4.5" data-track-index="3">Fictional story · illustration stands in for footage</div>
+      <div id="card" class="clip" data-start="0" data-duration="4.5" data-track-index="4">
+        <div id="eyebrow" class="lab">Cause documentary · in her words</div>
+        <div id="qm">“</div>
+        <div id="q"><div>I used to walk</div><div>two hours for water.</div><div>Now my daughter</div><div>walks to school.</div></div>
+        <div id="att" class="lab"><b>Amara, 34</b> · River district (fictional)</div>
+      </div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo("#eyebrow", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.05);
+      tl.fromTo("#qm", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.1);
+      tl.fromTo("#q div", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out", stagger: 0.35 }, 0.3);
+      tl.fromTo("#att", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 1.75);
+      // dissolve back to the footage (no hard cut)
+      tl.to("#card", { opacity: 0, duration: 0.5, ease: "power1.inOut" }, 2.5);
+      tl.fromTo("#super", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 3.0);
+      tl.fromTo("#sub", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 3.15);
+      tl.fromTo("#note", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 3.3);
+      // handheld drift on the footage: smooth seeded wander + 2 % push
+      const H = { t: 0 }, foot = document.getElementById("foot"), r = MF.rng("cause-documentary");
+      const ph = [r.range(0, 6), r.range(0, 6), r.range(0, 6)];
+      tl.to(H, { t: DUR, duration: DUR, ease: "none", onUpdate: () => {
+        const t = H.t, x = 9 * Math.sin(t * 1.3 + ph[0]) + 4 * Math.sin(t * 3.1 + ph[1]), y = 7 * Math.sin(t * 1.1 + ph[2]) + 3 * Math.sin(t * 2.7), a = 0.35 * Math.sin(t * 0.9 + ph[1]);
+        foot.style.transform = `translate(${x.toFixed(2)}px, ${y.toFixed(2)}px) rotate(${a.toFixed(3)}deg) scale(${(1 + 0.02 * t / DUR).toFixed(4)})`;
+      } }, 0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

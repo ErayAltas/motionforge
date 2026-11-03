@@ -1,0 +1,165 @@
+<!doctype html>
+<!--
+  motionforge style preview: car-spec-hud
+  © 2026 motionforge contributors, MIT
+  Signature scene: the ignition sweep. The cluster fades in (0.3 s), both needles swing to full scale and
+  back in 1.2 s (power2.inOut) while the tick marks light one by one, "READY" appears, then spec readouts
+  scramble 0.3 s (seeded) and lock with a 0.1 s amber flash as their leader lines draw to the car.
+  A short 0-100 replay (sped up, labelled) ends on the timer. The car is an original generic side-view
+  illustration; model name and every figure are fictional sample data. Rajdhani + Azeret Mono.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts: @fontsource/rajdhani, @fontsource/azeret-mono (copied from node_modules/@fontsource/<family>/files/) */
+      @font-face { font-family: "Rajdhani"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/rajdhani-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Rajdhani"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/rajdhani-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Rajdhani"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/rajdhani-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Rajdhani"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/rajdhani-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Azeret Mono"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/azeret-mono-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Azeret Mono"; font-weight: 500; font-style: normal; font-display: block; src: url("assets/fonts/azeret-mono-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Azeret Mono"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/azeret-mono-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Azeret Mono"; font-weight: 600; font-style: normal; font-display: block; src: url("assets/fonts/azeret-mono-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #0B0E11; --panel: #151A1F; --ring: #2A3138; --ink: #DCE3EA; --amb: #FF7A1A; --red: #E8261B; --mut: #6C7884; --mf-grain-opacity: 0.05; }
+      html, body { background: var(--bg); }
+      #root { background: repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 2px, transparent 2px 5px), radial-gradient(1100px 700px at 50% 0%, #1A2027 0%, transparent 70%), var(--bg); color: var(--ink); }
+      .lab { font: 500 26px/1 "Azeret Mono"; letter-spacing: .12em; text-transform: uppercase; color: var(--mut); }
+      #title { position: absolute; left: 60px; top: 236px; font: 700 112px/1 "Rajdhani"; letter-spacing: .06em; text-transform: uppercase; }
+      #sub { position: absolute; left: 64px; top: 352px; }
+      #car { position: absolute; left: 60px; top: 520px; width: 960px; height: 400px; }
+      .ro { position: absolute; }
+      .ro .v { font: 600 76px/1 "Azeret Mono"; letter-spacing: -0.02em; color: var(--ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .ro .v small { font-size: 28px; color: var(--mut); margin-left: 8px; letter-spacing: .1em; }
+      .ro .lab { margin-bottom: 10px; }
+      #r1 { left: 60px; top: 420px; } #r2 { left: 700px; top: 420px; } #r3 { left: 60px; top: 900px; }
+      #lead { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; pointer-events: none; }
+      #lead path { fill: none; stroke: var(--amb); stroke-width: 3; }
+      #lead circle { fill: var(--amb); }
+      #cl { position: absolute; left: 0; top: 1040px; width: 1080px; height: 440px; }
+      #ready { position: absolute; left: 0; right: 0; top: 1236px; text-align: center; font: 700 40px/1 "Rajdhani"; letter-spacing: .2em; color: var(--amb); }
+      #dig { position: absolute; left: 0; right: 0; top: 1490px; text-align: center; }
+      #dig .v { font: 600 120px/1 "Azeret Mono"; color: var(--ink); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+      #dig .v small { font-size: 40px; color: var(--mut); }
+      #cap { position: absolute; left: 0; right: 0; top: 1660px; text-align: center; font: 600 46px/1 "Rajdhani"; color: #9aa6b2; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="0">Volta GT</div>
+      <div id="sub" class="lab clip" data-start="0" data-duration="4.5" data-track-index="1">Spec sheet · fictional car</div>
+      <svg id="car" class="clip" viewBox="0 0 960 400" data-start="0" data-duration="4.5" data-track-index="2">
+        <defs>
+          <linearGradient id="body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a646e" /><stop offset=".35" stop-color="#2c343c" /><stop offset=".7" stop-color="#161b20" /><stop offset="1" stop-color="#0d1013" /></linearGradient>
+          <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#1b2229" /><stop offset=".5" stop-color="#3c4853" /><stop offset="1" stop-color="#151a1f" /></linearGradient>
+          <radialGradient id="rim"><stop offset="0" stop-color="#9aa4ae" /><stop offset=".7" stop-color="#3b434b" /><stop offset="1" stop-color="#14181c" /></radialGradient>
+        </defs>
+        <ellipse cx="480" cy="352" rx="440" ry="22" fill="#000" opacity=".6" />
+        <path d="M40 280 C 40 240, 70 220, 150 206 L 300 186 C 350 150, 420 110, 520 106 C 610 104, 680 130, 740 172 L 860 196 C 905 206, 925 232, 925 262 L 925 300 C 925 318, 910 326, 890 326 L 60 326 C 46 326, 40 316, 40 300 Z" fill="url(#body)" />
+        <path d="M330 184 C 380 146, 440 122, 520 120 C 590 119, 650 140, 700 172 L 690 182 L 340 190 Z" fill="url(#glass)" />
+        <path d="M520 121 L 516 186" stroke="#0d1013" stroke-width="6" />
+        <path d="M60 250 C 300 236, 700 236, 920 246" stroke="#7d8892" stroke-opacity=".5" stroke-width="2" fill="none" />
+        <path d="M860 214 L 912 226" stroke="#e8eef3" stroke-width="7" stroke-linecap="round" />
+        <path d="M44 236 L 90 228" stroke="#a11a14" stroke-width="7" stroke-linecap="round" />
+        <g id="wf"><circle cx="745" cy="314" r="70" fill="#0a0c0e" /><circle cx="745" cy="314" r="48" fill="url(#rim)" />
+          <path d="M745 268 L745 360 M699 314 L791 314 M712 281 L778 347 M778 281 L712 347" stroke="#20262c" stroke-width="7" /><circle cx="745" cy="314" r="12" fill="#2a3138" /></g>
+        <g id="wr"><circle cx="210" cy="314" r="70" fill="#0a0c0e" /><circle cx="210" cy="314" r="48" fill="url(#rim)" />
+          <path d="M210 268 L210 360 M164 314 L256 314 M177 281 L243 347 M243 281 L177 347" stroke="#20262c" stroke-width="7" /><circle cx="210" cy="314" r="12" fill="#2a3138" /></g>
+      </svg>
+      <svg id="lead" class="clip" viewBox="0 0 1080 1920" data-start="0" data-duration="4.5" data-track-index="3">
+        <path id="l1" d="M300 530 L 380 560 L 420 760" pathLength="1" /><circle id="c1" cx="420" cy="760" r="8" />
+        <path id="l2" d="M840 530 L 820 600 L 805 834" pathLength="1" /><circle id="c2" cx="805" cy="834" r="8" />
+        <path id="l3" d="M300 960 L 380 930 L 470 840" pathLength="1" /><circle id="c3" cx="470" cy="840" r="8" />
+      </svg>
+      <div id="r1" class="ro clip" data-start="0" data-duration="4.5" data-track-index="4"><div class="lab">Power</div><div class="v"><span>390</span><small>kW</small></div></div>
+      <div id="r2" class="ro clip" data-start="0" data-duration="4.5" data-track-index="5"><div class="lab">Torque</div><div class="v"><span>740</span><small>Nm</small></div></div>
+      <div id="r3" class="ro clip" data-start="0" data-duration="4.5" data-track-index="6"><div class="lab">Range · WLTP</div><div class="v"><span>512</span><small>km</small></div></div>
+      <svg id="cl" class="clip" viewBox="0 0 1080 440" data-start="0" data-duration="4.5" data-track-index="7"></svg>
+      <div id="ready" class="clip" data-start="0" data-duration="4.5" data-track-index="8">READY</div>
+      <div id="dig" class="clip" data-start="0" data-duration="4.5" data-track-index="9"><div class="lab">0–100 km/h · replay ×3</div><div class="v"><span id="tm">0.00</span><small> s</small></div></div>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="10">Sample data, not a real model</div>
+    </div>
+
+    <script>
+      const DUR = 4.5, NS = "http://www.w3.org/2000/svg";
+      const cl = document.getElementById("cl");
+      // two 420 px gauges, 270° sweep from -225° to +45°
+      const G = [{ cx: 270, cy: 220, max: 280, step: 40, unit: "KM/H", red: null }, { cx: 810, cy: 220, max: 16, step: 2, unit: "RPM ×1000", red: 13 }];
+      const ticks = [[], []];
+      const P = (cx, cy, r, f) => { const a = (-225 + 270 * f) * Math.PI / 180; return [cx + Math.cos(a) * r, cy + Math.sin(a) * r]; };
+      function el(tag, attrs, parent = cl) { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; }
+      G.forEach((g, gi) => {
+        el("circle", { cx: g.cx, cy: g.cy, r: 210, fill: "#151A1F", stroke: "#2A3138", "stroke-width": 4 });
+        el("circle", { cx: g.cx, cy: g.cy, r: 196, fill: "none", stroke: "#0B0E11", "stroke-width": 2 });
+        if (g.red) { const [x0, y0] = P(g.cx, g.cy, 176, g.red / g.max), [x1, y1] = P(g.cx, g.cy, 176, 1); el("path", { d: `M${x0} ${y0} A176 176 0 0 1 ${x1} ${y1}`, stroke: "#E8261B", "stroke-width": 14, fill: "none" }); }
+        const n = g.max / g.step * 2;
+        for (let i = 0; i <= n; i++) {
+          const f = i / n, major = i % 2 === 0, [x0, y0] = P(g.cx, g.cy, major ? 150 : 162, f), [x1, y1] = P(g.cx, g.cy, 184, f);
+          const ln = el("line", { x1: x0, y1: y0, x2: x1, y2: y1, stroke: "#2A3138", "stroke-width": major ? 6 : 3, "stroke-linecap": "round" });
+          ticks[gi].push([f, ln, major]);
+          if (major) { const [tx, ty] = P(g.cx, g.cy, 118, f); const tt = el("text", { x: tx, y: ty + 10, "text-anchor": "middle", style: "font: 600 28px 'Azeret Mono'; fill: #2A3138" }); tt.textContent = i / 2 * g.step; ticks[gi].push([f, tt, "num"]); }
+        }
+        const u = el("text", { x: g.cx, y: g.cy + 120, "text-anchor": "middle", style: "font: 500 24px 'Azeret Mono'; letter-spacing: .12em; fill: #6C7884" }); u.textContent = g.unit;
+        const nd = el("g", { id: "nd" + gi });
+        el("path", { d: `M${g.cx - 7} ${g.cy} L${g.cx} ${g.cy - 176} L${g.cx + 7} ${g.cy} Z`, fill: "#FF7A1A" }, nd);
+        el("circle", { cx: g.cx, cy: g.cy, r: 26, fill: "#0B0E11", stroke: "#2A3138", "stroke-width": 4 });
+      });
+      // needle state: v = 0..1 of full scale, lit = highest fraction reached (ticks light as the needle passes)
+      const N = [{ v: 0, lit: 0 }, { v: 0, lit: 0 }];
+      function setNeedles() {
+        N.forEach((n, gi) => {
+          const g = G[gi];
+          document.getElementById("nd" + gi).setAttribute("transform", `rotate(${(-135 + 270 * n.v).toFixed(2)} ${g.cx} ${g.cy})`);
+          ticks[gi].forEach(([f, e, k]) => {
+            const on = f <= n.lit + 1e-6, red = g.red && f >= g.red / g.max - 1e-6;
+            const c = !on ? "#2A3138" : red ? "#E8261B" : k === true || k === "num" ? "#DCE3EA" : "#6C7884";
+            if (k === "num") e.style.fill = c; else e.setAttribute("stroke", c);
+          });
+        });
+      }
+      setNeedles();
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo("#title", { opacity: 0, x: -30 }, { opacity: 1, x: 0, duration: 0.35, ease: "power3.out" }, 0.05);
+      tl.fromTo("#sub", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.2);
+      tl.fromTo("#car", { opacity: 0, x: 60 }, { opacity: 1, x: 0, duration: 0.5, ease: "power3.out" }, 0.2);
+      tl.fromTo("#cl", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.45);
+      // ignition sweep: 0 -> max -> 0 in 1.2 s with a back.out settle, ticks light on the way up
+      N.forEach((n, i) => {
+        tl.to(n, { v: 1, lit: 1, duration: 0.6, ease: "power2.inOut", onUpdate: setNeedles }, 0.75 + i * 0.04);
+        tl.to(n, { v: 0, duration: 0.6, ease: "back.out(1.2)", onUpdate: setNeedles }, 1.35 + i * 0.04);
+      });
+      tl.fromTo("#ready", { opacity: 0 }, { opacity: 1, duration: 0.1 }, 1.95);
+      // spec lock-on: leader line draws, value scrambles 0.3 s (seeded), locks with a 0.1 s amber flash
+      const r = MF.rng("car-spec-hud");
+      [["#r1", "#l1", "#c1"], ["#r2", "#l2", "#c2"], ["#r3", "#l3", "#c3"]].forEach(([ro, ln, c], i) => {
+        const at = 2.0 + i * 0.22, sp = document.querySelector(ro + " .v span"), final = sp.textContent, sc = { k: 0 };
+        const seq = Array.from({ length: 10 }, () => String(Math.floor(r.range(100, 999))));
+        tl.fromTo(ln, { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.3, ease: "power2.out" }, at);
+        tl.fromTo(c, { opacity: 0 }, { opacity: 1, duration: 0.05 }, at + 0.28);
+        tl.fromTo(ro, { opacity: 0 }, { opacity: 1, duration: 0.05 }, at);
+        tl.fromTo(sc, { k: 0 }, { k: 1, duration: 0.3, ease: "none", onUpdate: () => { sp.textContent = sc.k >= 1 ? final : seq[Math.floor(sc.k * 10) % 10]; } }, at);
+        tl.fromTo(ro + " .v", { color: "#DCE3EA" }, { color: "#FF7A1A", duration: 0.01 }, at + 0.3);
+        tl.to(ro + " .v", { color: "#DCE3EA", duration: 0.1 }, at + 0.4);
+      });
+      tl.set("#lead", { opacity: 1 }, 0);
+      // 0-100 replay: speed needle follows a launch curve, timer counts and flashes amber at 100
+      tl.fromTo("#dig", { opacity: 0 }, { opacity: 1, duration: 0.2 }, 2.75);
+      const run = { k: 0 }, tm = document.getElementById("tm");
+      tl.to(run, { k: 1, duration: 1.3, ease: "none", onUpdate: () => {
+        N[0].v = (100 / 280) * (1 - Math.pow(1 - run.k, 1.8)); N[1].v = 0.25 + 0.55 * Math.sin(run.k * Math.PI * 0.9);
+        tm.textContent = (3.92 * run.k).toFixed(2); setNeedles();
+      } }, 2.85);
+      tl.to("#ready", { opacity: 0, duration: 0.1 }, 2.85);
+      tl.fromTo("#dig .v", { color: "#DCE3EA" }, { color: "#FF7A1A", duration: 0.1 }, 4.15);
+      tl.fromTo("#cap", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 3.0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

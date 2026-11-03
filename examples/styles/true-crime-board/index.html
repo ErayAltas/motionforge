@@ -1,0 +1,156 @@
+<!doctype html>
+<!--
+  motionforge style preview: true-crime-board
+  © 2026 motionforge contributors, MIT
+  Signature scenes "string pull" + "redaction lift" + "circle the name": items are pinned (scale 1.08 -> 1,
+  pin pushes in 0.08 s later), the index card types one glyph every 2 frames, a red string leaves pin A
+  and follows a sag curve to pin B (0.7 s power2.inOut, 6 px overshoot, then tightens) while the camera
+  pans with it, focus racks to the receipt (others blur 3 px, darken 30 %), the black bar over the line being read
+  wipes off left to right in 0.35 s, and a red ellipse (1.15 loops) circles the time.
+  The case, times and documents are fictional; the "photos" are vector illustrations, labelled as such.
+  Anton + Special Elite + Archivo Narrow.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Anton"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/anton-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Anton"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/anton-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Special Elite"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/special-elite-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Special Elite"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/special-elite-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Archivo Narrow"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/archivo-narrow-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Archivo Narrow"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/archivo-narrow-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      /* fonts:end */
+      :root { --mf-bg: #1f1915; --paper: #e8dfc8; --ink: #191714; --acc: #c1121f; --sup: #8c7f6a; --mf-grain-opacity: .07;
+        --an: "Anton", "Oswald", sans-serif; --tw: "Special Elite", "Courier Prime", monospace; --ar: "Archivo Narrow", "Arial Narrow", sans-serif; }
+      #root { background: var(--mf-bg); }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 45%, rgba(0,0,0,.6) 100%); z-index: 3; }
+      #cork { position: absolute; left: -100px; top: -100px; width: 1280px; height: 2300px; }
+      #lamp { position: absolute; inset: 0; background: radial-gradient(900px 800px at 18% 22%, rgba(120,96,70,.55) 0%, rgba(58,49,40,.25) 45%, transparent 75%); mix-blend-mode: screen; }
+      #dim { position: absolute; inset: 0; background: #000; opacity: 0; }
+      #title { position: absolute; left: 70px; top: 250px; white-space: nowrap; font: 400 124px/1 var(--an); text-transform: uppercase; letter-spacing: .01em; color: var(--paper); }
+      #file { position: absolute; left: 76px; top: 392px; font: 400 40px/1 var(--tw); color: var(--paper); opacity: .85; }
+      #board { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      .item { position: absolute; background: var(--paper); box-shadow: 0 14px 24px rgba(0,0,0,.45); }
+      .photo { padding: 18px 18px 64px; }
+      .photo .img { width: 100%; height: 100%; overflow: hidden; }
+      .photo .lbl { position: absolute; left: 20px; bottom: 16px; font: 400 30px/1 var(--tw); color: var(--ink); }
+      .pin { position: absolute; width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #b8ab92, #8c7f6a 60%, #5c5242); box-shadow: 0 6px 6px rgba(0,0,0,.45); z-index: 2; }
+      .tw { font: 400 44px/1.35 var(--tw); color: var(--ink); white-space: pre; }
+      .bar { position: absolute; height: 46px; background: #0a0a0a; transform-origin: right; }
+      #string { position: absolute; left: 0; top: 0; overflow: visible; z-index: 1; }
+      #circ { position: absolute; left: 0; top: 0; overflow: visible; z-index: 2; }
+      #cap { position: absolute; left: 70px; top: 1490px; width: 900px; padding: 20px 26px; background: var(--paper); transform: rotate(-0.6deg); box-shadow: 0 10px 20px rgba(0,0,0,.45);
+        font: 700 50px/1.15 var(--ar); color: var(--ink); z-index: 4; }
+      #note { position: absolute; left: 76px; top: 1690px; font: 400 26px/1 var(--tw); color: rgba(232,223,200,.6); z-index: 4; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <svg id="cork" class="clip" width="1280" height="2300" data-start="0" data-duration="4.5" data-track-index="0">
+        <filter id="cf"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="7" /><feColorMatrix values="0 0 0 0 .32  0 0 0 0 .25  0 0 0 0 .19  0 0 0 .9 0" /></filter>
+        <filter id="cf2"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="3" /><feColorMatrix values="0 0 0 0 .1  0 0 0 0 .08  0 0 0 0 .06  0 0 0 .55 0" /></filter>
+        <rect width="1280" height="2300" fill="#1f1915" /><rect width="1280" height="2300" filter="url(#cf)" opacity=".3" /><rect width="1280" height="2300" filter="url(#cf2)" />
+      </svg>
+      <div id="lamp" class="clip" data-start="0" data-duration="4.5" data-track-index="1"></div>
+      <div id="board" class="clip" data-start="0" data-duration="4.5" data-track-index="2">
+        <div class="item photo" id="iA" style="left:80px;top:540px;width:400px;height:360px;transform:rotate(-2deg)">
+          <div class="img"><svg width="364" height="278" viewBox="0 0 364 278"><defs><linearGradient id="n1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1d2733" /><stop offset="1" stop-color="#3b4048" /></linearGradient>
+            <radialGradient id="l1" cx=".72" cy=".25" r=".6"><stop offset="0" stop-color="#e9d9a8" stop-opacity=".75" /><stop offset="1" stop-color="#e9d9a8" stop-opacity="0" /></radialGradient></defs>
+            <rect width="364" height="278" fill="url(#n1)" /><rect width="364" height="278" fill="url(#l1)" /><rect x="258" y="20" width="6" height="200" fill="#151a20" /><rect x="236" y="18" width="50" height="10" rx="4" fill="#efe3b8" />
+            <rect y="210" width="364" height="68" fill="#2a2d31" /><path d="M60 214 q10 -40 50 -44 h70 q30 2 46 30 l26 6 q12 4 12 16 v14 h-212 v-14 q0 -10 8 -8z" fill="#0f1216" /><circle cx="96" cy="234" r="16" fill="#08090b" /><circle cx="226" cy="234" r="16" fill="#08090b" />
+            <g stroke="#e9e3cf" stroke-opacity=".35" stroke-width="3"><line x1="20" y1="262" x2="80" y2="262" /><line x1="140" y1="262" x2="200" y2="262" /><line x1="260" y1="262" x2="320" y2="262" /></g></svg></div>
+          <div class="lbl">EXHIBIT 3 · CAR PARK</div><div class="pin" id="pA" style="left:185px;top:-8px"></div>
+        </div>
+        <div class="item" id="iB" style="left:560px;top:520px;width:440px;height:270px;transform:rotate(1.5deg);padding:26px 30px">
+          <div style="border-bottom:2px solid rgba(193,18,31,.35);margin-bottom:10px;font:400 26px/1 var(--tw);color:#8c7f6a;padding-bottom:10px">CALL LOG · LINE 2</div>
+          <div class="tw" id="twB"></div><div class="pin" id="pB" style="left:205px;top:-10px"></div>
+        </div>
+        <div class="item" id="iD" style="left:100px;top:1000px;width:360px;height:380px;transform:rotate(2deg)" >
+          <div class="photo" style="position:absolute;inset:0"><div class="img"><svg width="324" height="298" viewBox="0 0 324 298"><rect width="324" height="298" fill="#4a4f55" /><rect width="324" height="298" fill="#b8b0a0" opacity=".25" />
+            <circle cx="162" cy="118" r="58" fill="#24272b" /><path d="M52 298 q8 -112 110 -112 q102 0 110 112z" fill="#24272b" /></svg></div><div class="lbl">WITNESS 2 · SILHOUETTE</div></div>
+          <div class="pin" id="pD" style="left:165px;top:-8px"></div>
+        </div>
+        <div class="item" id="iC" style="left:600px;top:900px;width:360px;height:500px;transform:rotate(-1deg);padding:30px 32px;background:#efe8d6">
+          <div class="tw" style="font-size:38px;line-height:1.5">KIOSK 22
+NORTH ROAD
+------------
+COFFEE      2.40
+WATER       1.10
+TIME   <span id="tm">21:49</span>
+CARD   •••• 7731</div>
+          <div class="bar" id="b0" style="left:26px;top:207px;width:300px"></div>
+          <div class="bar" id="b1" style="left:26px;top:264px;width:300px"></div>
+          <div class="bar" id="b2" style="left:26px;top:321px;width:300px"></div>
+          <div class="bar" id="b3" style="left:26px;top:378px;width:300px"></div>
+          <div class="pin" id="pC" style="left:165px;top:-10px"></div>
+        </div>
+        <svg id="string" width="1080" height="1920"><path id="s0" fill="none" stroke="#7c0b14" stroke-width="5" stroke-linecap="round" /><path id="s0c" fill="none" stroke="#c1121f" stroke-width="3" stroke-linecap="round" />
+          <path id="s1" fill="none" stroke="#7c0b14" stroke-width="5" stroke-linecap="round" /><path id="s1c" fill="none" stroke="#c1121f" stroke-width="3" stroke-linecap="round" /></svg>
+        <svg id="circ" width="1080" height="1920"><path id="ell" fill="none" stroke="#c1121f" stroke-width="6" stroke-linecap="round" /></svg>
+      </div>
+      <div id="dim" class="clip" data-start="0" data-duration="4.5" data-track-index="3"></div>
+      <div id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="4">True crime board</div>
+      <div id="file" class="clip" data-start="0" data-duration="4.5" data-track-index="5">CASE FILE 0417</div>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="6">The receipt was printed nine minutes after the call.</div>
+      <div id="note" class="clip" data-start="0" data-duration="4.5" data-track-index="7">ILLUSTRATION · FICTIONAL CASE</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      // pin centres in board coordinates (items carry small rotations; close enough for a sagging string)
+      const pinPos = (id) => { const p = document.getElementById(id), it = p.parentElement; return [it.offsetLeft + p.offsetLeft + 15, it.offsetTop + p.offsetTop + 15]; };
+      const A = pinPos("pA"), B = pinPos("pB"), C = pinPos("pC");
+      function sag(a, b, k, extra) { const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2 + Math.hypot(b[0] - a[0], b[1] - a[1]) * k + (extra || 0); return `M${a[0]} ${a[1]} Q${mx} ${my} ${b[0]} ${b[1]}`; }
+      const setS = (n, d) => { document.getElementById(n).setAttribute("d", d); document.getElementById(n + "c").setAttribute("d", d); };
+      setS("s0", sag(A, B, 0.06));
+      // typewriter card: seeded ink density per glyph
+      const r = MF.rng("true-crime-board"), TXT = "TUE 14 MAR\n21:40  CALL IN\n4 MIN 12 S";
+      const tw = document.getElementById("twB");
+      tw.innerHTML = [...TXT].map((ch) => ch === "\n" ? "\n" : `<span style="opacity:0" data-o="${r.range(0.85, 1).toFixed(2)}">${ch}</span>`).join("");
+      const glyphs = [...tw.querySelectorAll("span")];
+      // hand-drawn ellipse with 1.15 loops around the time
+      const ellPts = []; const E = { cx: 842, cy: 1244, rx: 100, ry: 38 };
+      for (let i = 0; i <= 80; i++) { const a = -2.6 + i / 80 * 2 * Math.PI * 1.15, w = 1 + 0.06 * Math.sin(i * 0.4); ellPts.push(`${(E.cx + Math.cos(a) * E.rx * w).toFixed(1)},${(E.cy + Math.sin(a) * E.ry * w + i * 0.08).toFixed(1)}`); }
+      const ell = document.getElementById("ell"); ell.setAttribute("d", "M" + ellPts.join(" L"));
+      const EL = ell.getTotalLength(); ell.setAttribute("stroke-dasharray", `${EL} ${EL}`); ell.setAttribute("stroke-dashoffset", EL);
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      // slow camera drift (2 % of frame per second), plus the pan that follows the string; the cork stays put
+      // (a moving noise texture makes every GIF frame unique)
+      tl.fromTo("#board", { x: 0, y: 0, scale: 1 }, { x: -20, y: -30, scale: 1.02, duration: 1.6, ease: "none" }, 0);
+      tl.fromTo(["#title", "#file"], { opacity: 0 }, { opacity: 1, duration: 0.3, stagger: 0.15 }, 0.05);
+      // pin items: scale 1.08 -> 1 in 0.25 s power4.out, the pin pushes in 0.08 s later with a 2 px settle
+      [["#iA", "#pA", 0.2], ["#iB", "#pB", 0.4], ["#iD", "#pD", 0.6], ["#iC", "#pC", 0.8]].forEach(([it, pin, at]) => {
+        tl.fromTo(it, { opacity: 0, scale: 1.08 }, { opacity: 1, scale: 1, duration: 0.25, ease: "power4.out" }, at);
+        tl.fromTo(pin, { scale: 1.6, y: -8 }, { scale: 1, y: 2, duration: 0.08, ease: "power2.in" }, at + 0.08);
+        tl.to(pin, { y: 0, duration: 0.06 }, at + 0.16);
+      });
+      tl.fromTo(["#s0", "#s0c"], { opacity: 0 }, { opacity: 1, duration: 0.2 }, 0.55);
+      // typing: one glyph every 2 frames
+      glyphs.forEach((g, i) => tl.set(g, { opacity: +g.dataset.o }, 0.7 + i * 2 / 30));
+      // string pull B -> C: 0.7 s power2.inOut along the sag, 6 px overshoot, then tightens
+      const pull = { v: 0, extra: 0 };
+      const drawPull = () => { const v = pull.v, end = [B[0] + (C[0] - B[0]) * v, B[1] + (C[1] - B[1]) * v + Math.sin(v * Math.PI) * 40]; setS("s1", sag(B, end, 0.06 * v, pull.extra)); };
+      tl.fromTo(pull, { v: 0 }, { v: 1.03, duration: 0.7, ease: "power2.inOut", onUpdate: drawPull }, 1.65);
+      tl.to(pull, { v: 1, extra: -10, duration: 0.15, ease: "power2.out", onUpdate: drawPull }, 2.35);
+      tl.to("#board", { x: -60, y: -70, scale: 1.06, duration: 0.7, ease: "power2.inOut" }, 1.65);
+      // rack focus to the receipt
+      tl.to(["#iA", "#iB", "#iD"], { filter: "blur(3px) brightness(.7)", duration: 0.4 }, 2.4);
+      // redaction lift: bars wipe off left to right, 0.35 s each, 0.15 s stagger; the TIME line is the one read
+      tl.to("#b2", { scaleX: 0, duration: 0.35, ease: "power2.inOut" }, 2.75);
+      // circle the time
+      tl.to(ell, { attr: { "stroke-dashoffset": 0 }, duration: 0.45, ease: "power1.inOut" }, 3.4);
+      tl.fromTo("#cap", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }, 3.0);
+      tl.fromTo("#note", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 3.2);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

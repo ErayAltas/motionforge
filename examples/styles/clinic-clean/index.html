@@ -1,0 +1,96 @@
+<!doctype html>
+<!--
+  motionforge style preview: clinic-clean
+  © 2026 motionforge contributors, MIT
+  Signature scene "step rail": circled numbers on a 4 px blue rail; each number scales 0.6 -> 1
+  (back.out(1.4)), its icon tile slides in 60 px from the left (0.4 s power2.out), the text fades and
+  rises 20 px 0.08 s later, the rail fills to the active number and past steps dim to 40 %.
+  Atkinson Hyperlegible + IBM Plex Mono. The leaflet text is a sample, not medical advice.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      @font-face { font-family: "Atkinson Hyperlegible"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/atkinson-hyperlegible-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Atkinson Hyperlegible"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/atkinson-hyperlegible-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Atkinson Hyperlegible"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/atkinson-hyperlegible-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Atkinson Hyperlegible"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/atkinson-hyperlegible-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "IBM Plex Mono"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "IBM Plex Mono"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/ibm-plex-mono-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #f6f9fb; --ink: #13293d; --acc: #2a7fc9; --sup: #d6e6f2; --mf-grain-opacity: .03; }
+      html, body { background: var(--bg); }
+      #root { background: radial-gradient(1200px 700px at 50% 0%, #fbfdfe 0%, transparent 70%), var(--bg); color: var(--ink); }
+      #root::before { mix-blend-mode: multiply; }
+      #root::after { display: none; }
+      #kicker { position: absolute; left: 96px; top: 262px; font: 400 26px/1 "IBM Plex Mono", monospace; color: #4a6075; }
+      #title { position: absolute; left: 92px; right: 80px; top: 304px; font: 700 96px/1.02 "Atkinson Hyperlegible", system-ui; letter-spacing: -0.005em; }
+      #track { position: absolute; left: 94px; top: 620px; width: 4px; height: 780px; background: var(--sup); border-radius: 2px; }
+      #fill { position: absolute; left: 94px; top: 620px; width: 4px; height: 780px; background: var(--acc); border-radius: 2px; transform-origin: top; transform: scaleY(0); }
+      .st { position: absolute; left: 0; right: 0; height: 200px; }
+      .no { position: absolute; left: 64px; top: 60px; width: 64px; height: 64px; border-radius: 50%; background: var(--acc); color: #fff; display: flex; align-items: center; justify-content: center; font: 700 34px/1 "Atkinson Hyperlegible", system-ui; box-shadow: 0 0 0 8px var(--bg); }
+      .tile { position: absolute; left: 180px; top: 0; width: 180px; height: 180px; border-radius: 36px; background: var(--sup); display: flex; align-items: center; justify-content: center; }
+      .tile svg { width: 100px; height: 100px; fill: none; stroke: var(--acc); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+      .tx { position: absolute; left: 400px; right: 80px; top: 34px; }
+      .tx b { display: block; font: 700 52px/1.15 "Atkinson Hyperlegible", system-ui; }
+      .tx span { display: block; margin-top: 8px; font: 400 40px/1.3 "Atkinson Hyperlegible", system-ui; color: #34506a; }
+      #src { position: absolute; left: 96px; top: 1580px; font: 400 26px/1.5 "IBM Plex Mono", monospace; color: #4a6075; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="kicker" class="clip" data-start="0" data-duration="4.5" data-track-index="0">Clinic clean · patient leaflet</div>
+      <h1 id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="1">Before your<br />blood test</h1>
+      <div id="track" class="clip" data-start="0" data-duration="4.5" data-track-index="2"></div>
+      <div id="fill" class="clip" data-start="0" data-duration="4.5" data-track-index="3"></div>
+      <div id="steps" class="clip" data-start="0" data-duration="4.5" data-track-index="4"></div>
+      <div id="src" class="clip" data-start="0" data-duration="4.5" data-track-index="5">Sample leaflet for this preview.<br />Follow your own clinic’s instructions.</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this)
+      const ICONS = [
+        '<rect x="14" y="22" width="72" height="64" rx="10"/><path d="M14 42 H86 M32 14 V30 M68 14 V30 M34 60 H46 M54 60 H66 M34 72 H46"/>',
+        '<path d="M30 16 H70 L64 84 H36 Z M32 40 H68"/><path d="M44 58 C44 52 50 48 50 48 C50 48 56 52 56 58 C56 62 53 64 50 64 C47 64 44 62 44 58 Z"/>',
+        '<rect x="12" y="24" width="76" height="52" rx="8"/><circle cx="34" cy="46" r="8"/><path d="M22 66 C24 58 44 58 46 66 M56 42 H78 M56 54 H72"/>',
+        '<circle cx="50" cy="52" r="34"/><path d="M50 32 V52 L64 60 M40 12 H60"/>',
+      ];
+      const STEPS = [
+        ["Book a morning slot", "Ask what time suits the test"],
+        ["Ask about fasting", "Water is usually fine"],
+        ["Bring the request form", "and a photo ID"],
+        ["Sit for a few minutes", "before you head home"],
+      ];
+      const box = document.getElementById("steps");
+      const Y0 = 580, DY = 230;
+      const rows = STEPS.map(([a, b], i) => {
+        const d = document.createElement("div"); d.className = "st"; d.style.top = (Y0 + i * DY) + "px";
+        d.innerHTML = `<div class="no">${i + 1}</div><div class="tile"><svg viewBox="0 0 100 100">${ICONS[i]}</svg></div><div class="tx"><b>${a}</b><span>${b}</span></div>`;
+        box.appendChild(d);
+        return d;
+      });
+      tl.fromTo("#kicker", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.05);
+      tl.fromTo("#title", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 0.1);
+      tl.fromTo("#track", { scaleY: 0 }, { scaleY: 1, duration: 0.5, ease: "power2.out", transformOrigin: "top" }, 0.3);
+      const T = [0.6, 1.45, 2.3, 3.15];
+      rows.forEach((r, i) => {
+        const t = T[i];
+        tl.fromTo(r.querySelector(".no"), { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(1.4)" }, t);
+        tl.fromTo(r.querySelector(".tile"), { x: -60, opacity: 0 }, { x: 0, opacity: 1, duration: 0.4, ease: "power2.out" }, t);
+        tl.fromTo(r.querySelector(".tx"), { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, t + 0.08);
+        // the rail fills down to the active number
+        tl.to("#fill", { scaleY: (i * DY + 92 - 40) / 780, duration: 0.4, ease: "power2.out" }, t);
+        // the previous step dims to 40 % instead of leaving
+        if (i > 0) tl.to([rows[i - 1].querySelector(".tile"), rows[i - 1].querySelector(".tx")], { opacity: 0.4, duration: 0.3 }, t);
+      });
+      tl.fromTo("#src", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 3.7);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

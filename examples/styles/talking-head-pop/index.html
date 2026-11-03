@@ -1,0 +1,156 @@
+<!doctype html>
+<!--
+  motionforge style preview: talking-head-pop
+  © 2026 motionforge contributors, MIT
+  An original illustrated speaker stands in for phone footage: punch ladder 1.00 / 1.12 / 1.25 on hard cuts,
+  chunky white caption plates with the stressed word on a highlighter-yellow plate, then the signature
+  word-behind-head beat: the room drops away, the cut-out speaker stands on the paper field and a giant
+  Archivo Black word slams 1.3 -> 1 behind the head; an orange sticker arrow rotates in.
+  Fonts: Montserrat 900, Archivo Black, Work Sans 600 (Fontsource, OFL).
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Montserrat"; font-style: normal; font-weight: 900; font-display: block; src: url("assets/fonts/montserrat-latin-900-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Montserrat"; font-style: normal; font-weight: 900; font-display: block; src: url("assets/fonts/montserrat-latin-ext-900-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Archivo Black"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/archivo-black-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Archivo Black"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/archivo-black-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Work Sans"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/work-sans-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Work Sans"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/work-sans-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      /* fonts:end */
+      :root { --field: #F1ECE2; --ink: #0D0E10; --plate: #FFFFFF; --acc: #FFD84D; --sup: #FF5A1F; --mf-grain-opacity: .04; }
+      html, body { background: var(--field); }
+      #root { background: var(--field); }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 65%, rgba(0,0,0,.08) 100%); }
+      #cam { position: absolute; inset: 0; transform-origin: 540px 660px; }
+      #room { position: absolute; inset: 0; }
+      #room svg, #person svg { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      #word { position: absolute; left: 0; right: 0; top: 440px; text-align: center; font: 400 400px/1 "Archivo Black", sans-serif; letter-spacing: -0.02em; text-transform: uppercase; color: var(--ink); opacity: 0; transform-origin: 540px 200px; }
+      #person { position: absolute; inset: 0; transform-origin: 540px 1920px; }
+      #caps { position: absolute; left: 0; right: 0; top: 1230px; display: flex; justify-content: center; gap: 18px; z-index: 5; }
+      .pl { display: inline-block; padding: 14px 26px; border-radius: 18px; background: var(--plate); font: 900 74px/1 "Montserrat", sans-serif; letter-spacing: -0.01em; color: var(--ink); box-shadow: 0 6px 18px rgba(13,14,16,.18); opacity: 0; }
+      .pl.y { background: var(--acc); }
+      #arrow { position: absolute; left: 800px; top: 950px; width: 180px; height: 180px; opacity: 0; z-index: 6; transform-origin: 30% 80%; }
+      #label { position: absolute; left: 70px; top: 250px; font: 600 30px/1.3 "Work Sans", sans-serif; color: var(--ink); opacity: 0; z-index: 6; }
+      #label b { display: inline-block; padding: 6px 14px; margin-right: 10px; border-radius: 10px; background: var(--plate); box-shadow: 0 0 0 6px #fff, 0 4px 10px rgba(0,0,0,.12); font-weight: 600; }
+      #prog { position: absolute; left: 0; top: 0; height: 10px; width: 1080px; background: var(--acc); transform-origin: left; z-index: 7; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="cam" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <div id="room">
+          <svg viewBox="0 0 1080 1920" aria-hidden="true">
+            <defs>
+              <linearGradient id="wl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9c9b3"/><stop offset="1" stop-color="#a99479"/></linearGradient>
+              <radialGradient id="lamp" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff1cf" stop-opacity=".95"/><stop offset="1" stop-color="#ffd99a" stop-opacity="0"/></radialGradient>
+              <filter id="dof"><feGaussianBlur stdDeviation="12"/></filter>
+            </defs>
+            <rect width="1080" height="1920" fill="url(#wl)"/>
+            <g filter="url(#dof)">
+              <rect x="-40" y="380" width="360" height="26" fill="#7a5c41"/><rect x="760" y="520" width="380" height="26" fill="#7a5c41"/>
+              <rect x="20" y="250" width="60" height="130" fill="#2f6b5a"/><rect x="90" y="280" width="44" height="100" fill="#c8553d"/><rect x="142" y="300" width="70" height="80" fill="#e9dcc3"/>
+              <circle cx="240" cy="330" r="50" fill="#4f7d4b"/><rect x="220" y="340" width="40" height="40" fill="#b07a52"/>
+              <rect x="800" y="400" width="54" height="120" fill="#2d4a6b"/><rect x="866" y="430" width="40" height="90" fill="#e3b448"/><rect x="920" y="380" width="80" height="140" fill="#efe6d6"/>
+              <circle cx="930" cy="230" r="170" fill="url(#lamp)"/>
+              <rect x="0" y="1500" width="1080" height="420" fill="#8a6c50"/>
+              <rect x="40" y="1080" width="240" height="420" rx="20" fill="#5b7f6a" opacity=".8"/>
+            </g>
+          </svg>
+        </div>
+        <div id="word">Pop</div>
+        <div id="person">
+          <svg viewBox="0 0 1080 1920" aria-hidden="true">
+            <defs>
+              <linearGradient id="skin" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b9805b"/><stop offset=".45" stop-color="#d9a079"/><stop offset="1" stop-color="#a86d4b"/></linearGradient>
+              <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#34465c"/><stop offset="1" stop-color="#1f2b3a"/></linearGradient>
+              <radialGradient id="cs" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#000" stop-opacity=".22"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+            </defs>
+            <ellipse id="shadow" cx="560" cy="1500" rx="560" ry="420" fill="url(#cs)" opacity="0"/>
+            <!-- body -->
+            <path d="M120 1920 C 130 1300 250 1080 440 1020 L 640 1020 C 830 1080 950 1300 960 1920Z" fill="url(#shirt)"/>
+            <path d="M440 1020 L 540 1150 L 640 1020Z" fill="#f2efe8"/>
+            <path d="M440 1020 L 500 1210 L 540 1150Z M640 1020 L 580 1210 L 540 1150Z" fill="#2a3a4e"/>
+            <rect x="476" y="840" width="128" height="200" rx="50" fill="#b77d58"/>
+            <path d="M476 940 Q 540 990 604 940 V 1000 Q 540 1040 476 1000Z" fill="#9c6646" opacity=".7"/>
+            <!-- head -->
+            <g id="head">
+              <ellipse cx="392" cy="680" rx="30" ry="52" fill="#c08a64"/><ellipse cx="688" cy="680" rx="30" ry="52" fill="#c08a64"/>
+              <path d="M392 610 C 392 460 470 430 540 430 C 610 430 688 460 688 610 L 688 720 C 688 820 620 880 540 880 C 460 880 392 820 392 720Z" fill="url(#skin)"/>
+              <path d="M380 640 C 360 470 440 400 545 400 C 660 400 720 470 700 640 C 690 560 660 520 600 505 C 530 540 450 530 410 520 C 392 560 386 600 380 640Z" fill="#2b1d16"/>
+              <path d="M450 618 q 36 -18 66 -2" stroke="#2b1d16" stroke-width="12" fill="none" stroke-linecap="round"/>
+              <path d="M566 616 q 32 -16 66 2" stroke="#2b1d16" stroke-width="12" fill="none" stroke-linecap="round"/>
+              <g id="eyes">
+                <ellipse cx="482" cy="662" rx="24" ry="16" fill="#fbf6ee"/><circle cx="485" cy="663" r="12" fill="#3a2418"/><circle cx="489" cy="659" r="4" fill="#fff"/>
+                <ellipse cx="598" cy="662" rx="24" ry="16" fill="#fbf6ee"/><circle cx="601" cy="663" r="12" fill="#3a2418"/><circle cx="605" cy="659" r="4" fill="#fff"/>
+              </g>
+              <rect id="lids" x="450" y="640" width="180" height="0" fill="#c48d67"/>
+              <path d="M540 680 C 532 720 526 742 520 752 Q 540 764 560 752" stroke="#8f5a3c" stroke-width="7" fill="none" stroke-linecap="round"/>
+              <path id="mouth" d="M492 792 Q 540 800 588 792 Q 540 812 492 792Z" fill="#6b2e26"/>
+              <path d="M500 794 Q 540 799 580 794 L 578 800 Q 540 804 502 800Z" fill="#fff" id="teeth" opacity="0"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+      <div id="caps" class="clip" data-start="0" data-duration="4.5" data-track-index="1"></div>
+      <svg id="arrow" class="clip" viewBox="0 0 180 180" data-start="0" data-duration="4.5" data-track-index="2"><path d="M150 160 C 150 90 110 50 40 44" fill="none" stroke="#fff" stroke-width="40" stroke-linecap="round"/><path d="M70 6 L 22 44 L 72 84" fill="none" stroke="#fff" stroke-width="40" stroke-linecap="round" stroke-linejoin="round"/><path d="M150 160 C 150 90 110 50 40 44" fill="none" stroke="#FF5A1F" stroke-width="26" stroke-linecap="round"/><path d="M70 6 L 22 44 L 72 84" fill="none" stroke="#FF5A1F" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <div id="label" class="clip" data-start="0" data-duration="4.5" data-track-index="3"><b>talking-head-pop</b> one word, one beat</div>
+      <div id="prog" class="clip" data-start="0" data-duration="4.5" data-track-index="4"></div>
+    </div>
+
+    <script>
+      const DUR = 4.5, BEAT = 1.75;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      // caption chunks: [words, stressed index or -1, start]
+      const caps = document.getElementById("caps");
+      const CH = [[["Say", "it"], -1, 0.0], [["once,"], -1, 0.55], [["say", "it"], 1, 1.05], [["Talking", "head"], -1, 2.15], [["pop"], 0, 2.6]];
+      CH.forEach(([words, hi, t], ci) => {
+        const g = document.createElement("div"); g.style.cssText = "position:absolute;left:0;right:0;display:flex;justify-content:center;gap:18px"; g.id = "c" + ci;
+        words.forEach((w, i) => { const s = document.createElement("span"); s.className = "pl" + (i === hi ? " y" : ""); s.textContent = w; g.appendChild(s); });
+        caps.appendChild(g);
+        const plates = g.querySelectorAll(".pl");
+        tl.fromTo(plates, { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.14, ease: "back.out(2)", stagger: 0.12 }, t);
+        if (hi >= 0) tl.fromTo(plates[hi], { scale: 1.08 }, { scale: 1, duration: 0.18, ease: "power2.out", immediateRender: false }, t + 0.14 + hi * 0.12);
+        const next = CH[ci + 1];
+        if (next) tl.set(plates, { opacity: 0 }, next[2]);
+      });
+      // punch ladder: hard cuts at 1.00 / 1.12 / 1.25, neighbours never share a crop
+      tl.set("#cam", { scale: 1.0 }, 0);
+      tl.set("#cam", { scale: 1.12 }, 0.55);
+      tl.set("#cam", { scale: 1.25 }, 1.05);
+      // word behind head: footage drops away, cut-out on the paper field, the word slams in behind
+      tl.set("#cam", { scale: 1.0 }, BEAT);
+      tl.set("#room", { opacity: 0 }, BEAT);
+      tl.set("#person", { scale: 0.86, y: 40 }, BEAT);
+      tl.set("#shadow", { opacity: 1 }, BEAT);
+      tl.fromTo("#word", { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: 0.18, ease: "power4.out" }, BEAT + 0.05);
+      tl.to("#cam", { scale: 1.06, duration: 0.25, ease: "power2.out" }, 2.6);
+      tl.fromTo("#arrow", { opacity: 0, rotation: -20, scale: 0.6 }, { opacity: 1, rotation: 0, scale: 1, duration: 0.3, ease: "back.out(2)" }, 3.05);
+      tl.fromTo("#label", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.25, ease: "power2.out" }, 3.2);
+      tl.fromTo("#prog", { scaleX: 0 }, { scaleX: 1, duration: DUR, ease: "none" }, 0);
+      // talking: mouth and a small head bob from a seeded syllable pattern; blinks at fixed times
+      const r = MF.rng("talking-head-pop"), syl = Array.from({ length: 60 }, () => r());
+      const mouth = document.getElementById("mouth"), teeth = document.getElementById("teeth"), head = document.getElementById("head"), lids = document.getElementById("lids");
+      const k = { t: 0 };
+      tl.fromTo(k, { t: 0 }, { t: DUR, duration: DUR, ease: "none", onUpdate: () => {
+        const t = k.t, i = Math.floor(t * 9), f = t * 9 - i;
+        const open = (t > 3.6 ? 0.15 : 1) * syl[i % 60] * Math.sin(Math.PI * f);
+        const h = 6 + 46 * open;
+        mouth.setAttribute("d", `M492 792 Q 540 ${796 - h * 0.2} 588 792 Q 540 ${806 + h} 492 792Z`);
+        teeth.setAttribute("opacity", open > 0.35 ? 1 : 0);
+        head.setAttribute("transform", `rotate(${1.5 * Math.sin(t * 3.1)} 540 860) translate(0 ${3 * Math.sin(t * 7.3)})`);
+        const b = [0.9, 2.9].some((bt) => t > bt && t < bt + 0.12);
+        lids.setAttribute("height", b ? 34 : 0);
+      } }, 0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>
