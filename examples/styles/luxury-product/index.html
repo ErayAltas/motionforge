@@ -1,0 +1,147 @@
+<!doctype html>
+<!--
+  motionforge style preview: luxury-product
+  © 2026 motionforge contributors, MIT
+  Built on templates/product-turntable-3d (dark stone plinth, slow orbit, callouts off): an original
+  fragrance bottle made of primitives emerges from black into a warm light pool, then the signature light
+  sweep, a 120 px warm band at 25 deg masked to the object (an emissive term added in the product's own
+  shader, so the background stays black), and the Bodoni name plate with a gold hairline drawing outward.
+  Product name, size and edition are fictional sample values. Fonts: Bodoni Moda (+ italic), Josefin Sans.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script type="importmap">{ "imports": { "three": "./assets/vendor/three.module.min.js", "three/addons/": "./assets/vendor/three-addons/" } }</script>
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Bodoni Moda"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/bodoni-moda-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Bodoni Moda"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/bodoni-moda-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Bodoni Moda"; font-style: italic; font-weight: 400; font-display: block; src: url("assets/fonts/bodoni-moda-latin-400-italic.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Bodoni Moda"; font-style: italic; font-weight: 400; font-display: block; src: url("assets/fonts/bodoni-moda-latin-ext-400-italic.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Josefin Sans"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/josefin-sans-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Josefin Sans"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/josefin-sans-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      /* fonts:end */
+      :root { --bg: #0A0908; --ink: #EFE7D8; --gold: #C9A15A; --sup: #6E655A; --mf-grain-opacity: .05; }
+      html, body { background: var(--bg); }
+      #root { background: var(--bg); }
+      #root::after { background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0,0,0,.5) 100%); z-index: 6; }
+      #pool { position: absolute; inset: 0; background: radial-gradient(520px 480px at 50% 1000px, #2A2116 0%, rgba(42,33,22,.55) 35%, rgba(10,9,8,0) 60%); }
+      #gl { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      #black { position: absolute; inset: 0; background: var(--bg); z-index: 3; }
+      #name { position: absolute; left: 0; right: 0; top: 1370px; text-align: center; font: 400 104px/1.05 "Bodoni Moda", serif; letter-spacing: .01em; color: var(--ink); z-index: 4; }
+      #name em { font-style: italic; color: var(--gold); }
+      .hair { position: absolute; top: 1520px; width: 280px; height: 1px; background: var(--gold); z-index: 4; }
+      #hl { left: 260px; transform-origin: right; } #hr { left: 540px; transform-origin: left; }
+      #lab { position: absolute; left: 0; right: 0; top: 1552px; text-align: center; font: 400 26px/1 "Josefin Sans", sans-serif; letter-spacing: .35em; text-transform: uppercase; color: var(--ink); z-index: 4; }
+      #ed { position: absolute; left: 0; right: 0; top: 1620px; text-align: center; font: 400 24px/1 "Josefin Sans", sans-serif; letter-spacing: .35em; text-transform: uppercase; color: var(--sup); z-index: 4; }
+      #eyebrow2 { position: absolute; left: 0; right: 0; top: 300px; text-align: center; font: 400 24px/1 "Josefin Sans", sans-serif; letter-spacing: .5em; text-transform: uppercase; color: var(--sup); z-index: 4; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="pool" class="clip" data-start="0" data-duration="4.5" data-track-index="0"></div>
+      <canvas id="gl" class="clip" width="1080" height="1920" data-start="0" data-duration="4.5" data-track-index="1"></canvas>
+      <div id="black" class="clip" data-start="0" data-duration="4.5" data-track-index="2"></div>
+      <div id="eyebrow2" class="clip" data-start="0" data-duration="4.5" data-track-index="3">Nocturne · No. 7</div>
+      <div id="name" class="clip" data-start="0" data-duration="4.5" data-track-index="4">Luxury <em>product</em></div>
+      <div id="hl" class="hair clip" data-start="0" data-duration="4.5" data-track-index="5"></div>
+      <div id="hr" class="hair clip" data-start="0" data-duration="4.5" data-track-index="6"></div>
+      <div id="lab" class="clip" data-start="0" data-duration="4.5" data-track-index="7">Eau de parfum · 50 ml</div>
+      <div id="ed" class="clip" data-start="0" data-duration="4.5" data-track-index="8">Edition of 300 · sample</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      // emerge from black: 0.6 s of black, then a 1.2 s sine fade (the 3D layer scales 1.00 -> 1.03 itself)
+      tl.fromTo("#black", { opacity: 1 }, { opacity: 0, duration: 1.2, ease: "sine.inOut" }, 0.6);
+      tl.fromTo("#eyebrow2", { opacity: 0, letterSpacing: "0.65em" }, { opacity: 1, letterSpacing: "0.5em", duration: 1.4, ease: "power2.out" }, 1.2);
+      tl.fromTo("#name", { opacity: 0, letterSpacing: "0.08em" }, { opacity: 1, letterSpacing: "0.01em", duration: 1.4, ease: "power2.out" }, 2.2);
+      tl.fromTo(["#hl", "#hr"], { scaleX: 0 }, { scaleX: 1, duration: 0.9, ease: "power2.inOut" }, 2.7);
+      tl.fromTo("#lab", { opacity: 0, letterSpacing: "0.5em" }, { opacity: 1, letterSpacing: "0.35em", duration: 1.4, ease: "power2.out" }, 3.0);
+      tl.fromTo("#ed", { opacity: 0 }, { opacity: 1, duration: 0.8, ease: "sine.inOut" }, 3.4);
+      tl.seek(0);
+    </script>
+
+    <script type="module">
+      import * as THREE from "three";
+      import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+      import { createStage, environment, lights, shadowCatcher, onSeek, orbit, ease, seg, lerp } from "./assets/vendor/mf-three.js";
+
+      const { renderer, scene, camera, render } = createStage({ fov: 26, exposure: 0.95 });
+      environment(renderer, scene, 0.35);
+      const L = lights.studio(scene, { size: 3, target: [0, 1, 0], intensity: 0.75 });
+      L.rim.intensity = 3.2; L.rim.color.set("#ffd9a0"); L.fill.intensity = 0.15;
+      shadowCatcher(scene, { opacity: 0.6 });
+
+      // the light sweep: a soft screen-space band added to the product's emissive term (masked to the object)
+      const sweep = { x: { value: -400 }, amt: { value: 0 } };
+      function withSweep(mat) {
+        mat.onBeforeCompile = (sh) => {
+          sh.uniforms.uSweepX = sweep.x; sh.uniforms.uSweepAmt = sweep.amt;
+          sh.fragmentShader = "uniform float uSweepX;\nuniform float uSweepAmt;\n" + sh.fragmentShader.replace("#include <emissivemap_fragment>",
+            `#include <emissivemap_fragment>
+            vec2 sd = gl_FragCoord.xy - vec2(uSweepX, 960.0);
+            float dd = dot(sd, vec2(0.9063, -0.4226));
+            totalEmissiveRadiance += vec3(1.0, 0.93, 0.80) * exp(-dd * dd / 3200.0) * uSweepAmt;`);
+        };
+        return mat;
+      }
+
+      // plinth: honed dark stone
+      const plinth = new THREE.Mesh(new THREE.CylinderGeometry(0.95, 0.95, 0.36, 128), new THREE.MeshStandardMaterial({ color: "#100d0a", roughness: 0.75, metalness: 0.0, envMapIntensity: 0.4 }));
+      plinth.position.y = 0.18; plinth.receiveShadow = true; plinth.castShadow = true;
+      scene.add(plinth);
+
+      // an original fragrance bottle: faceted dark glass, ivory label, gold collar and cap
+      const product = new THREE.Group();
+      const glass = withSweep(new THREE.MeshPhysicalMaterial({ color: "#3a2412", roughness: 0.06, metalness: 0.1, clearcoat: 1, clearcoatRoughness: 0.04, envMapIntensity: 1.4 }));
+      const gold = withSweep(new THREE.MeshStandardMaterial({ color: "#C9A15A", roughness: 0.15, metalness: 1, envMapIntensity: 1.2 }));
+      const label = withSweep(new THREE.MeshStandardMaterial({ color: "#EFE7D8", roughness: 0.7 }));
+      const body = new THREE.Mesh(new RoundedBoxGeometry(1.15, 1.45, 0.62, 8, 0.12), glass);
+      body.position.y = 0.36 + 0.725;
+      const lab = new THREE.Mesh(new THREE.PlaneGeometry(0.5, 0.34), label);
+      lab.position.set(0, 0.36 + 0.68, 0.312);
+      const goldLine = new THREE.Mesh(new THREE.PlaneGeometry(0.34, 0.008), gold);
+      goldLine.position.set(0, 0.36 + 0.62, 0.3135);
+      const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.17, 0.19, 0.12, 64), gold);
+      collar.position.y = 0.36 + 1.45 + 0.06;
+      const cap = new THREE.Mesh(new RoundedBoxGeometry(0.62, 0.5, 0.62, 6, 0.06), gold);
+      cap.position.y = 0.36 + 1.45 + 0.12 + 0.25;
+      product.add(body, lab, goldLine, collar, cap);
+      product.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+      scene.add(product);
+      // engraved word on the label, drawn into a small canvas texture (Bodoni if loaded)
+      const ready = document.fonts.ready.then(() => {
+        const c = document.createElement("canvas"); c.width = 512; c.height = 348;
+        const g = c.getContext("2d"); g.fillStyle = "#EFE7D8"; g.fillRect(0, 0, 512, 348);
+        g.fillStyle = "#2a2116"; g.textAlign = "center"; g.font = '400 64px "Bodoni Moda"'; g.fillText("NOCTURNE", 256, 160);
+        g.font = '400 26px "Josefin Sans"'; g.fillStyle = "#6E655A"; g.fillText("N° 7 · 50 ML", 256, 240);
+        const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+        label.map = tex; label.needsUpdate = true;
+      });
+
+      function draw(t) {
+        const k = ease.inOutSine(seg(t, 0.6, 1.2));
+        product.scale.setScalar(lerp(1.0, 1.03, ease.inOutSine(seg(t, 0.6, DUR_ - 0.6))));
+        product.rotation.y = lerp(-0.42, -0.18, t / DUR_);
+        // sweep: crosses left to right over 2.0 s, sine.inOut, peak 0.6
+        const s = seg(t, 1.9, 2.0);
+        sweep.x.value = lerp(-300, 1380, ease.inOutSine(s));
+        sweep.amt.value = 0.6 * Math.sin(Math.PI * s);
+        orbit(camera, { radius: 12.6, height: 1.1, angle: lerp(-3, 3, t / DUR_), target: [0, 1.4, 0] });
+        camera.setViewOffset(1080, 1920, 0, -(900 - 960), 1080, 1920);
+        void k;
+        render();
+      }
+      const DUR_ = 4.5;
+      onSeek(draw, ready);
+    </script>
+  </body>
+</html>

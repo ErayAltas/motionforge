@@ -1,0 +1,180 @@
+<!doctype html>
+<!--
+  motionforge style preview: history-map-campaign
+  © 2026 motionforge contributors, MIT
+  Signature scenes "campaign arrow" + "front advance" + "siege ring": on an engraved paper map a madder
+  arrow (tapered 48 -> 18 px) sweeps along its route in 1.6 s power2.inOut, the head scaling 0.6 -> 1 in
+  the last 0.2 s, while the dated caption rolls (old date up 40 px and out, new date in, 0.3 s) and the
+  madder territory grows behind the arrow by mask; the indigo side sits at 80 %; then short dashes close
+  round the besieged town in 1.2 s, its label turns madder and a day counter ticks.
+  Geography, places, sides and dates are fictional (labelled on screen); the coastline is seeded.
+  Cormorant SC + EB Garamond.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Cormorant SC"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/cormorant-sc-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Cormorant SC"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/cormorant-sc-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Cormorant SC"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/cormorant-sc-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Cormorant SC"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/cormorant-sc-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "EB Garamond"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/eb-garamond-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "EB Garamond"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/eb-garamond-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "EB Garamond"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/eb-garamond-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "EB Garamond"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/eb-garamond-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "EB Garamond"; font-style: italic; font-weight: 500; font-display: block; src: url("assets/fonts/eb-garamond-latin-500-italic.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "EB Garamond"; font-style: italic; font-weight: 500; font-display: block; src: url("assets/fonts/eb-garamond-latin-ext-500-italic.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      /* fonts:end */
+      :root { --paper: #d9c9a0; --ink: #3b2b1b; --acc: #a3261e; --sup: #2e4a6b; --sea: #b9bfa8; --mf-grain-opacity: .05;
+        --sc: "Cormorant SC", "EB Garamond", Georgia, serif; --gar: "EB Garamond", Georgia, serif; }
+      html, body { background: var(--paper); }
+      #root { background: radial-gradient(1000px 1300px at 50% 48%, #e0d2ab 0%, #d9c9a0 45%, #bfa97a 100%); color: var(--ink); }
+      #root::before { mix-blend-mode: multiply; opacity: .1; }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(80,55,20,.3) 100%); z-index: 3; }
+      #map { position: absolute; left: 0; top: 0; }
+      #cart { position: absolute; left: 110px; top: 236px; width: 860px; height: 190px; z-index: 2; }
+      #cart svg { position: absolute; left: 0; top: 0; }
+      #cart .t { position: absolute; left: 0; right: 0; top: 40px; text-align: center; white-space: nowrap; font: 700 70px/1 var(--sc); letter-spacing: .06em; color: var(--ink); }
+      #cart .s { position: absolute; left: 0; right: 0; top: 128px; text-align: center; font: italic 500 34px/1 var(--gar); color: var(--ink); opacity: .85; }
+      #dateBox { position: absolute; left: 80px; top: 1500px; width: 520px; height: 100px; border: 3px solid var(--ink); background: rgba(232,219,184,.85); overflow: hidden; z-index: 2; }
+      #dateBox::after { content: ""; position: absolute; inset: 5px; border: 1px solid var(--ink); opacity: .6; }
+      .dt { position: absolute; left: 0; right: 0; top: 0; height: 100px; text-align: center; font: 600 56px/100px var(--gar); font-variant-numeric: lining-nums; color: var(--ink); }
+      #src { position: absolute; left: 80px; top: 1625px; font: italic 500 30px/1.3 var(--gar); color: var(--ink); opacity: .85; z-index: 2; }
+      .lbl { font-family: "Cormorant SC"; font-weight: 600; letter-spacing: 6px; fill: #3b2b1b; }
+      .wl { font-family: "EB Garamond"; font-style: italic; font-weight: 500; fill: #3b2b1b; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <svg id="map" class="clip" width="1080" height="1920" viewBox="0 0 1080 1920" data-start="0" data-duration="4.5" data-track-index="0">
+        <defs>
+          <pattern id="hM" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(40)"><line x1="0" y1="0" x2="0" y2="14" stroke="#a3261e" stroke-width="3" /></pattern>
+          <pattern id="hI" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(-40)"><line x1="0" y1="0" x2="0" y2="14" stroke="#2e4a6b" stroke-width="3" /></pattern>
+          <clipPath id="landClip"><path id="landClipPath" /></clipPath>
+          <clipPath id="growClip"><circle id="grow" cx="850" cy="1330" r="0" /></clipPath>
+        </defs>
+        <g id="sea"></g><g id="land"></g><g id="terr"></g><g id="marks"></g><g id="route"></g><g id="siege"></g><g id="labels"></g>
+      </svg>
+      <div id="cart" class="clip" data-start="0" data-duration="4.5" data-track-index="1">
+        <svg width="860" height="190" viewBox="0 0 860 190"><path d="M30 10 H830 Q850 10 850 30 V160 Q850 180 830 180 H30 Q10 180 10 160 V30 Q10 10 30 10 Z" fill="rgba(232,219,184,.92)" stroke="#3b2b1b" stroke-width="3" />
+          <path d="M44 22 H816 Q838 22 838 44 V146 Q838 168 816 168 H44 Q22 168 22 146 V44 Q22 22 44 22 Z" fill="none" stroke="#3b2b1b" stroke-width="1.2" />
+          <path d="M330 118 Q430 104 530 118" fill="none" stroke="#3b2b1b" stroke-width="1.5" /></svg>
+        <div class="t">History map campaign</div><div class="s">The march on Torrin · a fictional campaign</div>
+      </div>
+      <div id="dateBox" class="clip" data-start="0" data-duration="4.5" data-track-index="2"><div class="dt" id="d0">14 June 1807</div><div class="dt" id="d1">2 July 1807</div></div>
+      <div id="src" class="clip" data-start="0" data-duration="4.5" data-track-index="3">Example map · invented places and dates</div>
+    </div>
+
+    <script>
+      const DUR = 4.5, NS = "http://www.w3.org/2000/svg", r = MF.rng("history-map-campaign");
+      const $ = (id) => document.getElementById(id);
+      const mk = (p, tag, at) => { const e = document.createElementNS(NS, tag); for (const k in at) e.setAttribute(k, at[k]); p.appendChild(e); return e; };
+      // smooth seeded noise
+      const nv = []; for (let i = 0; i < 64; i++) nv.push(r.range(-1, 1));
+      const noise = (x) => { const i = Math.floor(x), f = x - i, a = nv[((i % 64) + 64) % 64], b = nv[(((i + 1) % 64) + 64) % 64]; return a + (b - a) * (f * f * (3 - 2 * f)); };
+      // coastline: sea to the west, a gulf in the middle, land to the east
+      const coast = [];
+      for (let y = 430; y <= 1500; y += 6) {
+        const gulf = 230 * Math.exp(-Math.pow((y - 960) / 120, 2));
+        coast.push([250 + 70 * Math.sin(y / 190) + gulf + 34 * noise(y / 40) + 12 * noise(y / 11 + 20), y]);
+      }
+      const pts = (a) => a.map((p) => p[0].toFixed(1) + " " + p[1].toFixed(1)).join(" L");
+      const landD = "M" + pts(coast) + " L1100 1500 L1100 430 Z";
+      $("landClipPath").setAttribute("d", landD);
+      mk($("sea"), "rect", { x: 0, y: 430, width: 1080, height: 1070, fill: "#b9bfa8", opacity: 0.75 });
+      for (let k = 1; k <= 3; k++) mk($("sea"), "path", { d: "M" + pts(coast.map(([x, y]) => [x - k * 14, y])), fill: "none", stroke: "#3b2b1b", "stroke-width": 1, opacity: 0.35 - k * 0.08 });
+      mk($("land"), "path", { d: landD, fill: "#dccca2" });
+      for (let k = 1; k <= 3; k++) mk($("land"), "path", { d: "M" + pts(coast.map(([x, y]) => [x + k * 6, y])), fill: "none", stroke: "#3b2b1b", "stroke-width": 1.2, opacity: 0.5 - k * 0.12, "clip-path": "url(#landClip)" });
+      mk($("land"), "path", { d: "M" + pts(coast), fill: "none", stroke: "#3b2b1b", "stroke-width": 3 });
+      // an island
+      const isl = []; for (let a = 0; a <= 40; a++) { const t = a / 40 * Math.PI * 2, rr = 46 + 12 * noise(a / 3 + 40); isl.push([120 + Math.cos(t) * rr * 1.4, 1320 + Math.sin(t) * rr]); }
+      mk($("land"), "path", { d: "M" + pts(isl) + "Z", fill: "#dccca2", stroke: "#3b2b1b", "stroke-width": 2.5 });
+      // territories: indigo (the north, holding Torrin) and madder (grows from Velm behind the arrow)
+      const north = "M380 430 L1100 430 L1100 760 C900 820 760 760 640 860 C560 920 480 880 400 900 L300 900 Z";
+      mk($("terr"), "path", { d: north, fill: "url(#hI)", opacity: 0.28, "clip-path": "url(#landClip)" });
+      mk($("terr"), "path", { d: "M1100 760 C900 820 760 760 640 860 C560 920 480 880 420 900", fill: "none", stroke: "#2e4a6b", "stroke-width": 4, opacity: 0.8, "stroke-dasharray": "2 10", "stroke-linecap": "round" });
+      const g2 = mk($("terr"), "g", { "clip-path": "url(#landClip)" });
+      const g3 = mk(g2, "g", { "clip-path": "url(#growClip)" });
+      mk(g3, "path", { d: "M1100 1500 L1100 820 C920 860 780 820 640 900 C560 950 480 920 400 960 L300 1500 Z", fill: "url(#hM)", opacity: 0.35 });
+      // mountains (hachured symbols), a river, towns, labels
+      for (let i = 0; i < 9; i++) {
+        const x = 760 + i * 34 + r.range(-8, 8), y = 1000 + Math.sin(i) * 30 + r.range(-10, 10);
+        mk($("marks"), "path", { d: `M${x - 22} ${y + 16} L${x} ${y - 18} L${x + 22} ${y + 16}`, fill: "none", stroke: "#3b2b1b", "stroke-width": 2.2 });
+        for (let h = 0; h < 4; h++) mk($("marks"), "line", { x1: x + 3 + h * 4, y1: y - 12 + h * 7, x2: x + 3 + h * 4, y2: y + 14, stroke: "#3b2b1b", "stroke-width": 1, opacity: 0.6 });
+      }
+      const riv = []; for (let i = 0; i <= 40; i++) { const u = i / 40; riv.push([800 - 420 * u + 26 * noise(u * 9 + 5), 1060 + 160 * u + 40 * Math.sin(u * 7)]); }
+      mk($("marks"), "path", { d: "M" + pts(riv), fill: "none", stroke: "#3b2b1b", "stroke-width": 2.4 });
+      const town = (x, y, name, dx, dy, id) => { mk($("marks"), "rect", { x: x - 9, y: y - 9, width: 18, height: 18, fill: "#3b2b1b", transform: `rotate(45 ${x} ${y})` }); const t = mk($("labels"), "text", { x: x + dx, y: y + dy, class: "lbl", "font-size": 34, id: id || "" }); t.textContent = name; return t; };
+      town(850, 1330, "Velm", 24, 12); town(620, 1110, "Asper", 22, -16); const torrin = town(500, 690, "Torrin", 26, -14, "torrinL"); town(880, 560, "Hollin", 22, 12);
+      const wl = (x, y, txt, s, rot) => { const t = mk($("labels"), "text", { x, y, class: "wl", "font-size": s, transform: `rotate(${rot || 0} ${x} ${y})` }); t.textContent = txt; };
+      wl(60, 760, "Gulf of Merrow", 38, -8); wl(500, 1230, "R. Esk", 30, 18); wl(40, 1440, "Outer Sea", 32);
+      // compass rose
+      const cr = mk($("marks"), "g", { transform: "translate(120 560) scale(.85)" });
+      mk(cr, "circle", { r: 54, fill: "none", stroke: "#3b2b1b", "stroke-width": 1.5 });
+      mk(cr, "path", { d: "M0 -70 L12 0 L0 70 L-12 0 Z M-70 0 L0 -12 L70 0 L0 12 Z", fill: "#3b2b1b", opacity: 0.85 });
+      const nt = mk(cr, "text", { x: -9, y: -80, class: "lbl", "font-size": 28 }); nt.textContent = "N";
+      // neat line round the map
+      mk($("labels"), "rect", { x: 22, y: 432, width: 1036, height: 1066, fill: "none", stroke: "#3b2b1b", "stroke-width": 4 });
+      mk($("labels"), "rect", { x: 32, y: 442, width: 1016, height: 1046, fill: "none", stroke: "#3b2b1b", "stroke-width": 1.2 });
+      // fold creases at thirds (light/dark pairs) and foxing
+      [[360, 0, 360, 1920], [720, 0, 720, 1920], [0, 1080, 1080, 1080]].forEach(([x1, y1, x2, y2]) => {
+        mk($("labels"), "line", { x1, y1, x2, y2, stroke: "#fff3d6", "stroke-width": 2, opacity: 0.35 });
+        mk($("labels"), "line", { x1: x1 + (x1 === x2 ? 2 : 0), y1: y1 + (y1 === y2 ? 2 : 0), x2: x2 + (x1 === x2 ? 2 : 0), y2: y2 + (y1 === y2 ? 2 : 0), stroke: "#7a5f34", "stroke-width": 2, opacity: 0.25 });
+      });
+      for (let i = 0; i < 12; i++) mk($("labels"), "circle", { cx: r.range(40, 1040), cy: r.range(200, 1800), r: r.range(5, 18), fill: "#a07a3e", opacity: r.range(0.08, 0.18) });
+      // ---- the campaign arrow: tapered polygon revealed along its route ----
+      const tmp = mk($("route"), "path", { d: "M850 1330 C800 1200 700 1180 640 1110 C580 1040 600 900 520 760", fill: "none" });
+      const RL = tmp.getTotalLength(), N = 90, samp = [];
+      for (let i = 0; i <= N; i++) samp.push(tmp.getPointAtLength(RL * i / N));
+      tmp.remove();
+      const arrow = mk($("route"), "path", { fill: "#a3261e", stroke: "#6e1913", "stroke-width": 1.5 });
+      const head = mk($("route"), "path", { d: "M-6 -34 L44 0 L-6 34 Z", fill: "#a3261e", stroke: "#6e1913", "stroke-width": 1.5, opacity: 0 });
+      function drawArrow(u) {
+        const n = Math.max(1, Math.round(u * N)), L = [], R = [];
+        for (let i = 0; i <= n; i++) {
+          const a = samp[Math.max(0, i - 1)], b = samp[Math.min(N, i + 1)], dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
+          const w = (48 - 30 * (i / N)) / 2, nx = -dy / len * w, ny = dx / len * w;
+          L.push([samp[i].x + nx, samp[i].y + ny]); R.push([samp[i].x - nx, samp[i].y - ny]);
+        }
+        arrow.setAttribute("d", u <= 0 ? "" : "M" + pts(L) + " L" + pts(R.reverse()) + " Z");
+        const a = samp[Math.max(0, n - 2)], b = samp[n], ang = Math.atan2(b.y - a.y, b.x - a.x) * 180 / Math.PI;
+        const hs = u < 0.875 ? 0.6 : 0.6 + 0.4 * (u - 0.875) / 0.125;
+        head.setAttribute("transform", `translate(${b.x} ${b.y}) rotate(${ang}) scale(${hs})`);
+        head.setAttribute("opacity", u > 0.02 ? 1 : 0);
+      }
+      drawArrow(0);
+      // siege ring: short dashes close round Torrin
+      const ring = mk($("siege"), "circle", { cx: 500, cy: 690, r: 62, fill: "none", stroke: "#a3261e", "stroke-width": 7, "stroke-dasharray": "10 9", transform: "rotate(-90 500 690)" });
+      const RC = 2 * Math.PI * 62;
+      const msk = mk(document.querySelector("#map defs"), "mask", { id: "rm", maskUnits: "userSpaceOnUse", x: 0, y: 0, width: 1080, height: 1920 });
+      const ringMask = mk(msk, "circle", { cx: 500, cy: 690, r: 62, fill: "none", stroke: "#fff", "stroke-width": 14, "stroke-dasharray": `${RC} ${RC}`, "stroke-dashoffset": RC, transform: "rotate(-90 500 690)" });
+      ring.setAttribute("mask", "url(#rm)");
+      const day = mk($("siege"), "text", { x: 580, y: 760, class: "wl", "font-size": 40, fill: "#a3261e", opacity: 0 }); day.style.fill = "#a3261e";
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.fromTo("#cart", { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0.05);
+      tl.fromTo(["#dateBox", "#src"], { opacity: 0 }, { opacity: 1, duration: 0.3, stagger: 0.1 }, 0.3);
+      gsap.set("#d1", { y: 60, opacity: 0 });
+      // the date changes at the start of the move
+      tl.to("#d0", { y: -40, opacity: 0, duration: 0.3, ease: "power2.in" }, 0.8);
+      tl.to("#d1", { y: 0, opacity: 1, duration: 0.3, ease: "power2.out" }, 0.9);
+      const av = { u: 0 };
+      tl.fromTo(av, { u: 0 }, { u: 1, duration: 1.6, ease: "power2.inOut", onUpdate: () => drawArrow(av.u) }, 0.8);
+      tl.fromTo("#grow", { attr: { r: 0 } }, { attr: { r: 820 } , duration: 1.9, ease: "power2.inOut" }, 0.9);
+      // siege ring + day counter
+      tl.fromTo(ringMask, { attr: { "stroke-dashoffset": RC } }, { attr: { "stroke-dashoffset": 0 } , duration: 1.2, ease: "power1.inOut" }, 2.6);
+      tl.to("#torrinL", { fill: "#a3261e", duration: 0.3 }, 2.6);
+      tl.to(day, { opacity: 1, duration: 0.2 }, 2.7);
+      const dc = { v: 1 };
+      tl.fromTo(dc, { v: 1 }, { v: 34, duration: 1.2, ease: "power1.out", onUpdate: () => (day.textContent = "Day " + Math.round(dc.v)) }, 2.7);
+      tl.seek(0);
+    </script>
+  </body>
+</html>
