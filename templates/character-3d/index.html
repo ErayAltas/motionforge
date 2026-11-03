@@ -211,7 +211,8 @@
         eyebrow.textContent = P.eyebrow || "";
         title.textContent = P.title || "";
         caption.textContent = P.caption || "";
-        const tl = MF.timeline("main", DUR); // = window.__timelines["main"]
+        const tl = MF.timeline("main", DUR);
+        window.__timelines["main"] = tl; // MF.timeline already registers it; spelled out for the HyperFrames linter
         const t0 = P.titleStart ?? 0.3;
         // the card is visible from frame 0 (safe to cut into); it settles with a small scale-in
         if (P.layout === "lower-card") tl.fromTo("#card", { scale: 0.96 }, { scale: 1, duration: 0.6, ease: "power3.out" }, 0);

@@ -59,7 +59,7 @@
   ],
   "unit": "m²",
   "wallColor": "#ece9e3",
-  "woodColor": "#9b6b46",
+  "woodColor": "#8a6446",
   "labelStart": 3.9,
   "theme": "dark",
   "lang": "en",
@@ -101,7 +101,9 @@
       environment(renderer, scene, 0.45);
       lights.studio(scene, { size: 9, target: [0, 2, 0], intensity: 1.05 });
       shadowCatcher(scene, { y: -0.3, opacity: light ? 0.2 : 0.5, size: 80 });
-      camera.setViewOffset(1080, 1920, 0, -(1120 - 960), 1080, 1920);
+      // frame the house inside BOX (below the title, above the subline) for the start and end pose
+      const BOX = { left: 50, right: 1030, top: 620, bottom: 1600 };
+      camera.setViewOffset(1080, 1920, 0, -((BOX.top + BOX.bottom) / 2 - 960), 1080, 1920);
 
       // ---- materials ----
       const M = {
@@ -109,8 +111,8 @@
         lawn: new THREE.MeshStandardMaterial({ color: "#4a5a42", roughness: 1 }),
         slab: new THREE.MeshStandardMaterial({ color: "#a9a7a1", roughness: 0.85 }),
         wall: new THREE.MeshStandardMaterial({ color: P.wallColor || "#ece9e3", roughness: 0.78 }),
-        wood: new THREE.MeshStandardMaterial({ color: P.woodColor || "#9b6b46", roughness: 0.62 }),
-        glass: new THREE.MeshStandardMaterial({ color: "#1c2a33", roughness: 0.06, metalness: 0.9, envMapIntensity: 0.9 }),
+        wood: new THREE.MeshStandardMaterial({ color: P.woodColor || "#8a6446", roughness: 0.62 }),
+        glass: new THREE.MeshStandardMaterial({ color: "#3b5361", roughness: 0.06, metalness: 0.55, envMapIntensity: 1.6 }),
         frame: new THREE.MeshStandardMaterial({ color: "#26272a", roughness: 0.5, metalness: 0.3 }),
         roof: new THREE.MeshStandardMaterial({ color: "#2c2d30", roughness: 0.65 }),
       };
@@ -149,9 +151,6 @@
       part("windows2", M.glass, 5.06, H2 - 1.5, 0.06, 1.45, U + 0.9, 1.56);
       for (const x of [0.2, 1.45, 2.7]) part("windows2", M.frame, 0.06, H2 - 1.5, 0.12, x, U + 0.9, 1.6);
       part("roof2", M.roof, 6.1, T1, 4.7, 1.45, U + H2, -0.45);
-      // a terrace railing on the open roof (glass)
-      part("roof2", M.frame, 0.05, 0.05, 3.9, -3.95, U + 0.95, 0.4);
-      part("roof2", M.frame, 2.7, 0.05, 0.05, -2.6, U + 0.95, 2.35);
 
       const PHASE = { site: [0, 0.5, "pop"], slab: [0.25, 0.5, "rise"], walls: [0.65, 0.9, "rise"], windows: [1.45, 0.5, "pop"], roof: [1.85, 0.7, "drop"],
                       walls2: [2.35, 0.75, "rise"], windows2: [2.95, 0.45, "pop"], roof2: [3.2, 0.7, "drop"] };
@@ -181,6 +180,26 @@
       });
 
       const TARGET = new THREE.Vector3(0.2, 2.6, 0);
+      const corners = [];
+      for (const x of [-6, 6]) for (const y of [-0.3, U + H2 + T1]) for (const z of [-4.1, 4.5]) corners.push([x, y, z]);
+      function pose(angleDeg, elevDeg, dist) {
+        const a = (angleDeg * Math.PI) / 180, e = (elevDeg * Math.PI) / 180;
+        camera.position.set(TARGET.x + Math.sin(a) * Math.cos(e) * dist, TARGET.y + Math.sin(e) * dist, TARGET.z + Math.cos(a) * Math.cos(e) * dist);
+        camera.lookAt(TARGET);
+        camera.updateMatrixWorld();
+      }
+      function fit(angleDeg, elevDeg) {
+        let lo = 5, hi = 300;
+        for (let k = 0; k < 30; k++) {
+          const mid = (lo + hi) / 2;
+          pose(angleDeg, elevDeg, mid);
+          const ok = corners.every((c) => { const p = project(c, camera); return p.x > BOX.left && p.x < BOX.right && p.y > BOX.top && p.y < BOX.bottom; });
+          if (ok) hi = mid; else lo = mid;
+        }
+        return hi;
+      }
+      const A0 = 34, A1 = -38, E0 = 16, E1 = 21;
+      const D0 = fit(A0, E0), D1 = fit(A1, E1);
       function draw(t) {
         for (const { m, p, kind, start, dur } of meshes) {
           const k = seg(t, start, dur);
@@ -190,11 +209,8 @@
           else m.position.y = p.y + lerp(4.5, 0, ease.outBounce(k)); // roofs drop and settle
         }
         // camera: front-right three-quarter view, then a slow orbit to the left side
-        const a = lerp(34, -38, ease.inOutSine(seg(t, 0.6, P.duration - 0.6))) * (Math.PI / 180);
-        const dist = lerp(36, 32, ease.outCubic(seg(t, 0, P.duration)));
-        const elev = lerp(16, 21, ease.inOutSine(seg(t, 0, P.duration))) * (Math.PI / 180);
-        camera.position.set(TARGET.x + Math.sin(a) * Math.cos(elev) * dist, TARGET.y + Math.sin(elev) * dist, TARGET.z + Math.cos(a) * Math.cos(elev) * dist);
-        camera.lookAt(TARGET);
+        const k = ease.inOutSine(seg(t, 0.6, P.duration - 0.6));
+        pose(lerp(A0, A1, k), lerp(E0, E1, ease.inOutSine(seg(t, 0, P.duration))), lerp(D0 * 1.06, D1, ease.outCubic(seg(t, 0, P.duration))));
         render();
 
         for (const R of rooms) {
