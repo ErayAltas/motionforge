@@ -1,0 +1,111 @@
+<!doctype html>
+<!--
+  motionforge style preview: screencast-zoom
+  © 2026 motionforge contributors, MIT
+  A fictional app in a browser window (stand-in for a real capture): window rises with a 3D tilt,
+  guided zoom to one button, spotlight, accent box, cursor click ripple.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      #title { top: 250px; font-size: 92px; z-index: 5; }
+      #persp { position: absolute; inset: 0; perspective: 1800px; }
+      #win { position: absolute; left: 60px; top: 440px; width: 960px; height: 960px; border-radius: 26px; overflow: hidden;
+             background: #f6f7f9; border: 2px solid rgba(255,255,255,.12); box-shadow: 0 50px 120px rgba(0,0,0,.6); transform-origin: 0 0; }
+      .chrome { height: 72px; background: #ffffff; border-bottom: 2px solid #e6e8ec; display: flex; align-items: center; gap: 12px; padding-left: 26px; }
+      .chrome i { width: 18px; height: 18px; border-radius: 50%; }
+      .chrome .url { margin-left: 30px; height: 40px; width: 520px; border-radius: 20px; background: #f0f2f5; font: 500 22px/40px var(--mf-font-mono); color: #6b7280; padding-left: 22px; }
+      .side { position: absolute; left: 0; top: 72px; bottom: 0; width: 220px; background: #ffffff; border-right: 2px solid #e6e8ec; padding: 30px 22px; }
+      .side .logo { width: 56px; height: 56px; border-radius: 16px; background: #16171a; margin-bottom: 36px; }
+      .side .nav { height: 22px; border-radius: 11px; background: #e5e7eb; margin-bottom: 26px; }
+      .side .nav.on { background: #c7d7fb; }
+      .main { position: absolute; left: 220px; right: 0; top: 72px; bottom: 0; padding: 40px 40px; }
+      .main h2 { font: 800 48px/1 var(--mf-font-display); color: #16171a; letter-spacing: -0.02em; }
+      #btn { position: absolute; right: 40px; top: 30px; width: 210px; height: 68px; border-radius: 16px; background: #2f6feb; color: #fff; overflow: hidden;
+             font: 700 30px/68px var(--mf-font-body); text-align: center; }
+      #btn .fill { position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background: #5a8ff0; transform-origin: left; transform: scaleX(0); }
+      #btn span { position: absolute; left: 0; right: 0; top: 0; }
+      .rowi { display: flex; align-items: center; gap: 22px; height: 118px; margin-top: 18px; border-radius: 18px; background: #fff; border: 2px solid #eceef2; padding: 0 22px; }
+      .rowi:first-of-type { margin-top: 44px; }
+      .thumb { width: 92px; height: 70px; border-radius: 12px; }
+      .rowi b { flex: 1; font: 700 32px/1 var(--mf-font-body); color: #16171a; }
+      .pill { font: 600 22px/1 var(--mf-font-body); padding: 10px 16px; border-radius: 20px; background: #eef1f5; color: #4b5563; }
+      #dim { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+      #box { position: absolute; border: 4px solid var(--mf-accent); border-radius: 22px; opacity: 0; box-shadow: 0 0 30px rgba(200,245,58,.45); }
+      #cursor { position: absolute; left: 0; top: 0; width: 64px; height: 64px; z-index: 6; }
+      #ripple { position: absolute; width: 140px; height: 140px; margin: -70px 0 0 -70px; border-radius: 50%; border: 6px solid var(--mf-accent); opacity: 0; z-index: 6; }
+      #callout { position: absolute; left: 0; right: 0; top: 1470px; text-align: center; z-index: 5; }
+      #callout span { display: inline-block; padding: 18px 34px; border-radius: 40px; background: var(--mf-accent); color: var(--mf-accent-ink); font: 800 40px/1 var(--mf-font-display); letter-spacing: -0.01em; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <h1 id="title" class="title clip" data-start="0" data-duration="4.5" data-track-index="0">Screencast <span class="serif accent">zoom</span></h1>
+      <div id="persp" class="clip" data-start="0" data-duration="4.5" data-track-index="1">
+        <div id="win">
+          <div class="chrome"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><div class="url">app.example/projects</div></div>
+          <div class="side"><div class="logo"></div><div class="nav on" style="width:150px"></div><div class="nav" style="width:120px"></div><div class="nav" style="width:140px"></div><div class="nav" style="width:100px"></div></div>
+          <div class="main">
+            <h2>Projects</h2>
+            <div id="btn"><div class="fill"></div><span id="l1">Export</span><span id="l2" style="opacity:0">Exporting</span></div>
+            <div class="rowi"><div class="thumb" style="background:#f9c784"></div><b>Spring launch</b><span class="pill">Draft</span></div>
+            <div class="rowi"><div class="thumb" style="background:#9fd8c9"></div><b>Team update</b><span class="pill">Ready</span></div>
+            <div class="rowi"><div class="thumb" style="background:#b9c6f5"></div><b>Tutorial 03</b><span class="pill">Ready</span></div>
+            <div class="rowi"><div class="thumb" style="background:#f3a6a6"></div><b>Field notes</b><span class="pill">Draft</span></div>
+            <div class="rowi"><div class="thumb" style="background:#d8d2f0"></div><b>Q&amp;A clips</b><span class="pill">Draft</span></div>
+          </div>
+          <div id="dim"></div>
+          <div id="box"></div>
+        </div>
+      </div>
+      <div id="ripple" class="clip" data-start="0" data-duration="4.5" data-track-index="2"></div>
+      <svg id="cursor" class="clip" viewBox="0 0 64 64" data-start="0" data-duration="4.5" data-track-index="3">
+        <path d="M10 6 L10 52 L22 41 L30 58 L39 54 L31 37 L47 37 Z" fill="#ffffff" stroke="#111" stroke-width="3.5" stroke-linejoin="round"/>
+      </svg>
+      <div id="callout" class="clip" data-start="0" data-duration="4.5" data-track-index="4"><span>Click Export</span></div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const win = document.getElementById("win");
+      const btn = document.getElementById("btn");
+      // button centre in window coordinates
+      const main = btn.offsetParent;
+      const bx = main.offsetLeft + btn.offsetLeft, by = main.offsetTop + btn.offsetTop, bw = btn.offsetWidth, bh = btn.offsetHeight;
+      const cx = bx + bw / 2, cy = by + bh / 2;
+      // spotlight hole and accent box
+      document.getElementById("dim").style.background = `radial-gradient(ellipse ${bw * 0.9}px ${bh * 1.6}px at ${cx}px ${cy}px, transparent 60%, rgba(0,0,0,.5) 100%)`;
+      Object.assign(document.getElementById("box").style, { left: (bx - 12) + "px", top: (by - 12) + "px", width: (bw + 24) + "px", height: (bh + 24) + "px" });
+      // zoom so the button lands at screen (540, 900)
+      const S = 2.0, WX = 60, WY = 440, TX = 760, TY = 900;
+      const zx = TX - WX - cx * S, zy = TY - WY - cy * S;
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo("#title", { opacity: 0, y: 40, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.45, ease: "back.out(1.5)" }, 0.05);
+      tl.fromTo(win, { y: 160, rotationX: 12, opacity: 0 }, { y: 0, rotationX: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 0.15);
+      tl.to(win, { x: zx, y: zy, scale: S, duration: 0.9, ease: "power3.inOut" }, 1.25);
+      tl.to("#dim", { opacity: 1, duration: 0.3 }, 2.0);
+      tl.fromTo("#box", { opacity: 0, scale: 1.3 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)", transformOrigin: "50% 50%" }, 2.15);
+      // cursor arrives 0.2 s before the click
+      tl.fromTo("#cursor", { opacity: 0 }, { opacity: 1, duration: 0.15 }, 1.85);
+      tl.fromTo("#cursor", { x: 1000, y: 1650 }, { x: TX - 6, y: TY - 4, duration: 0.75, ease: "power2.inOut" }, 1.85);
+      tl.to("#cursor", { scale: 0.85, duration: 0.08, yoyo: true, repeat: 1, transformOrigin: "10px 6px" }, 2.8);
+      tl.set("#ripple", { left: TX, top: TY }, 0);
+      tl.fromTo("#ripple", { scale: 0.2, opacity: 1 }, { scale: 1.3, opacity: 0, duration: 0.4, ease: "power2.out", immediateRender: false }, 2.8);
+      tl.set("#ripple", { opacity: 0 }, 0);
+      tl.to("#btn", { backgroundColor: "#2459c8", duration: 0.08 }, 2.8);
+      tl.to("#l1", { opacity: 0, duration: 0.15 }, 2.9);
+      tl.to("#l2", { opacity: 1, duration: 0.15 }, 2.95);
+      tl.to("#btn .fill", { scaleX: 1, duration: 1.4, ease: "power1.inOut" }, 2.95);
+      tl.fromTo("#callout", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.3, ease: "back.out(2)" }, 2.3);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

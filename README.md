@@ -96,6 +96,7 @@ motionforge/
 │  ├─ remotion/              optional React engine + kit
 │  └─ canvas/                frame = f(t) pages for hand-drawn and procedural looks
 ├─ templates/                ready scenes: kinetic title, captions, counter, browser, phone, chat, checklist, cover
+│                            + 3D (three.js): product turntable, globe arcs, city pin, house build, pitch tactics, bars
 └─ tools/                    word timings, cut-out, loudness, contact sheet, text check, export, cover safe area
 ```
 

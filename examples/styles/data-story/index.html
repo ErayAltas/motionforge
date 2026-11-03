@@ -1,0 +1,82 @@
+<!doctype html>
+<!--
+  motionforge style preview: data-story
+  © 2026 motionforge contributors, MIT
+  Grey first, one accent insight, visible source. The numbers are sample values for the preview
+  and are labelled as such on screen.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      :root { --mf-bg: #0f1115; --ink: #f1f3f5; --neutral: #5b6270; --axis: #2a2f38; --acc: #ffb020; --mf-grain-opacity: .05; }
+      html, body { background: var(--mf-bg); }
+      #root { background: radial-gradient(1100px 900px at 50% 20%, #171a20 0%, transparent 65%), var(--mf-bg); }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 65%, rgba(0,0,0,.35) 100%); }
+      #eyebrow { top: 250px; left: 90px; right: auto; text-align: left; color: var(--acc); }
+      #title { position: absolute; left: 90px; right: 90px; top: 300px; font: 800 84px/1.05 var(--mf-font-display); letter-spacing: -0.035em; color: var(--ink); }
+      #title .hl { color: var(--acc); }
+      #chart { position: absolute; left: 90px; right: 90px; top: 640px; height: 700px; }
+      #axis { position: absolute; left: 150px; top: 0; bottom: 0; width: 4px; background: var(--axis); }
+      .r { position: absolute; left: 0; right: 0; height: 100px; }
+      .lab { position: absolute; left: 0; width: 130px; top: 0; height: 80px; display: flex; align-items: center; justify-content: flex-end; font: 500 34px/1 var(--mf-font-body); color: #8b93a1; }
+      .bar { position: absolute; left: 154px; top: 0; height: 80px; border-radius: 0 10px 10px 0; background: var(--neutral); transform-origin: left; }
+      .val { position: absolute; top: 0; height: 80px; display: flex; align-items: center; line-height: 1; font: 800 44px var(--mf-font-display); color: var(--ink); font-variant-numeric: tabular-nums; }
+      .val small { font-size: 26px; color: #8b93a1; font-weight: 500; margin-left: 4px; }
+      #note { position: absolute; height: 80px; display: flex; align-items: center; font: 700 34px/1 var(--mf-font-body); color: #0f1115; }
+      #src { position: absolute; left: 90px; top: 1430px; font: 500 26px/1.4 var(--mf-font-mono); color: #6f7786; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="eyebrow" class="eyebrow clip" data-start="0" data-duration="4.5" data-track-index="0">Data story</div>
+      <h1 id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="1"><span class="hl">Thursday</span> carries the week</h1>
+      <div id="chart" class="clip" data-start="0" data-duration="4.5" data-track-index="2"><div id="axis"></div></div>
+      <div id="src" class="clip" data-start="0" data-duration="4.5" data-track-index="3">Source: sample data for this preview<br />Weekly views, thousands</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const DATA = [["Mon", 18], ["Tue", 24], ["Wed", 21], ["Thu", 46], ["Fri", 27], ["Sat", 15], ["Sun", 12]];
+      const HI = 3, MAXW = 640, MAXV = 50;
+      const chart = document.getElementById("chart");
+      DATA.forEach(([lab, v], i) => {
+        const r = document.createElement("div");
+        r.className = "r"; r.style.top = (i * 100) + "px";
+        r.innerHTML = `<div class="lab">${lab}</div><div class="bar" id="b${i}" style="width:${v / MAXV * MAXW}px"></div>` +
+          `<div class="val" id="v${i}" style="left:${154 + v / MAXV * MAXW + 20}px"><span>${i === HI ? 0 : v}</span><small>k</small></div>`;
+        chart.appendChild(r);
+      });
+      const note = document.createElement("div");
+      note.id = "note"; note.innerHTML = "2× the weekly average";
+      Object.assign(note.style, { left: "184px", top: (HI * 100) + "px" });
+      chart.appendChild(note);
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo("#eyebrow", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.05);
+      tl.fromTo("#title", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.15);
+      tl.fromTo("#axis", { scaleY: 0 }, { scaleY: 1, duration: 0.4, ease: "power2.out", transformOrigin: "top" }, 0.5);
+      tl.fromTo(".lab", { opacity: 0 }, { opacity: 1, duration: 0.3, stagger: 0.06 }, 0.6);
+      tl.fromTo(".bar", { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "power3.out", stagger: 0.06 }, 0.75);
+      tl.fromTo(gsap.utils.toArray(".val").filter((e) => e.id !== "v" + HI), { opacity: 0 }, { opacity: 1, duration: 0.3, stagger: 0.06 }, 1.1);
+      tl.fromTo("#v" + HI, { opacity: 0 }, { opacity: 1, duration: 0.15 }, 2.1);
+      tl.fromTo("#title .hl", { color: "#f1f3f5" }, { color: "#ffb020", duration: 0.3 }, 2.0);
+      // the insight: one bar turns accent, its value counts up, the label slides in
+      tl.to("#b" + HI, { backgroundColor: "#ffb020", duration: 0.3 }, 2.0);
+      DATA.forEach((d, i) => { if (i !== HI) tl.to("#b" + i, { opacity: 0.55, duration: 0.3 }, 2.0); });
+      const counter = { v: 0 };
+      const span = document.querySelector("#v" + HI + " span");
+      tl.fromTo(counter, { v: 0 }, { v: DATA[HI][1], duration: 1.0, ease: "power2.out", onUpdate: () => {}, modifiers: { v: (x) => { span.textContent = Math.round(x); return x; } } }, 2.1);
+      tl.to("#v" + HI, { color: "#ffb020", duration: 0.3 }, 2.1);
+      tl.fromTo("#note", { opacity: 0, x: -40 }, { opacity: 1, x: 0, duration: 0.3, ease: "power2.out" }, 2.6);
+      tl.fromTo("#src", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 1.4);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

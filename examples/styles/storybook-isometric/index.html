@@ -1,0 +1,187 @@
+<!doctype html>
+<!--
+  motionforge style preview: storybook-isometric
+  © 2026 motionforge contributors, MIT
+  2:1 isometric projection built in JS (no perspective). Blocks drop onto the island 0.15 s apart,
+  a dashed path draws ahead of an accent packet, trees sway and the chimney puffs from t.
+  Instrument Serif Italic stands in for Fraunces; Inter for Nunito on the label tags.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      :root { --sky: #eaf2f0; --ink: #2e3440; --acc: #f08a4b; }
+      html, body { background: var(--sky); }
+      #root { background: radial-gradient(1000px 900px at 50% 45%, #f6faf8 0%, var(--sky) 60%, #dde9e6 100%); color: var(--ink); }
+      #root::before { mix-blend-mode: multiply; opacity: .06; }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 65%, rgba(46,52,64,.08) 100%); }
+      #title { position: absolute; left: 0; right: 0; top: 230px; text-align: center; font: 400 112px/1 var(--mf-font-accent); font-style: italic; color: var(--ink); letter-spacing: -0.01em; }
+      #sub { position: absolute; left: 0; right: 0; top: 370px; text-align: center; font: 500 30px/1 var(--mf-font-mono); letter-spacing: .16em; text-transform: uppercase; color: #6b7686; }
+      #world { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      .tag { position: absolute; padding: 12px 22px; border-radius: 22px; background: #fff; font: 700 38px/1 var(--mf-font-body); color: var(--ink);
+             box-shadow: 0 6px 16px rgba(46,52,64,.12); white-space: nowrap; }
+      .tag.acc { color: #fff; background: var(--acc); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage light" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="0">Storybook isometric</div>
+      <div id="sub" class="clip" data-start="0" data-duration="4.5" data-track-index="1">A system you could hold</div>
+      <svg id="world" class="clip" viewBox="0 0 1080 1920" data-start="0" data-duration="4.5" data-track-index="2">
+        <defs><filter id="soft"><feGaussianBlur stdDeviation="8" /></filter></defs>
+        <g id="islandG"></g>
+        <g id="pathG"></g>
+        <g id="objs"></g>
+        <g id="puffs"></g>
+      </svg>
+      <div id="tags" class="clip" data-start="0" data-duration="4.5" data-track-index="3"></div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const NS = "http://www.w3.org/2000/svg";
+      const S = 78, CX = 540, CY = 760, K = Math.cos(Math.PI / 6);
+      const iso = (x, y, z = 0) => [CX + (x - y) * K * S, CY + (x + y) * 0.5 * S - z * S];
+      const pts = (arr) => arr.map((p) => iso(...p).map((v) => v.toFixed(1)).join(",")).join(" ");
+      const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent && parent.appendChild(e); return e; };
+      const STROKE = { stroke: "#2e3440", "stroke-width": 2, "stroke-linejoin": "round" };
+
+      // island slab 7 x 7, 0.7 thick
+      const isl = document.getElementById("islandG");
+      const N = 7, T = 0.7;
+      el("polygon", { points: pts([[0, N, 0], [N, N, 0], [N, N, -T], [0, N, -T]]), fill: "#d9c8b4", ...STROKE }, isl);
+      el("polygon", { points: pts([[N, 0, 0], [N, N, 0], [N, N, -T], [N, 0, -T]]), fill: "#c9b8a6", ...STROKE }, isl);
+      el("polygon", { points: pts([[0, 0, 0], [N, 0, 0], [N, N, 0], [0, N, 0]]), fill: "#cfe3c5", ...STROKE }, isl);
+      el("polygon", { points: pts([[4.6, 4.4, 0], [6.3, 4.4, 0], [6.3, 6.3, 0], [4.6, 6.3, 0]]), fill: "#7fb7d9", ...STROKE }, isl); // pond
+      el("polygon", { points: pts([[4.9, 4.9, 0], [5.5, 4.9, 0], [5.5, 5.2, 0], [4.9, 5.2, 0]]), fill: "#a9d0e6" }, isl);
+
+      // path on the ground (draws ahead of the packet)
+      const ROUTE = [[2.8, 5.5], [3.8, 5.5], [3.8, 3.35], [5.55, 3.35]];
+      const routeD = "M" + ROUTE.map(([x, y]) => iso(x, y, 0).map((v) => v.toFixed(1)).join(" ")).join(" L");
+      const pathG = document.getElementById("pathG");
+      el("path", { d: routeD, fill: "none", stroke: "#ffffff", "stroke-width": 16, "stroke-linecap": "round", "stroke-linejoin": "round", opacity: 0.8 }, pathG);
+      const lit = el("path", { d: routeD, fill: "none", stroke: "#f08a4b", "stroke-width": 7, "stroke-linecap": "round", "stroke-linejoin": "round", "stroke-dasharray": "14 12" }, pathG);
+      const routeLen = lit.getTotalLength();
+      const litMask = el("path", { d: routeD, fill: "none", stroke: "#fff", "stroke-width": 20, "stroke-linecap": "round" }, null);
+      const mask = el("mask", { id: "routeMask" }, document.querySelector("defs"));
+      mask.appendChild(litMask);
+      lit.setAttribute("mask", "url(#routeMask)");
+      litMask.style.strokeDasharray = routeLen; litMask.style.strokeDashoffset = routeLen;
+
+      // objects (sorted back to front by x + y)
+      const objs = document.getElementById("objs");
+      const drops = [];
+      function box(x, y, w, d, h, c, roof) {
+        const g = el("g", {}, objs);
+        const [sx, sy] = iso(x + w / 2, y + d / 2, 0);
+        el("ellipse", { cx: sx, cy: sy + 6, rx: (w + d) * K * S * 0.5, ry: (w + d) * 0.25 * S, fill: "rgba(46,52,64,.18)", filter: "url(#soft)" }, g);
+        const b = el("g", {}, g);
+        el("polygon", { points: pts([[x, y + d, 0], [x + w, y + d, 0], [x + w, y + d, h], [x, y + d, h]]), fill: c[1], ...STROKE }, b);
+        el("polygon", { points: pts([[x + w, y, 0], [x + w, y + d, 0], [x + w, y + d, h], [x + w, y, h]]), fill: c[2], ...STROKE }, b);
+        el("polygon", { points: pts([[x, y, h], [x + w, y, h], [x + w, y + d, h], [x, y + d, h]]), fill: roof || c[0], ...STROKE }, b);
+        // windows on the lit face
+        for (let i = 0; i < Math.floor(w / 0.5); i++) {
+          const wx = x + 0.25 + i * 0.5;
+          el("polygon", { points: pts([[wx, y + d, h * 0.45], [wx + 0.22, y + d, h * 0.45], [wx + 0.22, y + d, h * 0.7], [wx, y + d, h * 0.7]]), fill: "#7fb7d9", ...STROKE, "stroke-width": 1.5 }, b);
+        }
+        drops.push(g);
+        return { top: iso(x + w / 2, y + d / 2, h) };
+      }
+      function tree(x, y, s = 1) {
+        const g = el("g", {}, objs);
+        const [bx, by] = iso(x, y, 0);
+        el("ellipse", { cx: bx, cy: by + 4, rx: 30 * s, ry: 14 * s, fill: "rgba(46,52,64,.18)", filter: "url(#soft)" }, g);
+        const t = el("g", {}, g);
+        el("rect", { x: bx - 5, y: by - 30 * s, width: 10, height: 30 * s, fill: "#8a6f58", ...STROKE, "stroke-width": 1.5 }, t);
+        el("polygon", { points: `${bx},${by - 130 * s} ${bx - 42 * s},${by - 26 * s} ${bx},${by - 18 * s}`, fill: "#8cc084", ...STROKE }, t);
+        el("polygon", { points: `${bx},${by - 130 * s} ${bx + 42 * s},${by - 26 * s} ${bx},${by - 18 * s}`, fill: "#6fa36a", ...STROKE }, t);
+        t.dataset.x = bx; t.dataset.y = by;
+        drops.push(g);
+        trees.push(t);
+      }
+      const trees = [];
+      const CL = ["#f5ebdd", "#e6d8c6", "#c9b8a6"];
+      tree(0.8, 0.9, 0.9);
+      const server = box(0.9, 1.6, 1.6, 1.4, 1.7, CL);
+      tree(5.8, 0.8, 1.0);
+      const cache = box(4.9, 1.4, 1.3, 1.6, 1.0, CL, "#f3d9c4");
+      tree(0.7, 5.6, 0.8);
+      const you = box(1.4, 4.9, 1.2, 1.2, 0.8, CL);
+      tree(6.2, 3.4, 0.85);
+
+      // accent packet (a small cube) rides the route
+      const packet = el("g", {}, objs);
+      const pk = 0.42;
+      el("polygon", { points: pts([[0, pk, 0], [pk, pk, 0], [pk, pk, pk], [0, pk, pk]]), fill: "#f08a4b", ...STROKE }, packet);
+      el("polygon", { points: pts([[pk, 0, 0], [pk, pk, 0], [pk, pk, pk], [pk, 0, pk]]), fill: "#c96a33", ...STROKE }, packet);
+      el("polygon", { points: pts([[0, 0, pk], [pk, 0, pk], [pk, pk, pk], [0, pk, pk]]), fill: "#f7b384", ...STROKE }, packet);
+      const [p0x, p0y] = iso(0, 0, 0);
+
+      // chimney puffs from the server roof (looping, closed form in t)
+      const puffs = document.getElementById("puffs");
+      const PUFF = [0, 1, 2, 3].map(() => el("circle", { r: 0, fill: "#ffffff", stroke: "#2e3440", "stroke-width": 2 }, puffs));
+
+      // label tags
+      const tags = document.getElementById("tags");
+      const tag = (txt, [x, y], cls = "") => { const d = document.createElement("div"); d.className = "tag " + cls; d.textContent = txt; d.style.left = x + "px"; d.style.top = (y - 40) + "px"; tags.appendChild(d); gsap.set(d, { xPercent: -50, yPercent: -100 }); return d; };
+      const tServer = tag("Server", [server.top[0] - 150, server.top[1] - 40]);
+      const tCache = tag("Cache", [cache.top[0], cache.top[1] - 30]);
+      const tYou = tag("You", you.top);
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo("#title", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.5, ease: "power2.out" }, 0.05);
+      tl.fromTo("#sub", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.3);
+      tl.fromTo("#islandG", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.5, ease: "back.out(1.4)" }, 0.15);
+      drops.forEach((d, i) => tl.fromTo(d, { y: -120, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "back.out(1.8)" }, 0.55 + i * 0.15));
+      [tServer, tYou, tCache].forEach((t, i) => tl.fromTo(t, { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)" }, 1.75 + i * 0.12));
+      tl.fromTo(litMask, { strokeDashoffset: routeLen }, { strokeDashoffset: 0, duration: 1.2, ease: "power1.inOut" }, 2.2);
+
+      const inOut = gsap.parseEase("power1.inOut");
+      const segs = []; let acc = 0;
+      for (let i = 1; i < ROUTE.length; i++) { const l = Math.hypot(ROUTE[i][0] - ROUTE[i - 1][0], ROUTE[i][1] - ROUTE[i - 1][1]); segs.push([acc, l]); acc += l; }
+      function along(u) { // u in [0,1] -> world (x, y) along the route
+        let d = u * acc;
+        for (let i = 0; i < segs.length; i++) {
+          const [s0, l] = segs[i];
+          if (d <= s0 + l || i === segs.length - 1) { const k = Math.min(1, (d - s0) / l); return [ROUTE[i][0] + (ROUTE[i + 1][0] - ROUTE[i][0]) * k, ROUTE[i][1] + (ROUTE[i + 1][1] - ROUTE[i][1]) * k]; }
+        }
+      }
+      function draw(t) {
+        // packet: appears at 2.3, travels with eased start/stop until 3.9
+        const u = inOut(Math.max(0, Math.min(1, (t - 2.35) / 1.5)));
+        const [wx, wy] = along(u);
+        const [px, py] = iso(wx - pk / 2, wy - pk / 2, 0.05 + Math.abs(Math.sin(t * 9)) * 0.08);
+        packet.setAttribute("transform", `translate(${(px - p0x).toFixed(1)} ${(py - p0y).toFixed(1)})`);
+        packet.setAttribute("opacity", t < 2.3 ? 0 : Math.min(1, (t - 2.3) / 0.15));
+        // trees sway 1-2° on a seeded sine
+        trees.forEach((tr, i) => tr.setAttribute("transform", `rotate(${(1.6 * Math.sin(t * 2.2 + i * 1.7)).toFixed(2)} ${tr.dataset.x} ${tr.dataset.y})`));
+        // puffs
+        PUFF.forEach((c, i) => {
+          const ph = ((t - 1.2) * 0.8 + i / PUFF.length) % 1;
+          if (t < 1.2 + i * 0.3) { c.setAttribute("r", 0); return; }
+          c.setAttribute("cx", (server.top[0] + 30 + ph * 40).toFixed(1));
+          c.setAttribute("cy", (server.top[1] - 70 - ph * 160).toFixed(1));
+          c.setAttribute("r", (10 + ph * 22).toFixed(1));
+          c.setAttribute("opacity", (1 - ph).toFixed(2));
+        });
+      }
+      // chimney on the server roof
+      const [chx, chy] = server.top;
+      const chim = el("g", {}, null);
+      drops[1].appendChild(chim);
+      el("rect", { x: chx + 18, y: chy - 70, width: 28, height: 60, fill: "#c9b8a6", ...STROKE }, chim);
+      el("rect", { x: chx + 14, y: chy - 78, width: 36, height: 12, fill: "#e6d8c6", ...STROKE }, chim);
+
+      const clock = { _t: 0, get t() { return this._t; }, set t(v) { this._t = v; draw(v); } };
+      tl.fromTo(clock, { t: 0 }, { t: DUR, duration: DUR, ease: "none" }, 0);
+      draw(0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

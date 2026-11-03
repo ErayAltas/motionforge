@@ -1,0 +1,211 @@
+<!doctype html>
+<!--
+  motionforge template: house-build-3d — a simple modern two-storey house assembles (slab -> walls rise ->
+  windows -> roofs land), the camera orbits, and room labels with areas follow points in the house
+  © 2026 motionforge contributors, MIT
+  3D layer: three.js (MIT, from npm) + mf-three.js, copied into assets/vendor/ by new-scene.sh.
+  Contract: engines/hyperframes/three/README.md (hf-seek drives the 3D and labels, GSAP the titles).
+  The house is an original, generic massing model (not a real plan). Areas come from params.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script type="importmap">{ "imports": { "three": "./assets/vendor/three.module.min.js", "three/addons/": "./assets/vendor/three-addons/" } }</script>
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      #pool { position: absolute; inset: 0; background: radial-gradient(700px 360px at 50% 1360px, rgba(255, 255, 255, 0.08), transparent 70%); }
+      .light #pool { background: radial-gradient(700px 360px at 50% 1360px, rgba(255, 255, 255, 0.9), transparent 70%); }
+      #gl { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      #eyebrow { top: 220px; }
+      #title { top: 280px; font-size: 96px; }
+      #labels { position: absolute; inset: 0; }
+      .room { position: absolute; left: 0; top: 0; will-change: transform, opacity; }
+      .room .pill { position: absolute; left: 0; bottom: 34px; transform: translateX(-50%); display: flex; align-items: baseline; gap: 12px; padding: 13px 20px; border-radius: 16px; white-space: nowrap;
+                    background: rgba(14, 15, 17, 0.84); border: 1.5px solid rgba(255, 255, 255, 0.16); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35); }
+      .room .n { font: 500 22px/1 var(--mf-font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: #c9cdd4; }
+      .room .a { font: 800 34px/1 var(--mf-font-display); letter-spacing: -0.02em; color: var(--mf-accent); font-variant-numeric: tabular-nums; }
+      .room .stem { position: absolute; left: -1px; bottom: 6px; width: 2px; height: 28px; background: rgba(255, 255, 255, 0.7); }
+      .room .dot { position: absolute; left: -7px; top: -7px; width: 14px; height: 14px; border-radius: 50%; background: var(--mf-accent); box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.35); }
+      #subline { position: absolute; left: 80px; right: 80px; top: 1680px; text-align: center; font: 500 27px/1.3 var(--mf-font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--mf-muted); }
+      #subline b { color: var(--mf-accent); font-weight: 700; }
+      .light #subline b { color: var(--mf-text-dark); }
+      #grain { position: absolute; inset: 0; z-index: 5; pointer-events: none; background-image: var(--mf-grain); opacity: 0.05; mix-blend-mode: overlay; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="6.5" data-width="1080" data-height="1920">
+      <div id="pool"></div>
+      <canvas id="gl" class="clip" width="1080" height="1920" data-start="0" data-duration="6.5" data-track-index="0"></canvas>
+      <div id="labels" class="clip" data-start="0" data-duration="6.5" data-track-index="1"></div>
+      <div id="eyebrow" class="eyebrow clip" data-start="0" data-duration="6.5" data-track-index="2"></div>
+      <h1 id="title" class="title clip" data-start="0" data-duration="6.5" data-track-index="3"></h1>
+      <div id="subline" class="clip" data-start="0" data-duration="6.5" data-track-index="4"></div>
+      <div id="grain"></div>
+    </div>
+
+    <script id="params" type="application/json">
+{
+  "eyebrow": "Example plan",
+  "title": "Two floors, {four} rooms",
+  "subline": "Total <b>94 m²</b> · plot 420 m² · example",
+  "rooms": [
+    { "name": "Living", "area": 38, "at": [-1.4, 1.4, 0.6] },
+    { "name": "Kitchen", "area": 16, "at": [2.7, 1.4, 0.4] },
+    { "name": "Bedroom", "area": 18, "at": [1.6, 4.6, -0.2] },
+    { "name": "Terrace", "area": 22, "at": [-3.1, 3.5, 0.6] }
+  ],
+  "unit": "m²",
+  "wallColor": "#ece9e3",
+  "woodColor": "#9b6b46",
+  "labelStart": 3.9,
+  "theme": "dark",
+  "lang": "en",
+  "duration": 6.5
+}
+    </script>
+
+    <script>
+      // ---- HTML layer: titles on the GSAP timeline ----
+      const P = MF.params();
+      document.documentElement.lang = P.lang;
+      if (P.theme === "light") document.getElementById("root").classList.add("light");
+      const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+      document.getElementById("eyebrow").textContent = P.eyebrow || "";
+      const title = document.getElementById("title");
+      title.innerHTML = esc(P.title || "").replace(/\{([^}]+)\}/g, '<span class="serif accent">$1</span>');
+      document.getElementById("subline").innerHTML = P.subline || "";
+      MF.fit(title, 96, 60, 220);
+
+      const tl = MF.timeline("main", P.duration);
+      tl.fromTo("#eyebrow", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 0.15);
+      tl.fromTo("#title", { opacity: 0, y: 44, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, 0.25);
+      tl.fromTo("#subline", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, P.labelStart + 0.9);
+      MF.ready().then(() => MF.fit(title, 96, 60, 220));
+      tl.seek(0);
+    </script>
+
+    <script type="module">
+      import * as THREE from "three";
+      import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+      import { createStage, environment, lights, shadowCatcher, onSeek, ease, seg, lerp, project } from "./assets/vendor/mf-three.js";
+
+      const P = MF.params();
+      const css = getComputedStyle(document.getElementById("root"));
+      const ACCENT = css.getPropertyValue("--mf-accent").trim() || "#c8f53a";
+      const light = P.theme === "light";
+
+      const { renderer, scene, camera, render } = createStage({ fov: 26, far: 400 });
+      environment(renderer, scene, 0.45);
+      lights.studio(scene, { size: 9, target: [0, 2, 0], intensity: 1.05 });
+      shadowCatcher(scene, { y: -0.3, opacity: light ? 0.2 : 0.5, size: 80 });
+      camera.setViewOffset(1080, 1920, 0, -(1120 - 960), 1080, 1920);
+
+      // ---- materials ----
+      const M = {
+        plate: new THREE.MeshStandardMaterial({ color: light ? "#d7d6d2" : "#1b1c1f", roughness: 0.75 }),
+        lawn: new THREE.MeshStandardMaterial({ color: "#4a5a42", roughness: 1 }),
+        slab: new THREE.MeshStandardMaterial({ color: "#a9a7a1", roughness: 0.85 }),
+        wall: new THREE.MeshStandardMaterial({ color: P.wallColor || "#ece9e3", roughness: 0.78 }),
+        wood: new THREE.MeshStandardMaterial({ color: P.woodColor || "#9b6b46", roughness: 0.62 }),
+        glass: new THREE.MeshStandardMaterial({ color: "#1c2a33", roughness: 0.06, metalness: 0.9, envMapIntensity: 0.9 }),
+        frame: new THREE.MeshStandardMaterial({ color: "#26272a", roughness: 0.5, metalness: 0.3 }),
+        roof: new THREE.MeshStandardMaterial({ color: "#2c2d30", roughness: 0.65 }),
+      };
+
+      // ---- parts: [w, h, d] box standing on its base at [x, y, z], with a build phase ----
+      // phase: slab | walls | windows | roof | walls2 | windows2 | roof2   (times below)
+      const G = 0.3;            // top of the ground slab
+      const H1 = 2.9, H2 = 2.7; // storey heights
+      const T1 = 0.22;          // roof slab thickness
+      const U = G + H1 + T1;    // floor level of the upper volume
+      const parts = [];
+      const part = (phase, mat, w, h, d, x, y, z) => parts.push({ phase, mat, w, h, d, x, y, z });
+      // site
+      part("site", M.plate, 12, 0.3, 8.6, 0, -0.3, 0.2);
+      part("site", M.lawn, 3.0, 0.02, 8.0, -4.3, 0, 0.2);
+      part("slab", M.slab, 8.4, G, 5.4, 0, 0, 0);
+      // ground floor (x -4..4, z -2.5..2.5), walls 0.25 thick, big glazing on the front left
+      part("walls", M.wall, 8.0, H1, 0.25, 0, G, -2.45);
+      part("walls", M.wall, 0.25, H1, 5.0, -3.9, G, 0);
+      part("walls", M.wall, 0.25, H1, 5.0, 3.9, G, 0);
+      part("walls", M.wall, 0.9, H1, 0.25, -3.55, G, 2.45);
+      part("walls", M.wall, 2.4, H1, 0.25, 2.8, G, 2.45);
+      part("walls", M.wall, 4.8, 0.35, 0.25, -0.7, G + H1 - 0.35, 2.45);
+      part("windows", M.glass, 4.8, H1 - 0.35, 0.06, -0.7, G, 2.45);
+      for (const x of [-3.1, -1.5, 0.1, 1.7]) part("windows", M.frame, 0.07, H1 - 0.35, 0.12, x, G, 2.47);
+      part("windows", M.glass, 1.4, 1.3, 0.06, 2.6, G + 1.0, 2.6);
+      part("windows", M.frame, 1.55, 0.08, 0.14, 2.6, G + 0.95, 2.62);
+      part("windows", M.glass, 0.06, 1.3, 2.2, 4.04, G + 1.0, -0.6);
+      part("roof", M.roof, 8.7, T1, 5.7, 0, G + H1, 0.05);
+      // upper volume (x -1.3..4.2, z -2.5..1.6): wood, ribbon window on the front
+      part("walls2", M.wood, 5.5, H2, 0.22, 1.45, U, -2.4);
+      part("walls2", M.wood, 0.22, H2, 4.1, -1.2, U, -0.45);
+      part("walls2", M.wood, 0.22, H2, 4.1, 4.1, U, -0.45);
+      part("walls2", M.wood, 5.5, 0.9, 0.22, 1.45, U, 1.55);
+      part("walls2", M.wood, 5.5, 0.6, 0.22, 1.45, U + H2 - 0.6, 1.55);
+      part("windows2", M.glass, 5.06, H2 - 1.5, 0.06, 1.45, U + 0.9, 1.56);
+      for (const x of [0.2, 1.45, 2.7]) part("windows2", M.frame, 0.06, H2 - 1.5, 0.12, x, U + 0.9, 1.6);
+      part("roof2", M.roof, 6.1, T1, 4.7, 1.45, U + H2, -0.45);
+      // a terrace railing on the open roof (glass)
+      part("roof2", M.frame, 0.05, 0.05, 3.9, -3.95, U + 0.95, 0.4);
+      part("roof2", M.frame, 2.7, 0.05, 0.05, -2.6, U + 0.95, 2.35);
+
+      const PHASE = { site: [0, 0.5, "pop"], slab: [0.25, 0.5, "rise"], walls: [0.65, 0.9, "rise"], windows: [1.45, 0.5, "pop"], roof: [1.85, 0.7, "drop"],
+                      walls2: [2.35, 0.75, "rise"], windows2: [2.95, 0.45, "pop"], roof2: [3.2, 0.7, "drop"] };
+      const counters = {};
+      const meshes = parts.map((p) => {
+        const geo = p.w > 0.3 && p.d > 0.3 && p.h < 0.5 ? new RoundedBoxGeometry(p.w, p.h, p.d, 2, Math.min(0.04, p.h / 3)) : new THREE.BoxGeometry(p.w, p.h, p.d);
+        geo.translate(0, p.h / 2, 0); // pivot on the base
+        const m = new THREE.Mesh(geo, p.mat);
+        m.position.set(p.x, p.y, p.z);
+        m.castShadow = p.mat !== M.glass;
+        m.receiveShadow = true;
+        scene.add(m);
+        const k = (counters[p.phase] = (counters[p.phase] || 0) + 1) - 1;
+        const [start, dur, kind] = PHASE[p.phase];
+        return { m, p, kind, start: start + k * (kind === "rise" ? 0.06 : 0.04), dur };
+      });
+
+      // ---- room labels ----
+      const holder = document.getElementById("labels");
+      const rooms = (P.rooms || []).map((r, i) => {
+        const el = document.createElement("div");
+        el.className = "room";
+        el.innerHTML = '<div class="dot"></div><div class="stem"></div><div class="pill"><span class="n"></span><span class="a"></span></div>';
+        el.querySelector(".n").textContent = r.name;
+        holder.appendChild(el);
+        return { r, el, a: el.querySelector(".a"), start: P.labelStart + i * 0.22 };
+      });
+
+      const TARGET = new THREE.Vector3(0.2, 2.6, 0);
+      function draw(t) {
+        for (const { m, p, kind, start, dur } of meshes) {
+          const k = seg(t, start, dur);
+          m.visible = k > 0;
+          if (kind === "rise") m.scale.y = Math.max(0.001, ease.outCubic(k));
+          else if (kind === "pop") m.scale.setScalar(Math.max(0.001, ease.outBack(k)));
+          else m.position.y = p.y + lerp(4.5, 0, ease.outBounce(k)); // roofs drop and settle
+        }
+        // camera: front-right three-quarter view, then a slow orbit to the left side
+        const a = lerp(34, -38, ease.inOutSine(seg(t, 0.6, P.duration - 0.6))) * (Math.PI / 180);
+        const dist = lerp(36, 32, ease.outCubic(seg(t, 0, P.duration)));
+        const elev = lerp(16, 21, ease.inOutSine(seg(t, 0, P.duration))) * (Math.PI / 180);
+        camera.position.set(TARGET.x + Math.sin(a) * Math.cos(elev) * dist, TARGET.y + Math.sin(elev) * dist, TARGET.z + Math.cos(a) * Math.cos(elev) * dist);
+        camera.lookAt(TARGET);
+        render();
+
+        for (const R of rooms) {
+          const k = seg(t, R.start, 0.4);
+          const p = project(R.r.at, camera);
+          R.el.style.opacity = ease.outCubic(k) * (p.visible ? 1 : 0);
+          R.el.style.transform = `translate(${p.x}px, ${p.y + lerp(16, 0, ease.outCubic(k))}px)`;
+          R.a.textContent = `${Math.round(R.r.area * ease.outCubic(seg(t, R.start, 0.8)))} ${P.unit || "m²"}`;
+        }
+      }
+      onSeek(draw);
+    </script>
+  </body>
+</html>

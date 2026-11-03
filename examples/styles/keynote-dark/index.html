@@ -1,0 +1,74 @@
+<!doctype html>
+<!--
+  motionforge style preview: keynote-dark
+  © 2026 motionforge contributors, MIT
+  One hero object in a pool of light (pure CSS 3D), a specular band sweeping left to right,
+  one gradient word, slow power2 fades with no overshoot.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      :root { --mf-bg: #050506; --mf-grain-opacity: .04; }
+      html, body { background: #050506; }
+      #root { background: radial-gradient(760px 640px at 50% 40%, #1c1d22 0%, #0b0b0d 55%, #050506 100%); }
+      #stage { position: absolute; left: 0; right: 0; top: 380px; height: 820px; perspective: 1600px; }
+      #obj { position: absolute; left: 50%; top: 90px; width: 520px; height: 520px; margin-left: -260px; transform-style: preserve-3d; }
+      .face { position: absolute; inset: 0; border-radius: 130px; }
+      #body { background: linear-gradient(145deg, #3a3c43 0%, #1a1b1f 42%, #0c0c0e 100%);
+              box-shadow: inset 0 2px 0 rgba(255,255,255,.25), inset 0 -2px 0 rgba(0,0,0,.6), 0 60px 120px rgba(0,0,0,.6); }
+      #ring { position: absolute; left: 110px; top: 110px; width: 300px; height: 300px; border-radius: 50%;
+              background: conic-gradient(from 200deg, #4cc2ff, #a6ff7a, #4cc2ff);
+              -webkit-mask: radial-gradient(circle, transparent 112px, #000 114px, #000 148px, transparent 150px);
+                      mask: radial-gradient(circle, transparent 112px, #000 114px, #000 148px, transparent 150px);
+              filter: drop-shadow(0 0 30px rgba(76,194,255,.5)); }
+      #core { position: absolute; left: 190px; top: 190px; width: 140px; height: 140px; border-radius: 50%;
+              background: radial-gradient(circle at 40% 35%, #2b2d33, #0a0a0c 70%); box-shadow: inset 0 2px 0 rgba(255,255,255,.18); }
+      #spec { position: absolute; inset: 0; border-radius: 130px; overflow: hidden; }
+      #spec i { position: absolute; top: -40%; left: 0; width: 120px; height: 180%; transform: rotate(20deg);
+                background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent); }
+      #floor { position: absolute; left: 50%; top: 660px; width: 640px; height: 90px; margin-left: -320px; border-radius: 50%;
+               background: radial-gradient(ellipse, rgba(120,170,220,.16) 0%, transparent 70%); }
+      #refl { position: absolute; left: 50%; top: 622px; width: 520px; height: 200px; margin-left: -260px; border-radius: 0 0 130px 130px; opacity: .22;
+              background: linear-gradient(0deg, transparent 0%, #1a1b1f 100%); filter: blur(6px); }
+      #head { position: absolute; left: 0; right: 0; top: 1200px; text-align: center; font: 800 150px/1 var(--mf-font-display); letter-spacing: -0.045em; color: #f5f5f7; }
+      #head .g { background: linear-gradient(100deg, #4cc2ff, #a6ff7a); -webkit-background-clip: text; background-clip: text; color: transparent; padding-right: .04em; }
+      #sub { position: absolute; left: 0; right: 0; top: 1390px; text-align: center; font: 500 44px/1.35 var(--mf-font-body); color: #86868b; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="stage" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <div id="floor"></div>
+        <div id="refl"></div>
+        <div id="obj">
+          <div id="body" class="face"></div>
+          <div id="ring"></div>
+          <div id="core"></div>
+          <div id="spec"><i></i></div>
+        </div>
+      </div>
+      <div id="head" class="clip" data-start="0" data-duration="4.5" data-track-index="1">Keynote <span class="g">dark</span></div>
+      <div id="sub" class="clip" data-start="0" data-duration="4.5" data-track-index="2">One thing at a time,<br />shown like it matters.</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo("#stage", { opacity: 0 }, { opacity: 1, duration: 0.9, ease: "power2.out" }, 0);
+      tl.fromTo("#obj", { rotationY: -14, rotationX: 8, y: 40 }, { rotationY: 6, rotationX: 2, y: 0, duration: DUR, ease: "sine.out" }, 0);
+      tl.fromTo("#ring", { rotation: 0 }, { rotation: 40, duration: DUR, ease: "none" }, 0);
+      tl.fromTo("#spec i", { x: -200 }, { x: 640, duration: 1.2, ease: "power2.inOut" }, 2.0);
+      tl.fromTo("#head", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.9, ease: "power2.out" }, 1.0);
+      tl.fromTo("#sub", { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.8, ease: "power2.out" }, 1.8);
+      tl.fromTo("#head .g", { backgroundPosition: "0% 0%" }, { backgroundPosition: "100% 0%", duration: 1, ease: "none" }, 2.4);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

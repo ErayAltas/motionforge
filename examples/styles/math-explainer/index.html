@@ -1,0 +1,102 @@
+<!doctype html>
+<!--
+  motionforge style preview: math-explainer
+  © 2026 motionforge contributors, MIT
+  Colour = meaning: a (blue), b (orange), c (green) keep their colour in the figure and the equation.
+  Strokes draw on, fills fade in, then each square's term glides on an arc into the equation.
+  Variables are set in Instrument Serif Italic as a stand-in for KaTeX math italic.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      :root { --slate: #15171c; --chalk: #eceff4; --a: #58c4dd; --b: #f0b35a; --c: #8bd17c; --mf-grain-opacity: .05; }
+      html, body { background: var(--slate); }
+      #root { background: radial-gradient(900px 900px at 50% 45%, #1d2027 0%, #15171c 60%, #101216 100%); }
+      #fig { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      .st { fill-opacity: 0; stroke-width: 5; stroke-linecap: round; stroke-linejoin: round; }
+      #label { position: absolute; left: 0; right: 0; top: 190px; text-align: center; font: 700 36px/1 var(--mf-font-mono); letter-spacing: .2em; text-transform: uppercase; color: #8b93a1; }
+      .term { position: absolute; font-family: var(--mf-font-accent); font-style: italic; font-size: 128px; line-height: 1; white-space: nowrap; }
+      .term sup { font-size: 0.55em; vertical-align: 0.75em; margin-left: 0.04em; font-style: normal; font-family: var(--mf-font-accent); }
+      .op { position: absolute; font: 400 104px/1 var(--mf-font-body); color: var(--chalk); }
+      #box { position: absolute; border: 4px solid var(--c); border-radius: 16px; }
+      #cap { position: absolute; left: 0; right: 0; top: 1560px; text-align: center; font: 600 44px/1.3 var(--mf-font-body); color: #aab1bd; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="label" class="clip" data-start="0" data-duration="4.5" data-track-index="0">Math explainer</div>
+      <svg id="fig" class="clip" viewBox="0 0 1080 1920" data-start="0" data-duration="4.5" data-track-index="1">
+        <!-- right angle at R(380,900), A(380,660) above, B(700,900) to the right; c square outward -->
+        <polygon id="sqa" class="st" points="140,660 380,660 380,900 140,900" stroke="#58c4dd" fill="#58c4dd" pathLength="1" />
+        <polygon id="sqb" class="st" points="380,900 700,900 700,1220 380,1220" stroke="#f0b35a" fill="#f0b35a" pathLength="1" />
+        <polygon id="sqc" class="st" points="380,660 700,900 940,580 620,340" stroke="#8bd17c" fill="#8bd17c" pathLength="1" />
+        <path id="tri" d="M380 660 L380 900 L700 900 Z" fill="none" stroke="#eceff4" stroke-width="6" stroke-linejoin="round" pathLength="1" />
+        <path id="ra" d="M380 868 L412 868 L412 900" fill="none" stroke="#eceff4" stroke-width="4" pathLength="1" />
+      </svg>
+      <div id="ta" class="term clip" data-start="0" data-duration="4.5" data-track-index="2" style="color:var(--a)">a<sup>2</sup></div>
+      <div id="tb" class="term clip" data-start="0" data-duration="4.5" data-track-index="3" style="color:var(--b)">b<sup>2</sup></div>
+      <div id="tc" class="term clip" data-start="0" data-duration="4.5" data-track-index="4" style="color:var(--c)">c<sup>2</sup></div>
+      <div id="plus" class="op clip" data-start="0" data-duration="4.5" data-track-index="5">+</div>
+      <div id="eq" class="op clip" data-start="0" data-duration="4.5" data-track-index="6">=</div>
+      <div id="box" class="clip" data-start="0" data-duration="4.5" data-track-index="7"></div>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="8">See the idea before the formula.</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      // equation layout (y 1290..1440): a² + b² = c², centred
+      const EQ_Y = 1300;
+      const order = ["ta", "plus", "tb", "eq", "tc"], GAP = 34;
+      const widths = order.map((id) => document.getElementById(id).offsetWidth);
+      let x0 = 540 - (widths.reduce((a, b) => a + b, 0) + GAP * (order.length - 1)) / 2;
+      const slots = {};
+      order.forEach((id, i) => { slots[id] = Math.round(x0); x0 += widths[i] + GAP; });
+      // where each term starts: the centre of its square
+      const from = { ta: [260, 780], tb: [540, 1060], tc: [660, 620] };
+      const place = (id, x) => gsap.set("#" + id, { left: x, top: id === "plus" || id === "eq" ? EQ_Y + 14 : EQ_Y });
+      Object.entries(slots).forEach(([id, x]) => place(id, x));
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo("#label", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.4 }, 0.05);
+      tl.fromTo("#tri", { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.8, ease: "power3.inOut" }, 0.1);
+      tl.fromTo("#ra", { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.3 }, 0.8);
+      ["#sqa", "#sqb", "#sqc"].forEach((sel, i) => {
+        tl.fromTo(sel, { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.6, ease: "power3.inOut" }, 0.7 + i * 0.25);
+        tl.to(sel, { fillOpacity: 0.25, duration: 0.3 }, 1.3 + i * 0.25);
+      });
+      // terms glide out of the figure on arcs and land in the equation
+      const inOut = gsap.parseEase("power2.inOut"), out = gsap.parseEase("power2.out");
+      const glides = ["ta", "tb", "tc"].map((id, i) => {
+        const el = document.getElementById(id);
+        const [fx, fy] = from[id];
+        return { el, dx: fx - el.offsetWidth / 2 - slots[id], dy: fy - el.offsetHeight / 2 - EQ_Y, at: 1.9 + i * 0.35 };
+      });
+      function draw(t) {
+        for (const g of glides) {
+          const a = Math.max(0, Math.min(1, (t - g.at) / 0.25));
+          const k = inOut(Math.max(0, Math.min(1, (t - g.at - 0.1) / 0.6)));
+          g.el.style.opacity = out(a);
+          g.el.style.transform = `translate(${g.dx * (1 - k)}px, ${g.dy * (1 - k) - Math.sin(k * Math.PI) * 120}px) scale(${0.6 + 0.4 * out(a)})`;
+        }
+      }
+      const clock = { _t: 0, get t() { return this._t; }, set t(v) { this._t = v; draw(v); } };
+      tl.fromTo(clock, { t: 0 }, { t: DUR, duration: DUR, ease: "none" }, 0);
+      tl.fromTo(["#plus", "#eq"], { opacity: 0 }, { opacity: 1, duration: 0.3, stagger: 0.1 }, 3.0);
+      // emphasis: box grows around c², brief 1.05 pulse
+      const tc = document.getElementById("tc");
+      gsap.set("#box", { left: slots.tc - 18, top: EQ_Y - 14, width: tc.offsetWidth + 36, height: tc.offsetHeight + 28 });
+      tl.fromTo("#box", { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 0.3, ease: "power2.out" }, 3.4);
+      tl.to("#sqc", { fillOpacity: 0.45, duration: 0.3, yoyo: true, repeat: 1 }, 3.45);
+      tl.fromTo("#cap", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 3.6);
+      draw(0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

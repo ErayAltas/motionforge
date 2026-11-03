@@ -4,6 +4,43 @@
 How to pick, customise or create one: [`../SKILL.md`](../SKILL.md). All styles are original
 motionforge work (MIT); fonts named in them are free (SIL OFL or similar) but are not bundled.
 
+## Gallery (first 20 styles)
+
+Four-second previews rendered from [`examples/styles/`](../../../examples/styles/) with the HyperFrames engine.
+
+<table>
+  <tr>
+    <td align="center" valign="top" width="25%"><a href="creator-reels-dark/STYLE.md"><img src="creator-reels-dark/preview.gif" width="180" alt="creator-reels-dark preview"></a><br><code>creator-reels-dark</code><br><sub>Charcoal + lime accent, bold sans with an italic-serif word, pop-out talking head in a rounded card</sub></td>
+    <td align="center" valign="top" width="25%"><a href="agency-info-brand/STYLE.md"><img src="agency-info-brand/preview.gif" width="180" alt="agency-info-brand preview"></a><br><code>agency-info-brand</code><br><sub>Brand-kit colours on dark, corner watermark, captions, save/send CTA, logo end card</sub></td>
+    <td align="center" valign="top" width="25%"><a href="kinetic-captions/STYLE.md"><img src="kinetic-captions/preview.gif" width="180" alt="kinetic-captions preview"></a><br><code>kinetic-captions</code><br><sub>Big voice-synced words on a quiet field, accent on the stressed word</sub></td>
+    <td align="center" valign="top" width="25%"><a href="archival-newsreel/STYLE.md"><img src="archival-newsreel/preview.gif" width="180" alt="archival-newsreel preview"></a><br><code>archival-newsreel</code><br><sub>Black-and-white film, gate weave and dust, slab-serif title cards</sub></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top" width="25%"><a href="storybook-isometric/STYLE.md"><img src="storybook-isometric/preview.gif" width="180" alt="storybook-isometric preview"></a><br><code>storybook-isometric</code><br><sub>Pastel isometric miniatures that assemble block by block</sub></td>
+    <td align="center" valign="top" width="25%"><a href="retro-anime-cel/STYLE.md"><img src="retro-anime-cel/preview.gif" width="180" alt="retro-anime-cel preview"></a><br><code>retro-anime-cel</code><br><sub>Two-tone cel shading, glowing highlights, speed lines, sunset skies</sub></td>
+    <td align="center" valign="top" width="25%"><a href="pixel-quest/STYLE.md"><img src="pixel-quest/preview.gif" width="180" alt="pixel-quest preview"></a><br><code>pixel-quest</code><br><sub>16-bit sprites, tile levels, dialogue boxes, level-up chimes</sub></td>
+    <td align="center" valign="top" width="25%"><a href="rubber-hose-toon/STYLE.md"><img src="rubber-hose-toon/preview.gif" width="180" alt="rubber-hose-toon preview"></a><br><code>rubber-hose-toon</code><br><sub>Early-cartoon bendy limbs, sepia ink on cream, everything on the beat</sub></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top" width="25%"><a href="riso-print/STYLE.md"><img src="riso-print/preview.gif" width="180" alt="riso-print preview"></a><br><code>riso-print</code><br><sub>Two spot inks overprinting, halftones, slight misregistration</sub></td>
+    <td align="center" valign="top" width="25%"><a href="blueprint-schematic/STYLE.md"><img src="blueprint-schematic/preview.gif" width="180" alt="blueprint-schematic preview"></a><br><code>blueprint-schematic</code><br><sub>White line work on cyanotype blue, exploded views, callouts (no grid)</sub></td>
+    <td align="center" valign="top" width="25%"><a href="swiss-poster/STYLE.md"><img src="swiss-poster/preview.gif" width="180" alt="swiss-poster preview"></a><br><code>swiss-poster</code><br><sub>Strict columns, huge grotesque type, flat red blocks</sub></td>
+    <td align="center" valign="top" width="25%"><a href="terminal-crt/STYLE.md"><img src="terminal-crt/preview.gif" width="180" alt="terminal-crt preview"></a><br><code>terminal-crt</code><br><sub>Phosphor monospace on a tube, typing commands, scanlines and bloom</sub></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top" width="25%"><a href="keynote-dark/STYLE.md"><img src="keynote-dark/preview.gif" width="180" alt="keynote-dark preview"></a><br><code>keynote-dark</code><br><sub>Near-black stage, one lit hero object, gradient word, big numbers</sub></td>
+    <td align="center" valign="top" width="25%"><a href="marker-whiteboard/STYLE.md"><img src="marker-whiteboard/preview.gif" width="180" alt="marker-whiteboard preview"></a><br><code>marker-whiteboard</code><br><sub>Marker sketches drawn live on a clean board, arrows and circles</sub></td>
+    <td align="center" valign="top" width="25%"><a href="data-story/STYLE.md"><img src="data-story/preview.gif" width="180" alt="data-story preview"></a><br><code>data-story</code><br><sub>Honest charts, grey first, one accent insight, visible source</sub></td>
+    <td align="center" valign="top" width="25%"><a href="screencast-zoom/STYLE.md"><img src="screencast-zoom/preview.gif" width="180" alt="screencast-zoom preview"></a><br><code>screencast-zoom</code><br><sub>Real screens in a floating window, guided zooms and highlights</sub></td>
+  </tr>
+  <tr>
+    <td align="center" valign="top" width="25%"><a href="paper-cutout/STYLE.md"><img src="paper-cutout/preview.gif" width="180" alt="paper-cutout preview"></a><br><code>paper-cutout</code><br><sub>Layered coloured card with real shadows, stop-motion jitter</sub></td>
+    <td align="center" valign="top" width="25%"><a href="ink-crosshatch/STYLE.md"><img src="ink-crosshatch/preview.gif" width="180" alt="ink-crosshatch preview"></a><br><code>ink-crosshatch</code><br><sub>Pen-and-ink hatching on warm paper with one colour wash</sub></td>
+    <td align="center" valign="top" width="25%"><a href="sketchbook-pencil/STYLE.md"><img src="sketchbook-pencil/preview.gif" width="180" alt="sketchbook-pencil preview"></a><br><code>sketchbook-pencil</code><br><sub>Graphite sketches, sticky notes and taped photos on a sketchbook page</sub></td>
+    <td align="center" valign="top" width="25%"><a href="math-explainer/STYLE.md"><img src="math-explainer/preview.gif" width="180" alt="math-explainer preview"></a><br><code>math-explainer</code><br><sub>Colour-coded geometry and equations morphing on dark slate</sub></td>
+  </tr>
+</table>
+
 **Categories:** [Creators & personal brands](#creators--personal-brands) · [E-commerce & products](#e-commerce--products) · [Real estate & maps](#real-estate--maps) · [Football & sports](#football--sports) · [Documentary & storytelling](#documentary--storytelling) · [Education & explainers](#education--explainers) · [Tech, SaaS & AI](#tech-saas--ai) · [Finance & money](#finance--money) · [Food & restaurants](#food--restaurants) · [Fitness, health & wellness](#fitness-health--wellness) · [Travel & hospitality](#travel--hospitality) · [Music, events & weddings](#music-events--weddings) · [News & commentary](#news--commentary) · [Business, B2B & local](#business-b2b--local) · [Gaming & esports](#gaming--esports) · [Kids & animation](#kids--animation) · [Fashion & beauty](#fashion--beauty) · [Automotive](#automotive) · [Art direction & design looks](#art-direction--design-looks) · [Nonprofit & causes](#nonprofit--causes)
 
 ## Creators & personal brands

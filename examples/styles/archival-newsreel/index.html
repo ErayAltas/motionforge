@@ -1,0 +1,144 @@
+<!doctype html>
+<!--
+  motionforge style preview: archival-newsreel
+  © 2026 motionforge contributors, MIT
+  Title card (2-frame white flash, 1.04 -> 1 settle) cuts to drawn "footage" in a 4:3 window with a
+  slow Ken Burns push. Film effects are seeded per frame on a 12 fps clock: flicker, gate weave,
+  dust, one scratch (kept inside the 4:3 window so the preview GIF stays small). The scene is drawn in SVG
+  (no archive material). Instrument Serif stands in for a slab serif (Alfa Slab One / Roboto Slab).
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      :root { --black: #0b0b0a; --silver: #d8d4c8; --mid: #7d7a72; --red: #b8352b; --mf-grain-opacity: .13; }
+      html, body { background: var(--black); }
+      #root { background: var(--black); color: var(--silver); }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 50%, rgba(0,0,0,.7) 100%); }
+      #gate { position: absolute; inset: 0; }
+      .slab { font-family: var(--mf-font-accent); font-style: italic; font-weight: 400; text-transform: uppercase; letter-spacing: 0.01em; color: var(--silver); }
+      .sub { font: 700 40px/1 var(--mf-font-body); letter-spacing: .22em; text-transform: uppercase; color: var(--silver); }
+      #card { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, #1a1a18 0%, var(--black) 70%); }
+      #card .b1 { position: absolute; inset: 60px; border: 4px solid var(--silver); }
+      #card .b2 { position: absolute; inset: 78px; border: 2px solid var(--silver); opacity: .7; }
+      #card .pre { position: absolute; left: 0; right: 0; top: 640px; text-align: center; }
+      #card h1 { position: absolute; left: 0; right: 0; top: 720px; text-align: center; font-size: 168px; line-height: 0.98; }
+      #card .orn { position: absolute; left: 290px; right: 290px; top: 1080px; height: 4px; background: var(--silver); }
+      #card .orn::after { content: ""; position: absolute; left: 50%; top: -12px; width: 26px; height: 26px; margin-left: -13px; background: var(--black); border: 4px solid var(--silver); transform: rotate(45deg); }
+      #card .reel { position: absolute; left: 0; right: 0; top: 1140px; text-align: center; font-size: 34px; }
+      #reel { position: absolute; inset: 0; opacity: 0; }
+      #band { position: absolute; left: 0; right: 0; top: 340px; text-align: center; font-size: 104px; }
+      #win { position: absolute; left: 0; top: 520px; width: 1080px; height: 810px; overflow: hidden; filter: sepia(.35) contrast(1.12) brightness(.96); }
+      #shot { position: absolute; left: 0; top: 0; width: 1080px; height: 810px; transform-origin: 62% 40%; }
+      #cap { position: absolute; left: 0; right: 0; top: 1370px; height: 96px; background: #000; text-align: center; font-size: 40px; line-height: 96px; }
+      #stamp { position: absolute; left: 70px; top: 1150px; padding: 14px 26px; border: 6px solid var(--red); color: var(--red); font: 800 54px/1 var(--mf-font-display); letter-spacing: .12em; text-transform: uppercase; opacity: 0; background: rgba(216,212,200,.25); }
+      #fx { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      #flick { position: absolute; inset: 0; background: #000; opacity: 0; pointer-events: none; z-index: 2; }
+      #flash { position: absolute; inset: 0; background: #f4f1e8; opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="gate" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <div id="card">
+          <div class="b1"></div><div class="b2"></div>
+          <div class="pre sub">motionforge presents</div>
+          <h1 class="slab">Archival<br />Newsreel</h1>
+          <div class="orn"></div>
+          <div class="reel sub">Reel one</div>
+        </div>
+        <div id="reel">
+          <div id="band" class="slab">Archival newsreel</div>
+          <div id="win"><div id="flick"></div>
+            <svg id="shot" viewBox="0 0 1080 810">
+              <defs>
+                <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8f8b82" /><stop offset="1" stop-color="#d2cdc0" /></linearGradient>
+                <filter id="smoke"><feGaussianBlur stdDeviation="14" /></filter>
+                <filter id="haze"><feGaussianBlur stdDeviation="3" /></filter>
+              </defs>
+              <rect width="1080" height="810" fill="url(#sky)" />
+              <path d="M0 520 C 160 470, 300 500, 470 470 C 640 440, 820 490, 1080 450 L1080 810 L0 810 Z" fill="#a19c90" filter="url(#haze)" />
+              <g id="smk" filter="url(#smoke)" fill="#6f6b63" opacity=".85">
+                <circle cx="640" cy="230" r="46" /><circle cx="610" cy="170" r="60" /><circle cx="560" cy="110" r="78" /><circle cx="490" cy="60" r="96" />
+                <circle cx="790" cy="250" r="40" /><circle cx="770" cy="190" r="56" /><circle cx="730" cy="130" r="72" />
+              </g>
+              <!-- chimneys -->
+              <rect x="622" y="240" width="38" height="300" fill="#3b3935" /><rect x="616" y="236" width="50" height="14" fill="#2a2926" />
+              <rect x="772" y="270" width="34" height="270" fill="#3b3935" /><rect x="766" y="266" width="46" height="12" fill="#2a2926" />
+              <!-- factory with saw-tooth roof -->
+              <path d="M300 560 L300 470 L360 420 L360 470 L420 420 L420 470 L480 420 L480 470 L540 420 L540 470 L600 420 L600 470 L660 420 L660 470 L720 420 L720 470 L780 420 L780 470 L840 470 L840 560 Z" fill="#46433e" />
+              <g fill="#b9b3a5" opacity=".75">
+                <rect x="330" y="490" width="34" height="40" /><rect x="390" y="490" width="34" height="40" /><rect x="450" y="490" width="34" height="40" />
+                <rect x="510" y="490" width="34" height="40" /><rect x="570" y="490" width="34" height="40" /><rect x="630" y="490" width="34" height="40" />
+                <rect x="690" y="490" width="34" height="40" /><rect x="750" y="490" width="34" height="40" />
+              </g>
+              <!-- ground, road, fence -->
+              <path d="M0 560 H1080 V810 H0 Z" fill="#5e5a52" />
+              <path d="M420 810 L520 560 L560 560 L760 810 Z" fill="#8c877c" />
+              <g stroke="#2e2c29" stroke-width="6"><path d="M0 640 H380" /><path d="M40 600 V680 M120 600 V680 M200 600 V680 M280 600 V680 M360 600 V680" /></g>
+              <g fill="#2e2c29"><rect x="880" y="590" width="120" height="70" /><path d="M870 590 L940 550 L1010 590 Z" /></g>
+            </svg>
+          </div>
+          <div id="stamp">First</div>
+          <div id="cap" class="sub">The style catalogue · reel 1</div>
+        </div>
+        <svg id="fx" viewBox="0 0 1080 1920"><g id="dust" fill="#f4f1e8"></g><rect id="scratch" x="0" y="520" width="3" height="810" fill="#f4f1e8" opacity="0" /></svg>
+        </div>
+      <div id="flash" class="clip" data-start="0" data-duration="4.5" data-track-index="1"></div>
+    </div>
+
+    <script>
+      const DUR = 4.5, CUT = 2.2;
+      const dust = document.getElementById("dust");
+      const flick = document.getElementById("flick"), scratch = document.getElementById("scratch");
+      function draw(t) {
+        const f = Math.floor(t * 12);                         // film effects step at 12 fps (held frames)
+        const r = MF.rng("reel-" + f);
+        const footage = t >= CUT;
+        document.getElementById("win").style.transform = footage ? `translate(${r.range(-1.5, 1.5).toFixed(1)}px, ${r.range(-2, 2).toFixed(1)}px)` : "none";
+        flick.style.opacity = footage ? r.range(0, 0.07).toFixed(3) : 0;
+        let html = "";
+        const n = footage ? Math.floor(r.range(5, 12)) : (f % 3 === 0 ? 2 : 0);
+        for (let i = 0; i < n; i++) {
+          const x = r.range(40, 1040), y = r.range(540, 1310), s = r.range(2, 6);
+          html += r() < 0.75 ? `<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${s.toFixed(1)}" opacity=".7"/>`
+                             : `<path d="M${x.toFixed(0)} ${y.toFixed(0)} q ${r.range(-14, 14).toFixed(0)} ${r.range(6, 16).toFixed(0)} ${r.range(-20, 20).toFixed(0)} ${r.range(14, 30).toFixed(0)}" stroke="#f4f1e8" stroke-width="2" fill="none" opacity=".6"/>`;
+        }
+        dust.innerHTML = html;
+        // one vertical scratch for a few frames during the footage
+        const sOn = t > 3.1 && t < 3.6;
+        scratch.setAttribute("opacity", sOn ? 0.45 : 0);
+        scratch.setAttribute("x", (300 + Math.floor((t - 3.1) * 12) * 3).toFixed(0));
+      }
+
+      const clock = { _t: 0, get t() { return this._t; }, set t(v) { this._t = v; draw(v); } };
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo(clock, { t: 0 }, { t: DUR, duration: DUR, ease: "none" }, 0);
+      // title card: 2-frame white flash, thump and settle
+      tl.set("#flash", { opacity: 0.95 }, 0);
+      tl.set("#flash", { opacity: 0 }, 0.067);
+      tl.fromTo("#card", { scale: 1.04 }, { scale: 1, duration: 0.2, ease: "power2.out" }, 0.067);
+      // hard cut to footage with a flicker
+      tl.set("#card", { opacity: 0 }, CUT);
+      tl.set("#reel", { opacity: 1 }, CUT);
+      tl.set("#flash", { opacity: 0.5 }, CUT);
+      tl.set("#flash", { opacity: 0 }, CUT + 0.04);
+      tl.set("#flash", { opacity: 0.25 }, CUT + 0.12);
+      tl.set("#flash", { opacity: 0 }, CUT + 0.16);
+      // Ken Burns: slow push, sine.inOut
+      tl.fromTo("#shot", { scale: 1 }, { scale: 1.05, duration: DUR - CUT, ease: "sine.inOut" }, CUT);
+      tl.fromTo("#smk", { y: 0 }, { y: -40, duration: DUR - CUT, ease: "none" }, CUT);
+      // the one red stamp
+      gsap.set("#stamp", { rotation: -8 });
+      tl.fromTo("#stamp", { opacity: 0, scale: 1.4 }, { opacity: 1, scale: 1, duration: 0.12, ease: "power3.in" }, 3.0);
+      draw(0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

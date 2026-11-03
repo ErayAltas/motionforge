@@ -9,6 +9,7 @@ engines/hyperframes/
 ├─ base.css            fonts (latin + latin-ext split), brand tokens, backdrop with static grain, text primitives
 ├─ mf-runtime.js       small helpers for templates: params block, timeline registration, L(), seeded RNG, text fit
 ├─ starter/            minimal seekable scene (index.html, hyperframes.json, meta.json)
+├─ three/              optional three.js layer: mf-three.js helpers + README (3D scenes)
 └─ scripts/new-scene.sh  copy the starter (or a template) into a new scene folder
 ```
 
@@ -104,7 +105,21 @@ import { OffthreadVideo, Sequence, staticFile } from "remotion";
 Render HyperFrames scenes at the same fps and size as the Remotion composition (1080×1920, 30 fps
 by default) so frames line up one to one. Keep the voiceover in Remotion, not in the scene MP4.
 
-## 6. Pitfalls
+## 6. 3D scenes (three.js)
+
+A scene can add a full-frame WebGL canvas drawn with three.js (MIT, from npm). The canvas follows the
+`hf-seek` event that HyperFrames sends for every frame; HTML text stays on the GSAP timeline.
+
+```bash
+npm i -D three@0.170.0
+engines/hyperframes/scripts/new-scene.sh hero --template product-turntable-3d   # 3D templates add the layer
+engines/hyperframes/scripts/new-scene.sh my3d --three                           # starter + three.js + import map
+```
+
+Contract, determinism rules, software-rendering budget, lighting presets, loading your own GLB models
+and the checks: [three/README.md](three/README.md).
+
+## 7. Pitfalls
 
 | Symptom | Cause | Fix |
 |---|---|---|
@@ -113,4 +128,5 @@ by default) so frames line up one to one. Keep the voiceover in Remotion, not in
 | Video is frozen / blank | GSAP failed to load (CDN, wrong path) | local `assets/vendor/gsap.min.js`; check the console in `npx hyperframes preview` |
 | Frames flicker between renders | SMIL, CSS animation, `Math.random()` | move all motion onto the GSAP timeline; use `MF.rng(seed)` |
 | Huge output file | animated grain or noise | static grain only |
+| 3D canvas empty or frozen in the render | three.js from a CDN, no import map, or draw() not registered | `new-scene.sh --three`; `onSeek(draw, ready)` from `mf-three.js` |
 | Gradient / italic text clipped at the right edge | `background-clip: text` has no room for the overhang | small `padding-right` (the `.accent-gradient` class does this) |

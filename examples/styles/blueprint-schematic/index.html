@@ -1,0 +1,120 @@
+<!doctype html>
+<!--
+  motionforge style preview: blueprint-schematic
+  © 2026 motionforge contributors, MIT
+  Line work only on cyanotype blue (no grid: registration marks in the corners). An outline draws
+  itself, explodes along the vertical axis, leader lines draw after the parts settle, labels type in.
+  Labels use JetBrains Mono as a stand-in for IBM Plex Mono.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      :root { --line: #eaf2ff; --faint: rgba(234,242,255,.38); --acc: #ffd24a; --mf-grain-opacity: .07; }
+      html, body { background: #10345c; }
+      #root { background: radial-gradient(900px 1100px at 50% 48%, #1a4a7c 0%, #10345c 70%, #0c2949 100%); }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 60%, rgba(0,10,30,.45) 100%); }
+      #fibre { position: absolute; inset: 0; opacity: .5; mix-blend-mode: soft-light; }
+      #art { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      .l { fill: none; stroke: var(--line); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+      .l2 { fill: none; stroke: var(--line); stroke-width: 1.5; }
+      .f { fill: none; stroke: var(--faint); stroke-width: 2; stroke-dasharray: 14 10; }
+      .lab { font: 500 34px var(--mf-font-mono); letter-spacing: .08em; fill: var(--line); }
+      .labs { font: 500 24px var(--mf-font-mono); letter-spacing: .08em; fill: var(--faint); }
+      #title { position: absolute; left: 80px; top: 200px; font: 800 92px/0.95 var(--mf-font-display); letter-spacing: 0.01em; color: var(--line); text-transform: uppercase; }
+      #sub { position: absolute; left: 84px; top: 400px; font: 500 28px/1 var(--mf-font-mono); letter-spacing: .14em; color: var(--faint); text-transform: uppercase; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <svg id="fibre" class="clip" viewBox="0 0 1080 1920" data-start="0" data-duration="4.5" data-track-index="0">
+        <filter id="fb"><feTurbulence type="fractalNoise" baseFrequency="0.004 0.012" numOctaves="3" seed="4" /><feColorMatrix values="0 0 0 0 .7  0 0 0 0 .85  0 0 0 0 1  0 0 0 .6 0" /></filter>
+        <rect width="1080" height="1920" filter="url(#fb)" />
+      </svg>
+      <div id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="1">Blueprint<br />schematic</div>
+      <div id="sub" class="clip" data-start="0" data-duration="4.5" data-track-index="2">Fig. 1 — exploded view</div>
+      <svg id="art" class="clip" viewBox="0 0 1080 1920" data-start="0" data-duration="4.5" data-track-index="3">
+        <!-- registration marks -->
+        <g id="reg" class="l2">
+          <g transform="translate(70 130)"><circle r="18" /><path d="M-30 0 H30 M0 -30 V30" /></g>
+          <g transform="translate(1010 130)"><circle r="18" /><path d="M-30 0 H30 M0 -30 V30" /></g>
+          <g transform="translate(70 1790)"><circle r="18" /><path d="M-30 0 H30 M0 -30 V30" /></g>
+          <g transform="translate(1010 1790)"><circle r="18" /><path d="M-30 0 H30 M0 -30 V30" /></g>
+        </g>
+        <path id="axis" class="f" d="M540 520 V1440" />
+        <!-- parts: cylinders drawn as ellipse + sides; cy = top face centre -->
+        <g id="cap">
+          <path class="l d" d="M300 880 A240 70 0 0 1 780 880 A240 70 0 0 1 300 880 Z" />
+          <path class="l d" d="M300 880 V930 A240 70 0 0 0 780 930 V880" />
+          <path class="l2 d" d="M420 880 A120 34 0 0 1 660 880 A120 34 0 0 1 420 880 Z" />
+        </g>
+        <g id="board">
+          <path id="hl" d="M320 975 A220 62 0 0 1 760 975 A220 62 0 0 1 320 975 Z" fill="#ffd24a" fill-opacity="0" stroke="none" />
+          <path id="boardline" class="l d" d="M320 975 A220 62 0 0 1 760 975 A220 62 0 0 1 320 975 Z" />
+          <path class="l2 d" d="M470 955 l60 -18 l60 18 l-60 18 Z M610 985 l30 -9 l30 9 l-30 9 Z M410 990 l24 -7 l24 7 l-24 7 Z" />
+        </g>
+        <g id="base">
+          <path class="l d" d="M300 1010 A240 70 0 0 1 780 1010 A240 70 0 0 1 300 1010 Z" />
+          <path class="l d" d="M300 1010 V1110 A240 70 0 0 0 780 1110 V1010" />
+          <path class="f d" d="M300 1110 A240 70 0 0 1 780 1110" />
+        </g>
+        <!-- leader lines + labels (positions after the explode) -->
+        <g id="leaders">
+          <path class="l2 d" d="M780 640 L860 600 H990" /><text class="lab t" x="870" y="588">CAP</text>
+          <path class="l2 d" d="M320 975 L220 1010 H90" /><text class="lab t" x="90" y="998">BOARD</text>
+          <path class="l2 d" d="M780 1330 L860 1370 H990" /><text class="lab t" x="870" y="1358">BASE</text>
+          <!-- dimension line -->
+          <path class="l2 d" d="M300 1500 H780 M300 1484 V1516 M780 1484 V1516" /><text class="labs t" x="540" y="1546" text-anchor="middle">Ø 140 MM</text>
+        </g>
+        <!-- title block -->
+        <g id="tblock" transform="translate(640 1570)">
+          <rect class="l2" width="360" height="120" />
+          <path class="l2" d="M0 40 H360 M0 80 H360 M150 40 V120" />
+          <text class="labs" x="16" y="29">STYLE PREVIEW</text>
+          <text class="labs" x="16" y="69">SCALE</text><text class="labs" x="166" y="69">1:2</text>
+          <text class="labs" x="16" y="109">REV</text><text class="labs" x="166" y="109">A</text>
+        </g>
+      </svg>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      document.querySelectorAll("#art .d").forEach((p) => p.setAttribute("pathLength", "1"));
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo("#title", { clipPath: "inset(0% 100% 0% 0%)" }, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.6, ease: "power1.inOut" }, 0.05);
+      tl.fromTo("#sub", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.55);
+      tl.fromTo("#reg", { opacity: 0 }, { opacity: 0.8, duration: 0.3 }, 0);
+      tl.fromTo("#tblock", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.3);
+      tl.fromTo("#axis", { strokeDashoffset: 300, opacity: 0 }, { opacity: 1, strokeDashoffset: 0, duration: 0.8, ease: "none" }, 0.2);
+      // outline draws in build order: base, board, cap
+      const order = ["#base .d", "#board .d", "#cap .d"];
+      order.forEach((sel, i) => {
+        const ps = gsap.utils.toArray(sel).filter((p) => !p.classList.contains("f") || p.closest("#base"));
+        tl.fromTo(ps, { strokeDasharray: "1 1", strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.6, ease: "power1.inOut", stagger: 0.08 }, 0.3 + i * 0.3);
+      });
+      // explode along the vertical axis
+      tl.to("#cap", { y: -260, duration: 0.6, ease: "power3.inOut" }, 1.55);
+      tl.to("#base", { y: 260, duration: 0.6, ease: "power3.inOut" }, 1.55);
+      // leaders after parts settle, labels type in
+      tl.fromTo("#leaders .d", { strokeDasharray: "1 1", strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.4, ease: "power1.inOut", stagger: 0.12 }, 2.2);
+      document.querySelectorAll("#leaders .t").forEach((t, i) => {
+        const full = t.textContent;
+        const o = { n: 0 };
+        tl.fromTo(o, { n: 0 }, { n: full.length, duration: 0.3, ease: "none", onUpdate: null,
+          modifiers: { n: (v) => { t.textContent = full.slice(0, Math.round(v)); return v; } } }, 2.45 + i * 0.12);
+        t.textContent = "";
+      });
+      // camera: slow zoom to the active part, accent highlight
+      tl.fromTo("#art", { scale: 1 }, { scale: 1.06, duration: 1.4, ease: "power2.inOut", transformOrigin: "540px 975px" }, 2.9);
+      tl.to("#hl", { attr: { "fill-opacity": 0.25 }, duration: 0.3 }, 3.2);
+      tl.to("#boardline", { stroke: "#ffd24a", duration: 0.3 }, 3.2);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

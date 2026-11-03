@@ -1,0 +1,132 @@
+<!doctype html>
+<!--
+  motionforge style preview: rubber-hose-toon
+  © 2026 motionforge contributors, MIT
+  An original page character bounces on a 120 bpm beat: squash on the downbeat, stretch on the
+  upbeat, hose limbs as smooth curves whose control points follow sines, seeded line boil on threes (8 drawings/s, keeps the preview GIF light),
+  iris in and out. Inter 800 (slanted) stands in for Shrikhand / Lobster; Inter for Fredoka.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      :root { --cream: #f3e6c8; --ink: #1e1a16; --sepia: #8a6a48; --red: #d9452b; }
+      html, body { background: var(--ink); }
+      #root { background: var(--cream); }
+      #root::before { mix-blend-mode: multiply; opacity: .07; }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 58%, rgba(90,60,25,.5) 100%); }
+      #stage { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      .ln { fill: none; stroke: var(--ink); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+      .ttl { font-family: var(--mf-font-display); font-weight: 800; font-style: italic; letter-spacing: .02em; }
+      #cap { position: absolute; left: 0; right: 0; top: 1470px; text-align: center; font: 700 50px/1 var(--mf-font-body); color: var(--ink); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage light" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <svg id="stage" class="clip" viewBox="0 0 1080 1920" data-start="0" data-duration="4.5" data-track-index="0">
+        <defs>
+          <filter id="stain"><feGaussianBlur stdDeviation="30" /></filter>
+          <mask id="iris"><rect width="1080" height="1920" fill="#fff" /><circle id="hole" cx="540" cy="1000" r="0" fill="#000" /></mask>
+        </defs>
+        <g filter="url(#stain)" opacity=".10" fill="#8a6a48"><circle cx="180" cy="1500" r="90" /><circle cx="900" cy="420" r="70" /><ellipse cx="860" cy="1600" rx="120" ry="60" /></g>
+        <!-- title banner -->
+        <g id="banner">
+          <path d="M70 300 L140 300 L140 470 L70 470 L105 385 Z" fill="#1e1a16" />
+          <path d="M1010 300 L940 300 L940 470 L1010 470 L975 385 Z" fill="#1e1a16" />
+          <rect x="120" y="280" width="840" height="170" rx="10" fill="#1e1a16" />
+          <rect x="136" y="296" width="808" height="138" rx="6" fill="none" stroke="#f3e6c8" stroke-width="3" />
+          <text class="ttl" x="540" y="372" text-anchor="middle" font-size="76" fill="#f3e6c8">RUBBER HOSE</text>
+          <text class="ttl" x="540" y="420" text-anchor="middle" font-size="36" fill="#d9452b" letter-spacing="10">★ TOON ★</text>
+        </g>
+        <g transform="translate(540 1352) scale(1.2) translate(-540 -1352)">
+          <ellipse id="shadow" cx="540" cy="1352" rx="190" ry="26" fill="#8a6a48" opacity=".45" />
+          <path d="M240 1352 H840" class="ln" stroke-width="4" />
+          <g id="char"></g>
+        </g>
+        <g id="dust" fill="#1e1a16"></g>
+        <rect width="1080" height="1920" fill="#1e1a16" mask="url(#iris)" />
+      </svg>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="1">even a spreadsheet can dance</div>
+    </div>
+
+    <script>
+      const DUR = 4.5, BEAT = 0.5;
+      const ch = document.getElementById("char");
+      const dust = document.getElementById("dust");
+      const P = (x, y) => `${x.toFixed(1)} ${y.toFixed(1)}`;
+
+      function draw(t) {
+        const f = Math.floor(t * 8);                  // drawings on threes (8 per second)
+        const b = MF.rng("boil-" + f);
+        const j = () => b.range(-1.6, 1.6);           // line boil
+        const tq = f / 8;
+        // bounce: contact on every beat, airborne in between
+        const ph = (tq % BEAT) / BEAT;                // 0 = downbeat
+        const hop = Math.sin(ph * Math.PI);           // 0..1..0
+        const contact = ph < 0.18 || ph > 0.9;
+        const sx = contact ? 1.1 : 1 - 0.06 * hop, sy = contact ? 0.9 : 1 + 0.08 * hop;
+        const lift = contact ? 0 : hop * 60;
+        const sway = Math.sin(tq * Math.PI / BEAT) * 10; // lean left/right on alternate beats
+        const cx = 540 + sway, base = 1180 - lift;     // bottom of the body
+        const W = 300 * sx, H = 340 * sy;
+        const top = base - H, L = cx - W / 2, R = cx + W / 2;
+        const arm = Math.sin(tq * Math.PI * 2 / BEAT * 0.5);
+        // limbs: smooth hoses (no joints)
+        const hipL = [cx - 70, base], hipR = [cx + 70, base];
+        const footL = [cx - 110 - 10 * arm, 1330 + (contact ? 0 : -lift * 0.35)], footR = [cx + 110 - 10 * arm, 1330 + (contact ? 0 : -lift * 0.35)];
+        const shL = [L + 6, top + H * 0.55], shR = [R - 6, top + H * 0.55];
+        const hL = [L - 130 - 20 * arm, top + 60 - 90 * Math.max(0, arm)], hR = [R + 130 - 20 * arm, top + 60 - 90 * Math.max(0, -arm)];
+        const hose = (a, c, bend) => `M${P(a[0] + j(), a[1] + j())} C${P(a[0] + bend[0] + j(), a[1] + bend[1] + j())} ${P(c[0] - bend[0] * 0.3 + j(), c[1] + bend[2] + j())} ${P(c[0] + j(), c[1] + j())}`;
+        const glove = (p, s) => `<g transform="translate(${P(p[0], p[1])}) rotate(${(s * 20 + j() * 3).toFixed(1)})">
+            <circle r="36" fill="#fffaf0" class="ln" stroke-width="6"/><path class="ln" stroke-width="4" d="M-14 -20 V4 M0 -24 V2 M14 -20 V4"/>
+            <rect x="-26" y="26" width="52" height="16" rx="7" fill="#fffaf0" class="ln" stroke-width="5"/></g>`;
+        const shoe = (p, s) => `<ellipse cx="${(p[0] + s * 26).toFixed(1)}" cy="${(p[1] + 4).toFixed(1)}" rx="64" ry="30" fill="#1e1a16"/>
+            <ellipse cx="${(p[0] + s * 40).toFixed(1)}" cy="${(p[1] - 6).toFixed(1)}" rx="16" ry="8" fill="#f3e6c8" opacity=".6"/>`;
+        // body: page with folded corner
+        const k = 46;
+        const body = `M${P(L + j(), top + j())} L${P(R - k + j(), top + j())} L${P(R + j(), top + k + j())} L${P(R + j(), base + j())} L${P(L + j(), base + j())} Z`;
+        const fold = `M${P(R - k, top)} L${P(R - k + j(), top + k + j())} L${P(R, top + k)}`;
+        // face: pie-cut eyes, big smile
+        const ey = top + H * 0.3, ex = 58 * sx;
+        const eye = (x) => `<ellipse cx="${(x).toFixed(1)}" cy="${ey.toFixed(1)}" rx="20" ry="34" fill="#1e1a16"/>
+            <path d="M${P(x, ey - 6)} L${P(x + 22, ey - 30)} L${P(x + 22, ey - 2)} Z" fill="#fffaf0"/>`;
+        const sm = top + H * 0.56;
+        const smile = `M${P(cx - 70 + j(), sm + j())} C${P(cx - 50, sm + 70 * sy)} ${P(cx + 50, sm + 70 * sy)} ${P(cx + 70 + j(), sm + j())}`;
+        const lines = [0.78, 0.86].map((v) => `M${P(L + 44 + j(), top + H * v)} L${P(R - 44 + j(), top + H * v + j())}`).join(" ");
+        ch.innerHTML = `
+          <path class="ln" d="${hose(hipL, footL, [-20, 60, -60])}"/><path class="ln" d="${hose(hipR, footR, [20, 60, -60])}"/>
+          ${shoe(footL, -1)}${shoe(footR, 1)}
+          <path class="ln" d="${hose(shL, hL, [-90, 40, 80])}"/><path class="ln" d="${hose(shR, hR, [90, 40, 80])}"/>
+          <path d="${body}" fill="#fffaf0" class="ln"/><path d="${fold}" fill="#e8d7b0" class="ln" stroke-width="5"/>
+          ${eye(cx - ex)}${eye(cx + ex)}
+          <path d="${smile}" class="ln" fill="#7a2a1c"/>
+          <path d="${lines}" class="ln" stroke-width="4" opacity=".55"/>
+          <g transform="translate(${P(cx, top + 4)})"><path d="M-40 -18 L0 0 L-40 18 Z M40 -18 L0 0 L40 18 Z" fill="#d9452b" class="ln" stroke-width="4"/><circle r="10" fill="#d9452b" class="ln" stroke-width="4"/></g>
+          ${glove(hL, -1)}${glove(hR, 1)}`;
+        // shadow squashes with height
+        const sh = document.getElementById("shadow");
+        sh.setAttribute("cx", cx.toFixed(1)); sh.setAttribute("rx", (190 - lift * 0.6).toFixed(1));
+        // a few dust specks per drawing, kept near the character (whole-frame specks bloat the preview GIF)
+        const d = MF.rng("dust-" + f);
+        dust.innerHTML = Array.from({ length: 3 }, () => `<circle cx="${d.range(300, 780).toFixed(0)}" cy="${d.range(600, 1300).toFixed(0)}" r="${d.range(1.5, 3).toFixed(1)}" opacity=".45"/>`).join("");
+        // iris in (0–0.6 s) and out (4.05–4.5 s)
+        const open = Math.min(1, t / 0.6), close = Math.max(0, Math.min(1, (t - 4.05) / 0.4));
+        document.getElementById("hole").setAttribute("r", (1200 * (1 - Math.pow(1 - open, 3)) * (1 - close * close)).toFixed(1));
+      }
+
+      const clock = { _t: 0, get t() { return this._t; }, set t(v) { this._t = v; draw(v); } };
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo(clock, { t: 0 }, { t: DUR, duration: DUR, ease: "none" }, 0);
+      tl.fromTo("#banner", { y: -40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.4, ease: "back.out(2.2)" }, 0.45);
+      tl.fromTo("#cap", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "back.out(2)" }, 1.0);
+      draw(0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

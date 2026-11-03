@@ -1,0 +1,122 @@
+<!doctype html>
+<!--
+  motionforge style preview: sketchbook-pencil
+  © 2026 motionforge contributors, MIT
+  Construction lines first (fast), then the confident line, then smudged shading; a sticky note
+  slaps on, a blue pen marks the conclusion. Handheld drift is a seeded sine of t.
+  Instrument Serif Italic stands in for a handwriting font (Gochi Hand / Caveat).
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      :root { --page: #f7f4ec; --gr: #4a4a4a; --blue: #2d6cdf; }
+      html, body { background: #e9e4d6; }
+      #root { background: var(--page); }
+      #root::before { mix-blend-mode: multiply; opacity: .16; }
+      #root::after { background: radial-gradient(ellipse at 55% 50%, transparent 65%, rgba(60,50,30,.12) 100%); }
+      #cam { position: absolute; inset: -20px; }
+      #page { position: absolute; left: 0; top: 0; width: 1120px; height: 1960px; }
+      .hand { font-family: var(--mf-font-accent); font-style: italic; }
+      #note { position: absolute; left: 560px; top: 1180px; width: 400px; height: 360px; background: #ffe27a;
+              box-shadow: 0 18px 30px rgba(60,50,20,.18), 0 2px 4px rgba(60,50,20,.15); transform-origin: 50% 0%; }
+      #note::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 40px; background: linear-gradient(0deg, rgba(0,0,0,.05), transparent); }
+      #note .txt { position: absolute; left: 36px; top: 70px; font-size: 92px; line-height: 0.95; color: #3d3d3d; }
+      .tape { position: absolute; width: 190px; height: 54px; background: rgba(240,230,200,.75); box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+      #ttl { position: absolute; left: 110px; top: 210px; font-size: 64px; color: #555; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage light" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="cam" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <svg id="page" viewBox="0 0 1120 1960">
+          <defs>
+            <linearGradient id="gut" x1="0" x2="1"><stop offset="0" stop-color="#6b604a" stop-opacity=".35" /><stop offset=".6" stop-color="#6b604a" stop-opacity=".06" /><stop offset="1" stop-color="#6b604a" stop-opacity="0" /></linearGradient>
+            <filter id="graphite" x="-5%" y="-5%" width="110%" height="110%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" seed="5" result="n" />
+              <feDisplacementMap in="SourceGraphic" in2="n" scale="3" result="d" />
+              <feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.2 1.25" result="holes" />
+              <feComposite in="d" in2="holes" operator="in" />
+            </filter>
+            <filter id="smudge"><feGaussianBlur stdDeviation="2.4" /></filter>
+            <clipPath id="under"><polygon points="430,820 480,1010 330,880" /></clipPath>
+          </defs>
+          <rect x="0" y="0" width="160" height="1960" fill="url(#gut)" />
+          <!-- faint show-through from the previous page -->
+          <g opacity=".025" stroke="#4a4a4a" stroke-width="3" fill="none"><path d="M700 300 C 800 260, 900 330, 980 290" /><path d="M180 1640 C 300 1600, 380 1700, 520 1650" /><circle cx="900" cy="1700" r="90" /></g>
+          <!-- construction lines -->
+          <g id="cons" fill="none" stroke="#9a9a9a" stroke-width="2" stroke-linecap="round" filter="url(#graphite)">
+            <path class="d" d="M150 860 L960 520" />
+            <path class="d" d="M180 790 L930 520" />
+            <path class="d" d="M400 1060 L900 520" />
+            <path class="d" d="M240 700 C 380 900, 520 980, 560 1060" />
+            <circle class="d" cx="560" cy="780" r="280" />
+          </g>
+          <!-- confident lines -->
+          <g id="line" fill="none" stroke="#3a3a3a" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round" filter="url(#graphite)">
+            <path class="d" d="M890 540 L210 780 L430 820 Z" />
+            <path class="d" d="M890 540 L430 820 L480 1010 Z" />
+            <path class="d" d="M430 820 L330 880 L480 1010" />
+          </g>
+          <!-- smudged hatching on the underside -->
+          <g id="shade" clip-path="url(#under)" filter="url(#smudge)" opacity=".55" stroke="#4a4a4a" stroke-width="3"></g>
+          <!-- motion trail + handwritten note -->
+          <path id="trail" class="d" d="M200 1000 C 120 1100, 260 1180, 180 1290 C 120 1370, 200 1420, 260 1440" fill="none" stroke="#7a7a7a" stroke-width="3" stroke-dasharray="14 14" filter="url(#graphite)" />
+          <text id="memo" class="hand" x="110" y="460" font-size="66" fill="#555">v2: fold it tighter</text>
+          <!-- blue pen conclusion -->
+          <g id="blue" fill="none" stroke="#2d6cdf" stroke-width="5" stroke-linecap="round">
+            <path class="d" d="M960 500 C 1010 560, 940 620, 870 600 C 800 580, 820 490, 900 486 C 950 484, 980 520, 975 540" />
+            <path class="d" d="M760 1170 C 820 1000, 860 800, 900 640 M872 676 L900 636 L922 682" />
+          </g>
+          <text id="ship" class="hand" x="800" y="1140" font-size="64" fill="#2d6cdf" opacity="0">ship it</text>
+        </svg>
+        <div id="note"><div class="tape" style="left:105px; top:-26px; transform: rotate(-3deg)"></div><div class="txt hand">sketch&shy;book<br />pencil</div></div>
+      </div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const NS = "http://www.w3.org/2000/svg";
+      const r = MF.rng("sketchbook");
+      const shade = document.getElementById("shade");
+      for (let i = 0; i < 40; i++) {
+        const o = 300 + i * 8 + r.range(-2, 2);
+        const l = document.createElementNS(NS, "line");
+        l.setAttribute("x1", o); l.setAttribute("y1", 760); l.setAttribute("x2", o - 140); l.setAttribute("y2", 1060);
+        shade.appendChild(l);
+      }
+      document.querySelectorAll(".d").forEach((p) => p.setAttribute("pathLength", "1"));
+      gsap.set("#note", { left: 560, top: 1180, rotation: -5 });
+      document.querySelector("#note .txt").innerHTML = "sketchbook<br />pencil";
+      document.querySelector("#note .txt").style.fontSize = "84px";
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      const drawOn = (els, at, dur, stagger = 0) => tl.fromTo(els, { strokeDasharray: "1 1", strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: dur, ease: "power1.inOut", stagger }, at);
+      drawOn("#cons .d", 0.1, 0.3, 0.1);
+      drawOn("#line .d", 0.75, 0.6, 0.18);
+      tl.fromTo("#cons", { opacity: 1 }, { opacity: 0.45, duration: 0.6 }, 1.4);
+      tl.fromTo("#shade", { opacity: 0 }, { opacity: 0.55, duration: 0.4 }, 1.55);
+      tl.fromTo("#trail", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 1.7);
+      tl.fromTo("#memo", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.6, ease: "none" }, 1.9);
+      // sticky note slaps on: 0.15 s overshoot, 2° settle
+      tl.fromTo("#note", { scale: 1.25, opacity: 0, rotation: -9 }, { scale: 0.97, opacity: 1, rotation: -3, duration: 0.15, ease: "power2.in" }, 2.45);
+      tl.to("#note", { scale: 1, rotation: -5, duration: 0.2, ease: "power2.out" }, 2.6);
+      // blue pen: circle the nose, arrow from the note
+      drawOn("#blue .d", 3.2, 0.45, 0.4);
+      tl.to("#ship", { opacity: 1, duration: 0.2 }, 3.9);
+      // handheld drift (seeded sine, ≤ 6 px)
+      const ph = [r.range(0, 6), r.range(0, 6)];
+      const cam = document.getElementById("cam");
+      const clock = { _t: 0, get t() { return this._t; }, set t(v) { this._t = v;
+        cam.style.transform = `translate(${Math.round(5 * Math.sin(v * 0.9 + ph[0]))}px, ${Math.round(4 * Math.sin(v * 0.7 + ph[1]))}px)`; } };
+      tl.fromTo(clock, { t: 0 }, { t: DUR, duration: DUR, ease: "none" }, 0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

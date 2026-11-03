@@ -1,0 +1,424 @@
+<!doctype html>
+<!--
+  motionforge template: pitch-tactics-3d — a tilted football pitch with regulation markings, two teams'
+  numbered tokens that move along paths, pass arrows that draw on the grass with the ball following,
+  and a highlighted pressing zone. Generic team colours only (no crests, no real club marks).
+  © 2026 motionforge contributors, MIT
+  3D layer: three.js (MIT, from npm) + mf-three.js, copied into assets/vendor/ by new-scene.sh.
+  Contract: engines/hyperframes/three/README.md (hf-seek drives the 3D and notes, GSAP the titles).
+  Pitch coordinates are metres: x across (-34 left .. 34 right), z along (52.5 near goal .. -52.5 far goal);
+  the home team attacks the far goal.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script type="importmap">{ "imports": { "three": "./assets/vendor/three.module.min.js", "three/addons/": "./assets/vendor/three-addons/" } }</script>
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      #gl { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      #eyebrow { top: 200px; }
+      #title { top: 260px; font-size: 92px; }
+      #labels { position: absolute; inset: 0; }
+      .note { position: absolute; left: 0; top: 0; padding: 12px 18px; border-radius: 12px; white-space: nowrap; background: var(--mf-accent); color: var(--mf-accent-ink);
+              font: 700 25px/1 var(--mf-font-mono); letter-spacing: 0.1em; text-transform: uppercase; box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45); will-change: transform, opacity; }
+      #legend { position: absolute; left: 0; right: 0; top: 1720px; display: flex; justify-content: center; gap: 48px; font: 500 26px/1 var(--mf-font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--mf-muted); }
+      #legend span { display: inline-flex; align-items: center; gap: 14px; }
+      #legend i { width: 22px; height: 22px; border-radius: 50%; border: 3px solid #fff; }
+      #grain { position: absolute; inset: 0; z-index: 5; pointer-events: none; background-image: var(--mf-grain); opacity: 0.05; mix-blend-mode: overlay; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="6" data-width="1080" data-height="1920">
+      <canvas id="gl" class="clip" width="1080" height="1920" data-start="0" data-duration="6" data-track-index="0"></canvas>
+      <div id="labels" class="clip" data-start="0" data-duration="6" data-track-index="1"></div>
+      <div id="eyebrow" class="eyebrow clip" data-start="0" data-duration="6" data-track-index="2"></div>
+      <h1 id="title" class="title clip" data-start="0" data-duration="6" data-track-index="3"></h1>
+      <div id="legend" class="clip" data-start="0" data-duration="6" data-track-index="4"></div>
+      <div id="grain"></div>
+    </div>
+
+    <script id="params" type="application/json">
+{
+  "eyebrow": "Tactics · example move",
+  "title": "Win it high, {play} it wide",
+  "home": { "name": "Home", "color": "#f2f1ec" },
+  "away": { "name": "Away", "color": "#e5484d" },
+  "players": [
+    { "id": "A1", "team": "away", "n": 1, "from": [0, -50], "to": [-2, -49] },
+    { "id": "A4", "team": "away", "n": 4, "from": [-8, -37], "to": [-6, -36], "move": [1.0, 2.0] },
+    { "id": "A5", "team": "away", "n": 5, "from": [7, -37], "to": [10, -38], "move": [1.0, 2.0] },
+    { "id": "A2", "team": "away", "n": 2, "from": [21, -35], "to": [19, -37], "move": [3.2, 1.2] },
+    { "id": "A3", "team": "away", "n": 3, "from": [-21, -35], "to": [-18, -35], "move": [1.0, 2.0] },
+    { "id": "A6", "team": "away", "n": 6, "from": [0, -27], "to": [-4, -21], "move": [1.9, 1.0] },
+    { "id": "A8", "team": "away", "n": 8, "from": [-11, -24], "to": [-8, -16], "move": [1.9, 1.0] },
+    { "id": "A10", "team": "away", "n": 10, "from": [11, -25], "to": [3, -16], "move": [1.9, 1.0] },
+    { "id": "H6", "team": "home", "n": 6, "from": [-6, -4], "to": [-4, -8], "move": [0.6, 1.2] },
+    { "id": "H8", "team": "home", "n": 8, "from": [12, -8], "to": [13, -14], "move": [0.6, 1.4] },
+    { "id": "H10", "team": "home", "n": 10, "from": [-1, -15], "to": [-3, -18], "move": [0.8, 1.2] },
+    { "id": "H9", "team": "home", "n": 9, "from": [1, -29], "to": [6, -41], "move": [3.4, 1.4] },
+    { "id": "H7", "team": "home", "n": 7, "from": [25, -22], "to": [27, -36], "move": [2.9, 1.4] },
+    { "id": "H11", "team": "home", "n": 11, "from": [-24, -23], "to": [-21, -33], "move": [3.0, 1.4] },
+    { "id": "H2", "team": "home", "n": 2, "from": [27, -2], "to": [28, -10], "move": [1.5, 1.6] }
+  ],
+  "passes": [
+    { "from": "H6", "to": "H10", "at": 1.3, "dur": 0.55 },
+    { "from": "H10", "to": "H7", "at": 3.1, "dur": 0.9, "bend": -6, "loft": 2.5 }
+  ],
+  "runs": [
+    { "player": "H9", "at": 3.4 },
+    { "player": "H7", "at": 2.9 }
+  ],
+  "press": { "points": [[-12, -12], [6, -12], [7, -24], [-11, -24]], "at": 2.0, "label": "Press trigger" },
+  "notes": [
+    { "text": "Overload", "at": [24, -40], "time": 4.1 }
+  ],
+  "lang": "en",
+  "duration": 6
+}
+    </script>
+
+    <script>
+      // ---- HTML layer: titles + legend on the GSAP timeline ----
+      const P = MF.params();
+      document.documentElement.lang = P.lang;
+      const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+      document.getElementById("eyebrow").textContent = P.eyebrow || "";
+      const title = document.getElementById("title");
+      title.innerHTML = esc(P.title || "").replace(/\{([^}]+)\}/g, '<span class="serif accent">$1</span>');
+      document.getElementById("legend").innerHTML = [P.home, P.away]
+        .map((tm) => `<span><i style="background:${esc(tm.color)}"></i>${esc(tm.name)}</span>`).join("");
+      MF.fit(title, 92, 56, 210);
+
+      const tl = MF.timeline("main", P.duration);
+      tl.fromTo("#eyebrow", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 0.15);
+      tl.fromTo("#title", { opacity: 0, y: 44, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, 0.25);
+      tl.fromTo("#legend", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 0.9);
+      MF.ready().then(() => MF.fit(title, 92, 56, 210));
+      tl.seek(0);
+    </script>
+
+    <script type="module">
+      import * as THREE from "three";
+      import { createStage, environment, lights, onSeek, ease, seg, lerp, project } from "./assets/vendor/mf-three.js";
+
+      const P = MF.params();
+      const css = getComputedStyle(document.getElementById("root"));
+      const ACCENT = css.getPropertyValue("--mf-accent").trim() || "#c8f53a";
+      const L = 105, WID = 68, MARGIN = 5;
+
+      const { renderer, scene, camera, render } = createStage({ fov: 34, far: 800, toneMapping: "neutral" });
+      environment(renderer, scene, 0.3);
+      lights.daylight(scene, { size: 42, target: [0, 0, -24], intensity: 1.0 });
+
+      // ---- pitch texture: mowing stripes + regulation markings (canvas, 20 px per metre) ----
+      const PX = 20;
+      const cw = (WID + 2 * MARGIN) * PX, ch = (L + 2 * MARGIN) * PX;
+      const cv = Object.assign(document.createElement("canvas"), { width: cw, height: ch });
+      const c = cv.getContext("2d");
+      c.fillStyle = "#24502e";
+      c.fillRect(0, 0, cw, ch);
+      const STRIPES = 14;
+      for (let i = 0; i < STRIPES; i++) {
+        c.fillStyle = i % 2 ? "#2c6237" : "#316b3d";
+        c.fillRect(MARGIN * PX, (MARGIN + (i * L) / STRIPES) * PX, WID * PX, (L / STRIPES) * PX + 1);
+      }
+      // metres (x across, z along; z = -52.5 at the far goal) -> canvas px
+      const X = (x) => (x + WID / 2 + MARGIN) * PX, Z = (z) => (z + L / 2 + MARGIN) * PX;
+      c.strokeStyle = "rgba(255,255,255,0.92)";
+      c.fillStyle = "rgba(255,255,255,0.92)";
+      c.lineWidth = 0.14 * PX;
+      const rect = (x0, z0, x1, z1) => c.strokeRect(X(x0), Z(z0), X(x1) - X(x0), Z(z1) - Z(z0));
+      const arc = (x, z, r, a0, a1) => { c.beginPath(); c.arc(X(x), Z(z), r * PX, a0, a1); c.stroke(); };
+      const spot = (x, z, r = 0.22) => { c.beginPath(); c.arc(X(x), Z(z), r * PX, 0, Math.PI * 2); c.fill(); };
+      rect(-WID / 2, -L / 2, WID / 2, L / 2);                         // touchlines + goal lines
+      c.beginPath(); c.moveTo(X(-WID / 2), Z(0)); c.lineTo(X(WID / 2), Z(0)); c.stroke(); // halfway line
+      arc(0, 0, 9.15, 0, Math.PI * 2);                                  // centre circle
+      spot(0, 0);
+      for (const s of [-1, 1]) {                                        // both ends
+        const g = (s * L) / 2;                                          // goal line z
+        rect(-20.16, g, 20.16, g - s * 16.5);                           // penalty area 40.32 x 16.5
+        rect(-9.16, g, 9.16, g - s * 5.5);                              // goal area 18.32 x 5.5
+        spot(0, g - s * 11);                                            // penalty spot
+        const d = Math.acos(5.5 / 9.15);                                // penalty arc outside the area
+        const mid = s < 0 ? Math.PI / 2 : -Math.PI / 2;
+        arc(0, g - s * 11, 9.15, mid - d, mid + d);
+        for (const side of [-1, 1]) {                                   // corner arcs, r = 1 m, inside the pitch
+          const ax = side < 0 ? 0 : Math.PI, az = s < 0 ? Math.PI / 2 : -Math.PI / 2;
+          let d = az - ax;
+          while (d > Math.PI) d -= 2 * Math.PI;
+          while (d < -Math.PI) d += 2 * Math.PI;
+          c.beginPath();
+          c.arc(X((side * WID) / 2), Z(g), PX, ax, ax + d, d < 0);
+          c.stroke();
+        }
+      }
+      const tex = new THREE.CanvasTexture(cv);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+      const pitch = new THREE.Mesh(new THREE.PlaneGeometry(WID + 2 * MARGIN, L + 2 * MARGIN), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.92 }));
+      pitch.rotation.x = -Math.PI / 2;
+      pitch.receiveShadow = true;
+      scene.add(pitch);
+
+      // goals: white posts and crossbar (7.32 x 2.44 m) with a light net box
+      const postMat = new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.4 });
+      const netMat = new THREE.MeshStandardMaterial({ color: "#ffffff", transparent: true, opacity: 0.16, side: THREE.DoubleSide, depthWrite: false });
+      for (const s of [-1, 1]) {
+        const g = new THREE.Group();
+        for (const x of [-3.66, 3.66]) {
+          const post = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 2.44, 12), postMat);
+          post.position.set(x, 1.22, 0);
+          g.add(post);
+        }
+        const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 7.56, 12), postMat);
+        bar.rotation.z = Math.PI / 2;
+        bar.position.y = 2.44;
+        const net = new THREE.Mesh(new THREE.BoxGeometry(7.32, 2.44, 2).translate(0, 1.22, s), netMat);
+        g.add(bar, net);
+        g.position.z = (s * L) / 2;
+        g.traverse((o) => { if (o.isMesh && o !== net) o.castShadow = true; });
+        scene.add(g);
+      }
+
+      // ---- tokens: team-coloured pucks with a white rim and the shirt number on top ----
+      function numberTexture(n, color) {
+        const cnv = Object.assign(document.createElement("canvas"), { width: 128, height: 128 });
+        const x = cnv.getContext("2d");
+        x.fillStyle = color;
+        x.fillRect(0, 0, 128, 128);
+        x.lineWidth = 10;
+        x.strokeStyle = "#ffffff";
+        x.beginPath(); x.arc(64, 64, 58, 0, Math.PI * 2); x.stroke();
+        const col = new THREE.Color(color);
+        const lum = 0.2126 * col.r + 0.7152 * col.g + 0.0722 * col.b;
+        x.fillStyle = lum > 0.5 ? "#111214" : "#ffffff";
+        x.font = "800 62px Inter, system-ui, sans-serif";
+        x.textAlign = "center";
+        x.textBaseline = "middle";
+        x.fillText(String(n), 64, 68);
+        const t = new THREE.CanvasTexture(cnv);
+        t.colorSpace = THREE.SRGBColorSpace;
+        return t;
+      }
+      const TOKEN_R = 1.45;
+      const team = (k) => (k === "away" ? P.away : P.home);
+      const players = {};
+      const playerList = (P.players || []).map((p) => {
+        const col = team(p.team).color;
+        const side = new THREE.MeshStandardMaterial({ color: col, roughness: 0.45 });
+        const top = new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.5 });
+        const mesh = new THREE.Mesh(new THREE.CylinderGeometry(TOKEN_R, TOKEN_R, 0.6, 48), [side, top, side]);
+        mesh.position.y = 0.3;
+        mesh.castShadow = true;
+        const g = new THREE.Group();
+        g.add(mesh);
+        scene.add(g);
+        const entry = { p, g, top, from: p.from, to: p.to || p.from, move: p.move || [0, 0] };
+        players[p.id] = entry;
+        return entry;
+      });
+      // numbers need the webfont: draw them once Inter is loaded
+      const ready = (document.fonts ? document.fonts.load("800 62px Inter") : Promise.resolve()).then(() => {
+        for (const e of playerList) { e.top.map = numberTexture(e.p.n, team(e.p.team).color); e.top.needsUpdate = true; }
+      });
+      const posAt = (e, t) => {
+        const k = ease.inOutCubic(seg(t, e.move[0], e.move[1]));
+        return [lerp(e.from[0], e.to[0], k), lerp(e.from[1], e.to[1], k)];
+      };
+
+      // ---- flat ribbons on the grass: pass arrows (solid) and runs (dashed), drawn by draw range ----
+      const accentMat = new THREE.MeshBasicMaterial({ color: ACCENT, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+      const whiteMat = new THREE.MeshBasicMaterial({ color: "#ffffff", side: THREE.DoubleSide, transparent: true, opacity: 0.9, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
+      function ribbon(points, width, mat, dashed) {
+        const pos = [], idx = [];
+        for (let i = 0; i < points.length; i++) {
+          const a = points[Math.max(0, i - 1)], b = points[Math.min(points.length - 1, i + 1)];
+          let dx = b.x - a.x, dz = b.z - a.z;
+          const len = Math.hypot(dx, dz) || 1;
+          dx /= len; dz /= len;
+          const p = points[i];
+          pos.push(p.x - dz * width / 2, 0.06, p.z + dx * width / 2, p.x + dz * width / 2, 0.06, p.z - dx * width / 2);
+          if (i > 0 && (!dashed || Math.floor(i / 3) % 2 === 0)) {
+            const k = 2 * (i - 1);
+            idx.push(k, k + 1, k + 2, k + 1, k + 3, k + 2);
+          } else if (i > 0) idx.push(0, 0, 0, 0, 0, 0); // keep 6 indices per segment so draw range maps to length
+        }
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+        geo.setIndex(idx);
+        const m = new THREE.Mesh(geo, mat);
+        m.renderOrder = 2;
+        scene.add(m);
+        return m;
+      }
+      function head(mat, size) {
+        const s = new THREE.Shape();
+        s.moveTo(0, size); s.lineTo(-size * 0.7, -size * 0.5); s.lineTo(size * 0.7, -size * 0.5); s.closePath();
+        const m = new THREE.Mesh(new THREE.ShapeGeometry(s), mat);
+        m.rotation.x = -Math.PI / 2;
+        m.renderOrder = 2;
+        scene.add(m);
+        return m;
+      }
+      const SAMPLES = 60;
+      function curvePoints(a, b, bend) {
+        const mx = (a[0] + b[0]) / 2, mz = (a[1] + b[1]) / 2;
+        let nx = -(b[1] - a[1]), nz = b[0] - a[0];
+        const nl = Math.hypot(nx, nz) || 1;
+        const ctrl = [mx + (nx / nl) * bend, mz + (nz / nl) * bend];
+        const pts = [];
+        for (let i = 0; i <= SAMPLES; i++) {
+          const s = i / SAMPLES, u = 1 - s;
+          pts.push(new THREE.Vector3(u * u * a[0] + 2 * u * s * ctrl[0] + s * s * b[0], 0, u * u * a[1] + 2 * u * s * ctrl[1] + s * s * b[1]));
+        }
+        return pts;
+      }
+      // trims a polyline so it starts/ends at the token edges
+      const trim = (pts, a0, a1) => pts.slice(Math.round(a0 * SAMPLES), Math.round((1 - a1) * SAMPLES) + 1);
+
+      const passes = (P.passes || []).map((ps) => {
+        const from = players[ps.from], to = typeof ps.to === "string" ? players[ps.to] : null;
+        const a = posAt(from, ps.at), b = to ? posAt(to, ps.at + ps.dur) : ps.to;
+        const full = curvePoints(a, b, ps.bend || 0);
+        const len = full.reduce((s, p, i) => (i ? s + p.distanceTo(full[i - 1]) : 0), 0);
+        const cut = (TOKEN_R + 0.6) / len;
+        const pts = trim(full, cut, cut * 1.6);
+        const rib = ribbon(pts, 0.55, accentMat, false);
+        const tip = head(accentMat, 1.5);
+        return { ps, full, pts, rib, tip, a, b };
+      });
+      const runs = (P.runs || []).map((r) => {
+        const e = players[r.player];
+        const full = curvePoints(e.from, e.to, 0);
+        const len = Math.hypot(e.to[0] - e.from[0], e.to[1] - e.from[1]) || 1;
+        const pts = trim(full, (TOKEN_R + 0.4) / len, (TOKEN_R + 1.2) / len);
+        return { r, e, pts, rib: ribbon(pts, 0.38, whiteMat, true), tip: head(whiteMat, 1.1) };
+      });
+      function placeTip(tip, pts, n) {
+        const i = Math.max(1, Math.min(pts.length - 1, n));
+        const p = pts[i], q = pts[i - 1];
+        tip.position.set(p.x, 0.07, p.z);
+        tip.rotation.z = Math.atan2(-(p.x - q.x), -(p.z - q.z)); // the shape points along +y, which lies along -z
+      }
+
+      // ---- the ball ----
+      const ball = new THREE.Mesh(new THREE.SphereGeometry(0.55, 24, 16), new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.35 }));
+      ball.castShadow = true;
+      scene.add(ball);
+
+      // ---- pressing zone: translucent fill + outline, pulses once it appears ----
+      let zone = null;
+      if (P.press && P.press.points) {
+        const sh = new THREE.Shape(P.press.points.map(([x, z]) => new THREE.Vector2(x, -z)));
+        const fill = new THREE.Mesh(new THREE.ShapeGeometry(sh), new THREE.MeshBasicMaterial({ color: ACCENT, side: THREE.DoubleSide, transparent: true, opacity: 0.2, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }));
+        fill.rotation.x = -Math.PI / 2;
+        fill.position.y = 0.04;
+        scene.add(fill);
+        const ring = P.press.points.concat([P.press.points[0]]).map(([x, z]) => new THREE.Vector3(x, 0, z));
+        const dense = [];
+        for (let i = 0; i + 1 < ring.length; i++) for (let k = 0; k < 12; k++) dense.push(ring[i].clone().lerp(ring[i + 1], k / 12));
+        dense.push(ring[ring.length - 1]);
+        const outline = ribbon(dense, 0.4, new THREE.MeshBasicMaterial({ color: ACCENT, side: THREE.DoubleSide, transparent: true, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 }), true);
+        const c = P.press.points.reduce((s, p) => [s[0] + p[0] / P.press.points.length, s[1] + p[1] / P.press.points.length], [0, 0]);
+        zone = { fill, outline, centre: c };
+      }
+
+      // ---- HTML notes (press label + free notes) ----
+      const holder = document.getElementById("labels");
+      const notes = [];
+      if (zone && P.press.label) notes.push({ text: P.press.label, at: [zone.centre[0], Math.min(...P.press.points.map((p) => p[1])) - 1], time: P.press.at + 0.3 });
+      for (const n of P.notes || []) notes.push(n);
+      notes.forEach((n) => {
+        n.el = document.createElement("div");
+        n.el.className = "note";
+        n.el.textContent = n.text;
+        holder.appendChild(n.el);
+      });
+
+      // ---- camera: fit the attacking half, then push in slightly toward the play ----
+      const BOX = { left: 30, right: 1050, top: 600, bottom: 1660 };
+      camera.setViewOffset(1080, 1920, 0, -((BOX.top + BOX.bottom) / 2 - 960), 1080, 1920);
+      const corners = [[-WID / 2 - 1, 8], [WID / 2 + 1, 8], [-WID / 2 - 1, -L / 2 - 2], [WID / 2 + 1, -L / 2 - 2]];
+      function pose(tz, tilt, dist, yaw) {
+        const tlt = (tilt * Math.PI) / 180, yw = (yaw * Math.PI) / 180;
+        camera.position.set(Math.sin(yw) * Math.cos(tlt) * dist, Math.sin(tlt) * dist, tz + Math.cos(yw) * Math.cos(tlt) * dist);
+        camera.lookAt(0, 0, tz);
+        camera.updateMatrixWorld();
+      }
+      function fit(tz, tilt, yaw) {
+        let lo = 10, hi = 600;
+        for (let k = 0; k < 30; k++) {
+          const mid = (lo + hi) / 2;
+          pose(tz, tilt, mid, yaw);
+          const ok = corners.every(([x, z]) => { const p = project([x, 0, z], camera); return p.x > BOX.left && p.x < BOX.right && p.y > BOX.top && p.y < BOX.bottom; });
+          if (ok) hi = mid; else lo = mid;
+        }
+        return hi;
+      }
+      const TZ = -22, D = fit(TZ, 56, 0);
+
+      const tmp = new THREE.Vector3();
+      function draw(t) {
+        const k = ease.inOutSine(seg(t, 0, P.duration));
+        pose(lerp(TZ + 4, TZ - 4, k), lerp(62, 52, k), D * lerp(1.04, 0.86, k), lerp(-4, 5, k));
+
+        for (const e of playerList) {
+          const [x, z] = posAt(e, t);
+          e.g.position.set(x, 0, z);
+          e.g.scale.setScalar(Math.max(0.001, ease.outBack(seg(t, 0.1 + (x + 34) / 68 * 0.4, 0.4))));
+        }
+        // passes: arrow draws, ball follows; ball rests at the last receiver
+        let ballPos = null;
+        const first = passes[0];
+        if (first) { const p = posAt(players[first.ps.from], t); ballPos = [p[0], 0.55, p[1] + TOKEN_R + 0.4]; }
+        for (const ps of passes) {
+          const a = seg(t, ps.ps.at, ps.ps.dur);
+          const n = Math.floor(ease.outCubic(a) * (ps.pts.length - 1));
+          ps.rib.geometry.setDrawRange(0, n * 6);
+          ps.rib.visible = ps.tip.visible = a > 0;
+          placeTip(ps.tip, ps.pts, n);
+          ps.tip.scale.setScalar(Math.min(1, a * 4));
+          if (t >= ps.ps.at) {
+            if (a < 1) {
+              const s = ease.inOutSine(a);
+              const q = ps.full[Math.round(s * SAMPLES)];
+              ballPos = [q.x, 0.55 + (ps.ps.loft || 0) * Math.sin(Math.PI * s), q.z];
+            } else {
+              const to = typeof ps.ps.to === "string" ? posAt(players[ps.ps.to], t) : ps.ps.to;
+              ballPos = [to[0], 0.55, to[1] + TOKEN_R + 0.4];
+            }
+          }
+        }
+        if (ballPos) ball.position.set(...ballPos);
+        ball.visible = t > 0.6;
+
+        for (const r of runs) {
+          const a = seg(t, r.r.at, 0.6);
+          const n = Math.floor(ease.outCubic(a) * (r.pts.length - 1));
+          r.rib.geometry.setDrawRange(0, n * 6);
+          r.rib.visible = r.tip.visible = a > 0;
+          placeTip(r.tip, r.pts, n);
+        }
+        if (zone) {
+          const z = ease.outCubic(seg(t, P.press.at, 0.5));
+          const pulse = t > P.press.at + 0.5 ? 0.5 + 0.5 * Math.cos((t - P.press.at - 0.5) * 4) : 1;
+          zone.fill.visible = zone.outline.visible = z > 0;
+          zone.fill.material.opacity = 0.12 + 0.12 * pulse * z;
+          zone.outline.material.opacity = z;
+        }
+        render();
+
+        for (const n of notes) {
+          const p = project(tmp.set(n.at[0], 0, n.at[1]), camera);
+          const a = seg(t, n.time, 0.35);
+          n.el.style.opacity = ease.outCubic(a);
+          n.el.style.transform = `translate(${p.x}px, ${p.y}px) translate(-50%, -100%) scale(${lerp(0.85, 1, ease.outBack(a))})`;
+        }
+      }
+      onSeek(draw, ready);
+    </script>
+  </body>
+</html>

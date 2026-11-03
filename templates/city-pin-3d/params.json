@@ -1,0 +1,21 @@
+{
+  "id": "city-pin-3d",
+  "title": "City pin (3D)",
+  "description": "A seeded low-poly city: the camera tilts from top-down to an angled view, a location pin drops with a bounce on a highlighted building, walking-radius rings expand and amenity labels appear. For real-estate and location reels.",
+  "engine": "hyperframes",
+  "layers": ["three.js (hf-seek)", "HTML + GSAP"],
+  "size": [1080, 1920],
+  "usage": "engines/hyperframes/scripts/new-scene.sh <name> --template city-pin-3d --params values.json",
+  "parameters": {
+    "eyebrow": {"type": "string", "default": "Location · example", "description": "Small label above the title."},
+    "title": {"type": "string", "default": "Everything within {10 minutes}", "description": "Headline; wrap words in {braces} for the italic serif accent."},
+    "subline": {"type": "string", "default": "Invented city · walking times are examples", "description": "Line at the bottom. Say where real walking times come from."},
+    "minutes": {"type": "array", "default": [5, 10, 15], "description": "1-4 walking-time rings in minutes. Radii are proportional to each other (not to a real map scale)."},
+    "labels": {"type": "array", "default": [{"name": "School", "minutes": 4, "angle": 140}], "description": "Amenities {name, minutes, angle}: placed at the ring distance for its minutes, angle in degrees (0 = right, 90 = away from the viewer)."},
+    "seed": {"type": "string", "default": "block-7", "description": "Seed for the city layout. Same seed, same city."},
+    "pinStart": {"type": "number", "default": 1.5, "description": "Second the pin drops; rings and labels follow it."},
+    "lang": {"type": "string", "default": "en", "description": "Language of the copy (BCP 47). Sets <html lang>."},
+    "duration": {"type": "number", "default": 6, "description": "Scene length in seconds. new-scene.sh --params also rewrites data-duration to match."}
+  },
+  "checks": ["walking times come from a real source (or are marked as examples)", "amenity labels do not overlap each other or the subline"]
+}

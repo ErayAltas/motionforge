@@ -1,0 +1,131 @@
+<!doctype html>
+<!--
+  motionforge style preview: terminal-crt
+  © 2026 motionforge contributors, MIT
+  Typing, output bursts and the cursor blink are computed from t inside a proxy setter
+  driven by the GSAP timeline (seeded jitter, no timers).
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      :root { --tube: #0a0f0a; --ph: #7cff8a; --dim: rgba(124, 255, 138, 0.45); }
+      html, body { background: #060706; }
+      #root { background: radial-gradient(900px 700px at 50% 45%, #141814 0%, #060706 70%); }
+      #bezel {
+        position: absolute; left: 40px; right: 40px; top: 250px; height: 1290px; border-radius: 80px;
+        background: linear-gradient(160deg, #2a2c27 0%, #171815 55%, #0f100e 100%);
+        box-shadow: 0 40px 90px rgba(0,0,0,.7), inset 0 2px 0 rgba(255,255,255,.08), inset 0 -3px 0 rgba(0,0,0,.6);
+      }
+      #screen {
+        position: absolute; left: 80px; right: 80px; top: 300px; height: 1150px; border-radius: 64px / 56px;
+        background: radial-gradient(ellipse at 50% 46%, #102012 0%, #0a0f0a 62%, #050805 100%);
+        overflow: hidden;
+        box-shadow: inset 0 0 120px rgba(0,0,0,.85), inset 0 0 18px rgba(0,0,0,.9);
+      }
+      #content { position: absolute; left: 64px; right: 56px; top: 80px; bottom: 70px; transform-origin: 50% 80%; display: flex; flex-direction: column; }
+      #content, #content * { font-family: var(--mf-font-mono); color: var(--ph); }
+      #big { font-weight: 700; font-size: 150px; line-height: 1.0; letter-spacing: -0.02em;
+             text-shadow: 0 0 10px rgba(124,255,138,.65), 0 0 34px rgba(124,255,138,.35); white-space: pre; }
+      #rule { height: 4px; margin: 34px 0 30px; background: var(--dim); box-shadow: 0 0 10px rgba(124,255,138,.5); transform-origin: left; }
+      #log { margin-top: auto; font-weight: 500; font-size: 42px; line-height: 1.55; white-space: pre;
+             text-shadow: 0 0 6px rgba(124,255,138,.55), 0 0 18px rgba(124,255,138,.25); }
+      #log .d { color: var(--dim); }
+      #log .w { color: #ffffff; text-shadow: 0 0 8px rgba(255,255,255,.8), 0 0 24px rgba(124,255,138,.6); }
+      .cur { display: inline-block; width: 0.6em; height: 1.05em; vertical-align: -0.18em; background: var(--ph); box-shadow: 0 0 10px rgba(124,255,138,.7); }
+      #scan { position: absolute; inset: 0; pointer-events: none;
+              background: repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0px, rgba(0,0,0,.28) 1px, transparent 1px, transparent 3px); }
+      #glass { position: absolute; inset: 0; pointer-events: none;
+               background: radial-gradient(ellipse 70% 40% at 35% 12%, rgba(255,255,255,.07), transparent 70%); }
+      #grain { position: absolute; inset: 0; pointer-events: none; background-image: var(--mf-grain); opacity: .10; mix-blend-mode: screen; }
+      #power { position: absolute; left: 0; right: 0; top: 50%; height: 6px; margin-top: -3px; background: #e9ffe9; box-shadow: 0 0 40px #7cff8a; }
+      #led { position: absolute; left: 50%; top: 1484px; width: 18px; height: 18px; margin-left: -9px; border-radius: 50%; background: #7cff8a; box-shadow: 0 0 16px #7cff8a; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="bezel" class="clip" data-start="0" data-duration="4.5" data-track-index="0"></div>
+      <div id="led" class="clip" data-start="0" data-duration="4.5" data-track-index="1"></div>
+      <div id="screen" class="clip" data-start="0" data-duration="4.5" data-track-index="2">
+        <div id="content">
+          <div id="big"></div>
+          <div id="rule"></div>
+          <div id="log"></div>
+        </div>
+        <div id="grain"></div>
+        <div id="scan"></div>
+        <div id="glass"></div>
+        <div id="power"></div>
+      </div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const big = document.getElementById("big");
+      const log = document.getElementById("log");
+      const r = MF.rng("terminal-crt-typing");
+
+      // character schedule with seeded jitter (±30 % around 24 chars/s)
+      function schedule(str, start, cps) {
+        const times = []; let t = start;
+        for (let i = 0; i < str.length; i++) { t += (1 / cps) * (0.7 + 0.6 * r()); times.push(t); }
+        return times;
+      }
+      const BIG = "TERMINAL\nCRT";
+      const bigT = schedule(BIG, 0.35, 34);
+      const CMD = "mf style terminal-crt";
+      const cmdT = schedule(CMD, 1.0, 24);
+      const enter = cmdT[cmdT.length - 1] + 0.25;
+      const OUT = [
+        ["d", "  loading tube profile"],
+        ["", "  phosphor  #7CFF8A     ok"],
+        ["", "  scanlines 2px         ok"],
+        ["", "  bloom     6px         ok"],
+        ["", "  noise     static      ok"],
+      ];
+      const outT = [enter + 0.05, enter + 0.12, enter + 0.12, enter + 0.2, enter + 0.2];
+      const doneT = enter + 0.5;
+      const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+
+      function draw(t) {
+        const cursorOn = Math.floor(t / 0.53) % 2 === 0;
+        const cur = cursorOn ? '<span class="cur"></span>' : '<span class="cur" style="opacity:0"></span>';
+        // big header
+        const nb = bigT.filter((x) => x <= t).length;
+        big.innerHTML = esc(BIG.slice(0, nb)) + (nb < BIG.length && t > 0.3 ? cur : "");
+        // command line + output
+        let html = '<span class="d">motionforge 1.0  style preview</span>\n';
+        const nc = cmdT.filter((x) => x <= t).length;
+        html += "$ " + esc(CMD.slice(0, nc));
+        if (t < enter && nb >= BIG.length) html += cur;
+        html += "\n";
+        OUT.forEach(([cls, line], i) => { if (t >= outT[i]) html += `<span class="${cls}">${esc(line)}</span>\n`; });
+        if (t >= doneT) {
+          const flash = t < doneT + 0.2;
+          html += `<span class="${flash ? "w" : ""}">✓ done  style ready</span>\n`;
+          html += "$ " + cur;
+        }
+        log.innerHTML = html;
+      }
+
+      const clock = { _t: 0, get t() { return this._t; }, set t(v) { this._t = v; draw(v); } };
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo(clock, { t: 0 }, { t: DUR, duration: DUR, ease: "none" }, 0);
+      // power on: a bright line opens into the picture
+      tl.fromTo("#power", { scaleX: 0.02, opacity: 1 }, { scaleX: 1, duration: 0.14, ease: "power2.out" }, 0);
+      tl.to("#power", { scaleY: 200, opacity: 0, duration: 0.18, ease: "power2.in" }, 0.14);
+      tl.fromTo("#content", { opacity: 0 }, { opacity: 1, duration: 0.12 }, 0.2);
+      tl.fromTo("#rule", { scaleX: 0 }, { scaleX: 1, duration: 0.3, ease: "power2.out" }, 0.75);
+      // push-in on the key output line
+      tl.fromTo("#content", { scale: 1 }, { scale: 1.06, duration: 0.9, ease: "power2.inOut" }, doneT - 0.1);
+      draw(0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

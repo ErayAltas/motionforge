@@ -1,0 +1,23 @@
+{
+  "id": "pitch-tactics-3d",
+  "title": "Pitch tactics (3D)",
+  "description": "A tilted football pitch with regulation markings, two teams' numbered tokens moving along paths, pass arrows that draw on the grass with the ball following, dashed runs and a pulsing pressing zone. Generic colours only, no crests.",
+  "engine": "hyperframes",
+  "layers": ["three.js (hf-seek)", "HTML + GSAP"],
+  "size": [1080, 1920],
+  "usage": "engines/hyperframes/scripts/new-scene.sh <name> --template pitch-tactics-3d --params values.json",
+  "parameters": {
+    "eyebrow": {"type": "string", "default": "Tactics · example move", "description": "Small label above the title."},
+    "title": {"type": "string", "default": "Win it high, {play} it wide", "description": "Headline; wrap one word in {braces} for the italic serif accent."},
+    "home": {"type": "object", "default": {"name": "Home", "color": "#f2f1ec"}, "description": "{name, color} of the team attacking the far goal. Generic colours; no club crests or marks."},
+    "away": {"type": "object", "default": {"name": "Away", "color": "#e5484d"}, "description": "{name, color} of the defending team."},
+    "players": {"type": "array", "default": [{"id": "H10", "team": "home", "n": 10, "from": [-1, -15], "to": [-3, -18], "move": [0.8, 1.2]}], "description": "Tokens {id, team: home|away, n (shirt number), from: [x, z], to: [x, z], move: [start s, duration s]}. Metres: x -34..34 across, z 52.5 (near goal line) .. -52.5 (far goal line)."},
+    "passes": {"type": "array", "default": [{"from": "H6", "to": "H10", "at": 1.3, "dur": 0.55}], "description": "Pass arrows {from: id, to: id or [x, z], at, dur, bend (metres, curve sideways), loft (metres, ball height)}. The ball follows each pass and stays with the receiver."},
+    "runs": {"type": "array", "default": [{"player": "H9", "at": 3.4}], "description": "Dashed run arrows {player, at} drawn along that player's from -> to path."},
+    "press": {"type": "object", "default": {"points": [[-12, -12], [6, -12], [7, -24], [-11, -24]], "at": 2.0, "label": "Press trigger"}, "description": "Pressing zone {points: [[x, z], ...] (convex), at, label}. Omit or set to null for none."},
+    "notes": {"type": "array", "default": [{"text": "Overload", "at": [24, -40], "time": 4.1}], "description": "Extra HTML notes {text, at: [x, z], time}."},
+    "lang": {"type": "string", "default": "en", "description": "Language of the copy (BCP 47). Sets <html lang>."},
+    "duration": {"type": "number", "default": 6, "description": "Scene length in seconds. new-scene.sh --params also rewrites data-duration to match."}
+  },
+  "checks": ["no club crests, kits or sponsor marks", "tokens do not overlap at rest", "arrows start and end at token edges"]
+}

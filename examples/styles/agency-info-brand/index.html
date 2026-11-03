@@ -1,0 +1,96 @@
+<!doctype html>
+<!--
+  motionforge style preview: agency-info-brand
+  © 2026 motionforge contributors, MIT
+  Uses the style's neutral fallback colours and a fictional corner mark; a real job takes them from brand.json.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      :root { --mf-bg: #0b0f14; --mf-accent: #3bd6c6; --mf-accent-2: #2f7bff; --mf-muted: #9aa6b8; }
+      html, body { background: var(--mf-bg); }
+      #root { background:
+        radial-gradient(1000px 700px at 50% 0%, rgba(59,214,198,.16) 0%, transparent 70%),
+        radial-gradient(700px 600px at 100% 100%, rgba(47,123,255,.14) 0%, transparent 70%),
+        var(--mf-bg); }
+      #mark { position: absolute; top: 70px; right: 56px; width: 64px; height: 64px; opacity: .42; }
+      #eyebrow { top: 220px; }
+      #title { top: 280px; font-size: 100px; letter-spacing: -0.03em; }
+      #title .w { display: inline-block; }
+      #list { left: 80px; right: 80px; top: 580px; height: 560px; padding: 44px 48px; border-radius: 34px;
+              background: rgba(20,26,34,.92); border: 2px solid rgba(255,255,255,.08); }
+      .item { position: relative; display: flex; align-items: center; height: 150px; border-bottom: 2px solid rgba(255,255,255,.06); }
+      .item:last-child { border-bottom: 0; }
+      .num { width: 84px; font: 500 30px/1 var(--mf-font-mono); color: var(--mf-accent); letter-spacing: .1em; }
+      .txt { flex: 1; font: 700 50px/1.1 var(--mf-font-body); letter-spacing: -0.015em; }
+      .chk { width: 64px; height: 64px; }
+      .chk circle { fill: rgba(59,214,198,.14); }
+      .chk path { fill: none; stroke: var(--mf-accent); stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; }
+      #cta { position: absolute; left: 80px; right: 80px; top: 1210px; height: 230px; display: flex; gap: 32px; }
+      .btn { flex: 1; border-radius: 34px; background: rgba(20,26,34,.92); border: 2px solid rgba(255,255,255,.08); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+      .btn svg { width: 96px; height: 96px; overflow: visible; }
+      .btn span { font: 500 28px/1 var(--mf-font-mono); letter-spacing: .18em; text-transform: uppercase; color: var(--mf-muted); }
+      #cap { position: absolute; left: 0; right: 0; top: 1500px; text-align: center; font: 700 48px/1.2 var(--mf-font-body); color: var(--mf-muted); }
+      #cap b { color: #fff; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <svg id="mark" class="clip" viewBox="0 0 64 64" data-start="0" data-duration="4.5" data-track-index="0">
+        <rect x="2" y="2" width="60" height="60" rx="16" fill="none" stroke="#fff" stroke-width="4"/>
+        <path d="M18 44 C 18 26, 30 18, 46 18 C 46 34, 36 46, 18 44 Z" fill="#fff"/>
+      </svg>
+      <div id="eyebrow" class="eyebrow clip" data-start="0" data-duration="4.5" data-track-index="1">Save this · 3 rules</div>
+      <h1 id="title" class="title clip" data-start="0" data-duration="4.5" data-track-index="2">
+        <span class="w">Agency info,</span><br /><span class="w accent-gradient">on brand</span>
+      </h1>
+      <div id="list" class="clip" data-start="0" data-duration="4.5" data-track-index="3">
+        <div class="item"><div class="num">01</div><div class="txt">One idea per screen</div><svg class="chk" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30"/><path d="M18 33 L28 43 L47 22" pathLength="1"/></svg></div>
+        <div class="item"><div class="num">02</div><div class="txt">Brand colour on words</div><svg class="chk" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30"/><path d="M18 33 L28 43 L47 22" pathLength="1"/></svg></div>
+        <div class="item"><div class="num">03</div><div class="txt">Save + send at the end</div><svg class="chk" viewBox="0 0 64 64"><circle cx="32" cy="32" r="30"/><path d="M18 33 L28 43 L47 22" pathLength="1"/></svg></div>
+      </div>
+      <div id="cta" class="clip" data-start="0" data-duration="4.5" data-track-index="4">
+        <div class="btn"><svg viewBox="0 0 96 96">
+          <defs><clipPath id="bmclip"><path d="M26 10 H70 V86 L48 68 L26 86 Z"/></clipPath></defs>
+          <rect id="bmfill" x="20" y="8" width="56" height="80" fill="#3bd6c6" clip-path="url(#bmclip)"/>
+          <path d="M26 10 H70 V86 L48 68 L26 86 Z" fill="none" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>
+        </svg><span>Save</span></div>
+        <div class="btn"><svg viewBox="0 0 96 96"><g id="plane">
+          <path d="M10 46 L86 12 L64 84 L44 58 Z" fill="none" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>
+          <path d="M44 58 L86 12" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+        </g></svg><span>Send</span></div>
+      </div>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="5">Send it to <b>your team</b></div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      const inn = (sel, at) => tl.fromTo(sel, { opacity: 0, y: 30, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.35, ease: "back.out(1.3)" }, at);
+      tl.fromTo("#mark", { opacity: 0 }, { opacity: 0.42, duration: 0.3 }, 0);
+      inn("#eyebrow", 0.05);
+      gsap.utils.toArray("#title .w").forEach((w, i) => inn(w, 0.15 + i * 0.15));
+      inn("#list", 0.5);
+      gsap.utils.toArray(".item").forEach((it, i) => {
+        const at = 0.8 + i * 0.42;
+        tl.fromTo(it, { opacity: 0, x: -60 }, { opacity: 1, x: 0, duration: 0.4, ease: "power3.out" }, at);
+        tl.fromTo(it.querySelector(".chk path"), { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.3, ease: "power2.out" }, at + 0.35);
+        tl.fromTo(it.querySelector(".chk"), { scale: 0.6, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.3, ease: "back.out(2)" }, at + 0.3);
+      });
+      inn("#cta", 2.2);
+      inn("#cap", 2.3);
+      // save icon fills, then the paper plane lifts
+      tl.fromTo("#bmfill", { attr: { y: 88 } }, { attr: { y: 8 }, duration: 0.45, ease: "power2.out" }, 2.8);
+      tl.fromTo("#plane", { x: 0, y: 0, rotation: 0 }, { x: 22, y: -26, rotation: -8, duration: 0.5, ease: "back.out(2)", transformOrigin: "50% 50%" }, 3.6);
+      tl.to("#plane", { y: -18, duration: 0.4, ease: "sine.inOut" }, 4.1);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

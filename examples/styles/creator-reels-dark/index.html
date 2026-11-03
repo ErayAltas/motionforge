@@ -1,0 +1,124 @@
+<!doctype html>
+<!--
+  motionforge style preview: creator-reels-dark
+  © 2026 motionforge contributors, MIT
+  Split frame: graphics on top, presenter card below with the head popping over its edge.
+  The presenter is a neutral drawn silhouette (stand-in for real footage); the window content is fictional.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      #eyebrow { top: 190px; }
+      #title { top: 240px; font-size: 118px; }
+      #title .w { display: inline-block; }
+      #win { left: 110px; right: 110px; top: 500px; height: 420px; overflow: hidden; border-radius: 30px; }
+      .bar { height: 64px; border-bottom: 2px solid var(--mf-line); display: flex; align-items: center; gap: 14px; padding-left: 28px; }
+      .bar i { width: 18px; height: 18px; border-radius: 50%; display: block; }
+      .url { margin-left: 26px; height: 36px; width: 460px; border-radius: 18px; background: #0f1012; font: 500 22px/36px var(--mf-font-mono); color: var(--mf-muted); padding-left: 20px; }
+      .pane { position: absolute; left: 0; right: 0; top: 66px; bottom: 0; padding: 36px 40px; }
+      .row { height: 26px; border-radius: 13px; background: #24262b; margin-bottom: 22px; }
+      .tiles { display: flex; gap: 22px; margin-top: 32px; }
+      .tile { flex: 1; height: 130px; border-radius: 20px; background: #202227; border: 2px solid #2c2e33; position: relative; }
+      .tile b { position: absolute; left: 22px; bottom: 18px; font: 800 44px/1 var(--mf-font-display); color: #fff; }
+      .tile s { position: absolute; left: 22px; top: 20px; width: 70px; height: 14px; border-radius: 7px; background: #3a3d44; }
+      #hl { position: absolute; border: 5px solid var(--mf-accent); border-radius: 22px; box-shadow: 0 0 40px rgba(200,245,58,.35); }
+      .chip { position: absolute; width: 116px; height: 116px; border-radius: 28px; background: #ffffff; box-shadow: 0 20px 40px rgba(0,0,0,.4); }
+      .chip svg { position: absolute; inset: 22px; }
+      #word { position: absolute; left: 0; right: 0; top: 972px; height: 100px; font: 800 96px/1 var(--mf-font-display); letter-spacing: -0.04em; }
+      #word span { position: absolute; left: 0; right: 0; text-align: center; opacity: 0; }
+      #card { left: 36px; right: 36px; top: 1220px; bottom: -60px; border-radius: 48px; background: linear-gradient(180deg, #1d1f23, #121316); border: 2px solid var(--mf-line); overflow: visible; }
+      #person { position: absolute; left: 50%; bottom: 0; width: 760px; height: 1000px; margin-left: -380px; }
+      #cap { position: absolute; left: 0; right: 0; top: 1420px; text-align: center; font: 800 62px/1 var(--mf-font-display); letter-spacing: -0.02em; }
+      #cap span { color: #fff; display: inline-block; padding: 10px 16px; margin: 0 4px; border-radius: 14px; background: rgba(0,0,0,.55); }
+      #cap .on { color: var(--mf-accent-ink); background: var(--mf-accent); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="eyebrow" class="eyebrow clip" data-start="0" data-duration="4.5" data-track-index="0">Style · creator-reels-dark</div>
+      <h1 id="title" class="title clip" data-start="0" data-duration="4.5" data-track-index="1">
+        <span class="w">Creator</span> <span class="w">reels,</span> <span class="w serif accent">dark</span>
+      </h1>
+      <div id="win" class="card clip" data-start="0" data-duration="4.5" data-track-index="2">
+        <div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><div class="url">studio.example/stats</div></div>
+        <div class="pane">
+          <div class="row" style="width:62%"></div>
+          <div class="row" style="width:40%"></div>
+          <div class="tiles">
+            <div class="tile"><s></s><b>12</b></div>
+            <div class="tile" id="t2"><s></s><b>3.4k</b></div>
+            <div class="tile"><s></s><b>98%</b></div>
+          </div>
+        </div>
+        <div id="hl"></div>
+      </div>
+      <div id="c1" class="chip clip" data-start="0" data-duration="4.5" data-track-index="3"><svg viewBox="0 0 72 72"><circle cx="36" cy="36" r="30" fill="#16171a"/><circle cx="36" cy="36" r="12" fill="#c8f53a"/></svg></div>
+      <div id="c2" class="chip clip" data-start="0" data-duration="4.5" data-track-index="4"><svg viewBox="0 0 72 72"><path d="M10 62 L36 10 L62 62 Z" fill="#16171a"/></svg></div>
+      <div id="c3" class="chip clip" data-start="0" data-duration="4.5" data-track-index="5"><svg viewBox="0 0 72 72"><rect x="8" y="8" width="24" height="24" rx="6" fill="#16171a"/><rect x="40" y="8" width="24" height="24" rx="6" fill="#16171a"/><rect x="8" y="40" width="24" height="24" rx="6" fill="#16171a"/><rect x="40" y="40" width="24" height="24" rx="12" fill="#c8f53a"/></svg></div>
+      <div id="word" class="clip" data-start="0" data-duration="4.5" data-track-index="6"><span id="wa">Fast.</span><span id="wb">Clear.</span><span id="wc" class="accent">Yours.</span></div>
+      <div id="card" class="card clip" data-start="0" data-duration="4.5" data-track-index="7">
+        <svg id="person" viewBox="0 0 760 1000">
+          <defs>
+            <radialGradient id="skin" cx="45%" cy="38%" r="65%"><stop offset="0" stop-color="#6b6f78"/><stop offset="1" stop-color="#2e3036"/></radialGradient>
+            <linearGradient id="shirt" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a3d44"/><stop offset="1" stop-color="#1a1b1f"/></linearGradient>
+          </defs>
+          <path d="M60 1000 C 80 760, 200 660, 380 650 C 560 660, 680 760, 700 1000 Z" fill="url(#shirt)"/>
+          <rect x="330" y="560" width="100" height="110" rx="30" fill="#3d4047"/>
+          <ellipse cx="380" cy="420" rx="160" ry="196" fill="url(#skin)"/>
+          <path d="M222 400 C 214 250, 300 196, 384 196 C 476 196, 550 250, 540 400 C 520 320, 470 290, 384 286 C 300 290, 240 320, 222 400 Z" fill="#1b1c20"/>
+          <rect x="520" y="640" width="64" height="150" rx="32" fill="#0f1012" stroke="#4a4d55" stroke-width="4"/>
+          <rect x="544" y="790" width="16" height="210" fill="#0f1012"/>
+        </svg>
+      </div>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="8"><span id="cw1">one</span><span id="cw2">idea</span><span id="cw3">per</span><span id="cw4">beat</span></div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      const rise = { opacity: 0, y: 40, filter: "blur(14px)" };
+      const rest = { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.4, ease: "back.out(1.4)" };
+      tl.fromTo("#eyebrow", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.3 }, 0.05);
+      gsap.utils.toArray("#title .w").forEach((w, i) => tl.fromTo(w, rise, { ...rest }, 0.12 + i * 0.12));
+      // presenter card slides up, head pops over the edge
+      tl.fromTo("#card", { y: 700 }, { y: 0, duration: 0.55, ease: "power3.out" }, 0.1);
+      tl.fromTo("#person", { y: 120, scale: 0.96 }, { y: -80, scale: 1, duration: 0.6, ease: "back.out(1.6)" }, 0.45);
+      // window + push-in
+      tl.fromTo("#win", { opacity: 0, y: 120, scale: 0.94 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "power3.out" }, 0.55);
+      tl.fromTo("#win", { scale: 1 }, { scale: 1.04, duration: 3, ease: "none", immediateRender: false }, 1.05);
+      // lime box on the detail that matters
+      const t2 = document.getElementById("t2");
+      const hl = document.getElementById("hl");
+      const pane = t2.offsetParent;
+      Object.assign(hl.style, { left: (t2.offsetLeft + pane.offsetLeft - 10) + "px", top: (t2.offsetTop + pane.offsetTop - 10) + "px", width: (t2.offsetWidth + 20) + "px", height: (t2.offsetHeight + 20) + "px" });
+      tl.fromTo("#hl", { opacity: 0, scale: 1.25 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)" }, 1.5);
+      // tiles fly in from off-screen with directional stretch + blur, 70 ms apart
+      const chips = [["#c1", 120, 960], ["#c2", 482, 960], ["#c3", 844, 960]];
+      chips.forEach(([sel, x], i) => {
+        gsap.set(sel, { left: x, top: 830 });
+      });
+      tl.fromTo(["#c1", "#c2", "#c3"], { x: 900, scaleX: 2.2, filter: "blur(10px)", opacity: 0 },
+        { x: 0, scaleX: 1, filter: "blur(0px)", opacity: 1, duration: 0.42, ease: "power3.out", stagger: 0.07 }, 1.9);
+      tl.to(["#c1", "#c2", "#c3"], { y: -10, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 2, stagger: 0.1 }, 2.4);
+      // one-word headline changes on stressed words, hard cut + 0.12 s scale pop
+      [["#wa", 1.2, 2.3], ["#wb", 2.3, 3.4], ["#wc", 3.4, 99]].forEach(([sel, a, b]) => {
+        tl.fromTo(sel, { opacity: 1, scale: 1.18 }, { opacity: 1, scale: 1, duration: 0.12, ease: "power2.out", immediateRender: false }, a);
+        if (b < DUR) tl.set(sel, { opacity: 0 }, b);
+      });
+      // captions, 1 active word at a time
+      tl.fromTo("#cap", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.25 }, 0.9);
+      ["#cw1", "#cw2", "#cw3", "#cw4"].forEach((sel, i) => {
+        tl.set(sel, { color: "#0e0f11", backgroundColor: "#c8f53a" }, 1.0 + i * 0.7);
+        if (i < 3) tl.set(sel, { color: "#ffffff", backgroundColor: "rgba(0,0,0,0.55)" }, 1.7 + i * 0.7);
+      });
+      tl.seek(0);
+    </script>
+  </body>
+</html>

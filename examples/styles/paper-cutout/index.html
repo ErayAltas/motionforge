@@ -1,0 +1,150 @@
+<!doctype html>
+<!--
+  motionforge style preview: paper-cutout
+  © 2026 motionforge contributors, MIT
+  Layered card with rough, seeded edges, paper fibre and real drop shadows. Motion is computed on
+  twos (12 positions/s) with a ±1 px / ±0.4° seeded jitter per held frame. Inter stands in for Fraunces/Nunito.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      :root { --backing: #f1e9da; --ink: #2a2320; }
+      html, body { background: var(--backing); }
+      #root { background: var(--backing); }
+      #root::before { mix-blend-mode: multiply; opacity: .12; }
+      #root::after { background: radial-gradient(ellipse at 50% 45%, transparent 60%, rgba(80,50,20,.14) 100%); }
+      #scene { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      .strip { position: absolute; left: 50%; background: #fbf7ee; color: var(--ink); text-align: center; white-space: nowrap;
+               box-shadow: 8px 12px 16px rgba(42,35,32,.3); }
+      #title { top: 250px; width: 880px; margin-left: -440px; padding: 34px 0 40px; font: 800 116px/1 var(--mf-font-display); letter-spacing: -0.035em; }
+      #title i { position: absolute; top: 18px; width: 22px; height: 22px; border-radius: 50%; background: #e86f4f; box-shadow: 2px 3px 3px rgba(0,0,0,.3); }
+      #cap { top: 1420px; width: 640px; margin-left: -320px; padding: 22px 0; font: 700 50px/1 var(--mf-font-body); }
+      #persp { position: absolute; inset: 0; perspective: 1400px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage light" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <svg id="scene" class="clip" viewBox="0 0 1080 1920" data-start="0" data-duration="4.5" data-track-index="0">
+        <defs></defs>
+      </svg>
+      <div id="persp" class="clip" data-start="0" data-duration="4.5" data-track-index="1">
+        <div id="title" class="strip">Paper cutout<i style="left:40px"></i><i style="right:40px"></i></div>
+      </div>
+      <div id="cap" class="strip clip" data-start="0" data-duration="4.5" data-track-index="2">one layer at a time</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const NS = "http://www.w3.org/2000/svg";
+      const svg = document.getElementById("scene"), defs = svg.querySelector("defs");
+      const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent && parent.appendChild(e); return e; };
+      const R = MF.rng("paper-cutout-edges");
+
+      // paper filter: fibre noise multiplied into the fill + a drop shadow sized by layer height
+      function paperFilter(id, off, blur, alpha) {
+        const f = el("filter", { id, x: "-10%", y: "-10%", width: "130%", height: "130%" }, defs);
+        f.innerHTML = `
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="${id.length * 7}" result="n"/>
+          <feColorMatrix in="n" values="0 0 0 0 .55  0 0 0 0 .5  0 0 0 0 .45  0 0 0 .22 0" result="fib"/>
+          <feComposite in="fib" in2="SourceAlpha" operator="in" result="fibIn"/>
+          <feBlend in="SourceGraphic" in2="fibIn" mode="multiply" result="paper"/>
+          <feDropShadow in="paper" dx="${off}" dy="${off * 1.3}" stdDeviation="${blur}" flood-color="#2a2320" flood-opacity="${alpha}"/>`;
+      }
+      paperFilter("f1", 6, 9, 0.25); paperFilter("f2", 9, 12, 0.28); paperFilter("f3", 12, 15, 0.32);
+
+      // rough outline: subdivide each edge and jitter the points (fixed per shape)
+      function rough(points, step = 26, amp = 2.2) {
+        const out = [];
+        for (let i = 0; i < points.length; i++) {
+          const [ax, ay] = points[i], [bx, by] = points[(i + 1) % points.length];
+          const n = Math.max(1, Math.round(Math.hypot(bx - ax, by - ay) / step));
+          for (let k = 0; k < n; k++) out.push([ax + (bx - ax) * k / n + R.range(-amp, amp), ay + (by - ay) * k / n + R.range(-amp, amp)]);
+        }
+        return out.map((p) => p.map((v) => v.toFixed(1)).join(",")).join(" ");
+      }
+      const circle = (cx, cy, r, n = 64) => Array.from({ length: n }, (_, i) => [cx + Math.cos(i / n * Math.PI * 2) * r, cy + Math.sin(i / n * Math.PI * 2) * r]);
+      function hills(base, amps, phase, w = 1240, x0 = -80) {
+        const pts = [];
+        for (let x = 0; x <= w; x += 20) {
+          let y = base;
+          amps.forEach(([a, p], i) => { y -= a * Math.sin((x + phase * (i + 1)) / p); });
+          pts.push([x0 + x, y]);
+        }
+        pts.push([x0 + w, 2000], [x0, 2000]);
+        return pts;
+      }
+
+      const layers = [];
+      function layer(filter, build, from, at, dur = 0.5) {
+        const g = el("g", { filter: `url(#${filter})` }, svg);
+        build(g);
+        layers.push({ g, from, at, dur, seed: layers.length });
+      }
+      // sun + rays
+      layer("f1", (g) => {
+        el("polygon", { points: rough(circle(820, 600, 118)), fill: "#f2c14e" }, g);
+        el("polygon", { points: rough(circle(820, 600, 70, 40), 20, 1.5), fill: "#f6d27a" }, g);
+      }, [0, -500], 0.15);
+      // clouds
+      layer("f1", (g) => {
+        el("polygon", { points: rough([[120, 680], [170, 630], [230, 600], [300, 610], [350, 650], [400, 680]]), fill: "#fbf7ee" }, g);
+        el("polygon", { points: rough([[610, 820], [650, 780], [710, 765], [770, 790], [800, 820]]), fill: "#fbf7ee" }, g);
+      }, [-700, 0], 0.35);
+      // far hills (teal)
+      layer("f1", (g) => el("polygon", { points: rough(hills(1010, [[60, 160], [30, 70]], 40)), fill: "#2f7f79" }, g), [0, 900], 0.55);
+      // middle hills (coral) with paper trees
+      layer("f2", (g) => {
+        el("polygon", { points: rough(hills(1180, [[50, 140], [26, 60]], 300)), fill: "#e86f4f" }, g);
+        [[210, 1135, 1], [300, 1150, 0.8], [760, 1160, 1.1], [850, 1170, 0.85]].forEach(([x, y, s]) => {
+          el("polygon", { points: rough([[x, y - 150 * s], [x + 55 * s, y], [x - 55 * s, y]], 18, 1.6), fill: "#2f7f79" }, g);
+          el("polygon", { points: rough([[x - 8, y], [x + 8, y], [x + 8, y + 30 * s], [x - 8, y + 30 * s]], 12, 1), fill: "#2a2320" }, g);
+        });
+      }, [0, 900], 0.75);
+      // front hill (yellow) with a little house
+      layer("f3", (g) => {
+        el("polygon", { points: rough(hills(1330, [[40, 220], [16, 50]], 120)), fill: "#f2c14e" }, g);
+        el("polygon", { points: rough([[470, 1300], [620, 1300], [620, 1190], [470, 1190]], 22, 1.6), fill: "#fbf7ee" }, g);
+        el("polygon", { points: rough([[450, 1196], [545, 1110], [640, 1196]], 22, 1.6), fill: "#e86f4f" }, g);
+        el("polygon", { points: rough([[525, 1300], [565, 1300], [565, 1238], [525, 1238]], 10, 1), fill: "#2a2320" }, g);
+        el("polygon", { points: rough([[580, 1225], [606, 1225], [606, 1250], [580, 1250]], 8, 0.8), fill: "#2f7f79" }, g);
+      }, [0, 900], 0.95);
+
+      const back = gsap.parseEase("back.out(1.5)");
+      const title = document.getElementById("title"), cap = document.getElementById("cap");
+      function draw(t) {
+        const f = Math.floor(t * 12), tq = f / 12;           // on twos: 12 positions per second
+        layers.forEach((L) => {
+          const p = Math.max(0, Math.min(1, (tq - L.at) / L.dur));
+          const e = back(p);
+          // held-frame jitter while the layer moves and settles; then it rests (keeps the file small)
+          const live = tq >= L.at && tq <= L.at + L.dur + 0.35;
+          const jr = live ? MF.rng(`j${L.seed}-${f}`) : MF.rng(`j${L.seed}-rest`);
+          const x = L.from[0] * (1 - e) + jr.range(-1, 1), y = L.from[1] * (1 - e) + jr.range(-1, 1), rot = jr.range(-0.4, 0.4);
+          L.g.setAttribute("transform", `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${rot.toFixed(2)} 540 1200)`);
+          L.g.setAttribute("opacity", p > 0 ? 1 : 0);
+        });
+        // title flips up like a pop-up book; caption strip slides in from the left
+        const jt = (tq >= 1.3 && tq <= 2.85) ? MF.rng(`t-${f}`) : MF.rng("t-rest");
+        const pt = back(Math.max(0, Math.min(1, (tq - 1.3) / 0.5)));
+        title.style.transformOrigin = "50% 100%";
+        title.style.transform = `rotateX(${(90 * (1 - pt)).toFixed(1)}deg) rotate(${(-2 + jt.range(-0.4, 0.4)).toFixed(2)}deg) translate(${jt.range(-1, 1).toFixed(1)}px, 0)`;
+        title.style.opacity = tq >= 1.3 ? 1 : 0;
+        const pc = back(Math.max(0, Math.min(1, (tq - 2.0) / 0.5)));
+        cap.style.transform = `translateX(${(-1100 * (1 - pc) + jt.range(-1, 1)).toFixed(1)}px) rotate(${(1.5 + jt.range(-0.4, 0.4)).toFixed(2)}deg)`;
+      }
+
+      const clock = { _t: 0, get t() { return this._t; }, set t(v) { this._t = v; draw(v); } };
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo(clock, { t: 0 }, { t: DUR, duration: DUR, ease: "none" }, 0);
+      draw(0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

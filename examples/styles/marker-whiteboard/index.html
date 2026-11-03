@@ -1,0 +1,181 @@
+<!doctype html>
+<!--
+  motionforge style preview: marker-whiteboard
+  © 2026 motionforge contributors, MIT
+  Strokes are drawn in order (box -> word -> arrow -> box -> word -> circle) from a schedule;
+  a drawn marker follows the stroke tip. Wobble is seeded and fixed per drawing.
+  The board lettering uses Inter with a static roughening filter (swap in Caveat or Kalam when available).
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      html, body { background: #fafaf7; }
+      #root { background: radial-gradient(1100px 1000px at 50% 40%, #ffffff 0%, #fafaf7 55%, #efefea 100%); }
+      #root::before { mix-blend-mode: multiply; opacity: .05; }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 62%, rgba(0,0,0,.10) 100%); }
+      #board { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      .word { font-family: var(--mf-font-display); font-weight: 700; letter-spacing: -0.01em; }
+      .s { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage light" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <svg id="board" class="clip" viewBox="0 0 1080 1920" data-start="0" data-duration="4.5" data-track-index="0">
+        <defs>
+          <filter id="rough" x="-5%" y="-5%" width="110%" height="110%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7" />
+            <feDisplacementMap in="SourceGraphic" scale="5" />
+          </filter>
+          <filter id="ghost"><feGaussianBlur stdDeviation="14" /></filter>
+        </defs>
+        <g id="ghosts" filter="url(#ghost)" opacity="0.03"></g>
+        <g id="ink"></g>
+        <g id="tray">
+          <rect x="70" y="1660" width="940" height="26" rx="10" fill="#d9dbd6" />
+          <rect x="70" y="1686" width="940" height="10" rx="5" fill="#c4c6c0" />
+        </g>
+        <g id="pen">
+          <g transform="rotate(-35)">
+            <rect x="-18" y="-250" width="36" height="210" rx="12" fill="#2b2f36" />
+            <rect x="-18" y="-120" width="36" height="34" fill="#e5484d" />
+            <path d="M-14 -40 L14 -40 L6 -8 L-6 -8 Z" fill="#cfd2d6" />
+            <rect x="-5" y="-10" width="10" height="12" rx="3" fill="#1f2328" />
+          </g>
+        </g>
+      </svg>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const NS = "http://www.w3.org/2000/svg";
+      const ink = document.getElementById("ink");
+      const pen = document.getElementById("pen");
+      const r = MF.rng("marker-whiteboard");
+      const C = { marker: "#1f2328", red: "#e5484d", blue: "#2f6feb" };
+
+      // seeded ghosts of erased marks
+      const ghosts = document.getElementById("ghosts");
+      for (let i = 0; i < 7; i++) {
+        const e = document.createElementNS(NS, "ellipse");
+        e.setAttribute("cx", r.range(100, 980)); e.setAttribute("cy", r.range(250, 1550));
+        e.setAttribute("rx", r.range(80, 220)); e.setAttribute("ry", r.range(20, 60));
+        e.setAttribute("fill", "#555");
+        ghosts.appendChild(e);
+      }
+
+      const j = (a) => r.range(-a, a);
+      function roughRect(x, y, w, h) {
+        const p = [[x + j(6), y + j(6)], [x + w + j(8), y + j(6)], [x + w + j(6), y + h + j(8)], [x + j(8), y + h + j(6)]];
+        let d = `M${p[0][0]} ${p[0][1]}`;
+        for (let i = 1; i <= 4; i++) {
+          const a = p[i - 1], b = p[i % 4];
+          d += ` Q${(a[0] + b[0]) / 2 + j(5)} ${(a[1] + b[1]) / 2 + j(5)} ${b[0]} ${b[1]}`;
+        }
+        d += ` L${p[1][0] * 0.12 + p[0][0] * 0.88 + 10} ${p[0][1] + j(4) - 4}`;
+        return d;
+      }
+      function roughEllipse(cx, cy, rx, ry, turns = 1.12) {
+        let d = "";
+        const n = 40;
+        for (let i = 0; i <= n * turns; i++) {
+          const a = -2.2 + (i / n) * Math.PI * 2;
+          const k = 1 + 0.04 * Math.sin(i * 0.7) + j(0.012) + (i / n) * 0.05;
+          d += (i ? " L" : "M") + (cx + Math.cos(a) * rx * k).toFixed(1) + " " + (cy + Math.sin(a) * ry * k).toFixed(1);
+        }
+        return d;
+      }
+      const strokes = [];   // { el, len, start, dur, kind }
+      function path(d, color, width, start, dur) {
+        const el = document.createElementNS(NS, "path");
+        el.setAttribute("d", d); el.setAttribute("class", "s"); el.setAttribute("stroke", color); el.setAttribute("stroke-width", width);
+        el.setAttribute("filter", "url(#rough)");
+        ink.appendChild(el);
+        const len = el.getTotalLength();
+        el.style.strokeDasharray = len; el.style.strokeDashoffset = len;
+        strokes.push({ el, len, start, dur, kind: "path" });
+      }
+      function word(txt, x, y, size, color, start, dur, anchor = "middle") {
+        const id = "c" + strokes.length;
+        const cp = document.createElementNS(NS, "clipPath"); cp.id = id;
+        const rect = document.createElementNS(NS, "rect");
+        cp.appendChild(rect); document.querySelector("defs").appendChild(cp);
+        const el = document.createElementNS(NS, "text");
+        el.textContent = txt; el.setAttribute("x", x); el.setAttribute("y", y); el.setAttribute("text-anchor", anchor);
+        el.setAttribute("class", "word"); el.setAttribute("font-size", size); el.setAttribute("fill", color);
+        el.setAttribute("filter", "url(#rough)"); el.setAttribute("clip-path", `url(#${id})`);
+        ink.appendChild(el);
+        strokes.push({ el, rect, start, dur, kind: "text", y, size });
+      }
+
+      // the drawing, in build order (≈ 900 px/s)
+      path(roughRect(230, 360, 620, 200), C.marker, 7, 0.15, 0.55);
+      word("Marker", 540, 500, 128, C.marker, 0.65, 0.45);
+      path("M540 590 C 520 650, 560 700, 540 770 M500 730 L540 775 L582 728", C.marker, 7, 1.15, 0.4);
+      path(roughRect(150, 800, 780, 200), C.marker, 7, 1.6, 0.6);
+      word("Whiteboard", 540, 942, 124, C.marker, 2.2, 0.55);
+      path(roughEllipse(540, 900, 450, 150), C.red, 9, 2.85, 0.4);
+      // blue doodle: light bulb + note
+      path("M300 1180 C 230 1180, 200 1260, 240 1310 C 260 1335, 270 1350, 270 1380 L330 1380 C 330 1350, 340 1335, 360 1310 C 400 1260, 370 1180, 300 1180 M272 1405 L328 1405 M282 1428 L318 1428", C.blue, 7, 3.3, 0.45);
+      word("explain it live", 420, 1330, 76, C.blue, 3.55, 0.5, "start");
+      path("M772 1352 C 810 1347, 850 1350, 896 1345 M780 1374 C 820 1370, 856 1373, 890 1369", C.red, 7, 3.98, 0.3);
+
+      const ease = gsap.parseEase("power1.inOut");
+      const textBox = {};
+      function draw(t) {
+        let tip = null;
+        for (const s of strokes) {
+          const p = Math.max(0, Math.min(1, (t - s.start) / s.dur));
+          const e = ease(p);
+          if (s.kind === "path") {
+            s.el.style.strokeDashoffset = s.len * (1 - e);
+            if (p > 0 && p < 1) tip = s.el.getPointAtLength(s.len * e);
+            else if (p >= 1) tip = tip || null;
+          } else {
+            if (!textBox[s.start]) textBox[s.start] = s.el.getBBox();
+            const b = textBox[s.start];
+            s.rect.setAttribute("x", b.x - 10); s.rect.setAttribute("y", b.y - 20);
+            s.rect.setAttribute("height", b.height + 40);
+            s.rect.setAttribute("width", (b.width + 20) * e);
+            if (p > 0 && p < 1) tip = { x: b.x + b.width * e, y: s.y - s.size * 0.35 + Math.sin(e * 40) * s.size * 0.18 };
+          }
+        }
+        // marker rests at the last tip when idle, enters from the right at the start
+        if (tip) { draw.last = tip; }
+        const at = tip || draw.lastAt(t);
+        pen.setAttribute("transform", `translate(${at.x.toFixed(1)} ${at.y.toFixed(1)})`);
+      }
+      // where the pen sits between strokes: end point of the most recent finished stroke (deterministic)
+      draw.lastAt = (t) => {
+        let best = { x: 1200, y: 1500 }, bestT = -1;
+        for (const s of strokes) {
+          const end = s.start + s.dur;
+          if (end <= t && end > bestT) {
+            bestT = end;
+            if (s.kind === "path") best = s.el.getPointAtLength(s.len);
+            else { const b = textBox[s.start] || s.el.getBBox(); best = { x: b.x + b.width + 10, y: s.y - s.size * 0.3 }; }
+          }
+        }
+        if (bestT < 0) { // before the first stroke: glide in to its start
+          const s0 = strokes[0].el.getPointAtLength(0);
+          const k = Math.min(1, t / strokes[0].start);
+          return { x: 1200 + (s0.x - 1200) * k, y: 1500 + (s0.y - 1500) * k };
+        }
+        return best;
+      };
+
+      const clock = { _t: 0, get t() { return this._t; }, set t(v) { this._t = v; draw(v); } };
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo(clock, { t: 0 }, { t: DUR, duration: DUR, ease: "none" }, 0);
+      MF.ready && MF.ready().then(() => { for (const k in textBox) delete textBox[k]; draw(clock.t); });
+      draw(0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

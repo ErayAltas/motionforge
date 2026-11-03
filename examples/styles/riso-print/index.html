@@ -1,0 +1,123 @@
+<!doctype html>
+<!--
+  motionforge style preview: riso-print
+  © 2026 motionforge contributors, MIT
+  Two spot inks (fluorescent pink, blue) multiplied on paper; overprint only where they overlap.
+  Roller-wipe reveal per drum, letters stamp in, layer offsets jitter on a 12 fps clock (seeded),
+  drift apart and snap back into register on the beat. Inter stands in for Space Grotesk / Archivo Black.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      :root { --paper: #f4efe6; --pink: #ff48b0; --blue: #0078bf; }
+      html, body { background: var(--paper); }
+      #root { background: var(--paper); }
+      #root::before { mix-blend-mode: multiply; opacity: .14; }
+      #root::after { display: none; }
+      #sheet { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      .ink { mix-blend-mode: multiply; }
+      .big { font-family: var(--mf-font-display); font-weight: 800; letter-spacing: -0.045em; }
+      .mono { font-family: var(--mf-font-mono); font-weight: 500; letter-spacing: .04em; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage light" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <svg id="sheet" class="clip" viewBox="0 0 1080 1920" data-start="0" data-duration="4.5" data-track-index="0">
+        <defs>
+          <pattern id="dotsB" width="15" height="15" patternUnits="userSpaceOnUse" patternTransform="rotate(75)"><circle cx="7.5" cy="7.5" r="4.6" fill="#0078bf" /></pattern>
+          <pattern id="dotsP" width="13" height="13" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><circle cx="6.5" cy="6.5" r="3.4" fill="#ff48b0" /></pattern>
+          <!-- uneven ink coverage: speckles knocked out of the solids -->
+          <filter id="cover" x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.55" numOctaves="2" seed="9" result="n" />
+            <feComponentTransfer in="n" result="speck"><feFuncA type="discrete" tableValues="0 0 0 0 0 0 0 1" /></feComponentTransfer>
+            <feComposite in="SourceGraphic" in2="speck" operator="out" result="a" />
+            <feTurbulence type="fractalNoise" baseFrequency="0.004 0.08" numOctaves="1" seed="2" result="streak" />
+            <feColorMatrix in="streak" values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .22 0" result="st" />
+            <feComposite in="st" in2="a" operator="in" result="stIn" />
+            <feBlend in="a" in2="stIn" mode="screen" />
+          </filter>
+          <clipPath id="wipeP"><rect id="rollP" x="0" y="0" width="0" height="1920" /></clipPath>
+          <clipPath id="wipeB"><rect id="rollB" x="0" y="0" width="0" height="1920" /></clipPath>
+        </defs>
+        <!-- drum 1: fluorescent pink -->
+        <g id="inkP" class="ink" clip-path="url(#wipeP)">
+          <g id="offP" filter="url(#cover)">
+            <text class="mono" x="84" y="250" font-size="34" fill="#ff48b0">TWO-DRUM PRINT / PINK + BLUE</text>
+            <text class="big" x="64" y="560" font-size="330" fill="#ff48b0">RISO</text>
+            <circle cx="380" cy="1160" r="290" fill="#ff48b0" />
+            <rect x="620" y="1380" width="380" height="150" fill="url(#dotsP)" />
+          </g>
+        </g>
+        <!-- drum 2: blue -->
+        <g id="inkB" class="ink" clip-path="url(#wipeB)">
+          <g id="offB" filter="url(#cover)">
+            <circle cx="690" cy="1060" r="300" fill="url(#dotsB)" />
+            <g id="print"></g>
+            <text class="mono" x="84" y="1600" font-size="40" fill="#0078bf">two inks · halftone</text>
+            <text class="mono" x="84" y="1652" font-size="40" fill="#0078bf">slight misregistration</text>
+            <rect x="84" y="1700" width="300" height="14" fill="#0078bf" />
+          </g>
+        </g>
+      </svg>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const NS = "http://www.w3.org/2000/svg";
+      // "PRINT" as separate letters so each can stamp in
+      const print = document.getElementById("print");
+      const letters = [];
+      for (const ch of "PRINT") {
+        const t = document.createElementNS(NS, "text");
+        t.setAttribute("class", "big"); t.setAttribute("font-size", "268"); t.setAttribute("fill", "#0078bf");
+        t.setAttribute("y", 800); t.textContent = ch;
+        print.appendChild(t);
+        letters.push(t);
+      }
+      function layout() {   // re-run once the webfont is in: widths differ from the fallback
+        let x = 70;
+        letters.forEach((t) => { t.setAttribute("x", x); delete t.dataset.c; x += t.getComputedTextLength() - 10; });
+      }
+      layout();
+
+      const stepIn = (p) => Math.floor(Math.max(0, Math.min(1, p)) * 6) / 6;    // stepped roller, 12 fps feel
+      function draw(t) {
+        // offsets change every 2 frames at 12 fps while ink moves (reveal, drift); the sheet rests in between
+        const live = t >= 2.3 && t < 3.4;
+        const f = live ? Math.floor(t * 6) : "rest";
+        document.getElementById("rollP").setAttribute("width", 1080 * stepIn((t - 0.1) / 0.4));
+        document.getElementById("rollB").setAttribute("width", 1080 * stepIn((t - 0.2) / 0.4));
+        // letters stamp in one at a time with a 2-frame overshoot
+        letters.forEach((el, i) => {
+          const at = 0.75 + i * 0.16, k = Math.floor((t - at) * 12);
+          const s = k < 0 ? 0 : k === 0 ? 1.28 : k === 1 ? 0.94 : 1;
+          const bb = el.dataset.c || (el.dataset.c = (() => { const b = el.getBBox(); return (b.x + b.width / 2) + " " + (b.y + b.height / 2); })());
+          const [cx, cy] = bb.split(" ").map(Number);
+          el.setAttribute("transform", `translate(${cx} ${cy}) scale(${s}) translate(${-cx} ${-cy})`);
+        });
+        // misregistration: small seeded jitter; drift apart on 2.3–2.9, snap back into register at 3.3
+        const r = MF.rng("riso-" + f);
+        let dx = r.range(-2.5, 2.5), dy = r.range(-2.5, 2.5);
+        const drift = t < 2.3 ? 0 : t < 2.9 ? Math.floor((t - 2.3) / 0.6 * 4) / 4 : t < 3.3 ? 1 : 0;
+        dx += 13 * drift; dy += -7 * drift;
+        document.getElementById("offB").setAttribute("transform", `translate(${dx.toFixed(1)} ${dy.toFixed(1)})`);
+        const r2 = MF.rng("riso-p-rest");
+        document.getElementById("offP").setAttribute("transform", `translate(${r2.range(-1.5, 1.5).toFixed(1)} ${r2.range(-1.5, 1.5).toFixed(1)})`);
+      }
+
+      const clock = { _t: 0, get t() { return this._t; }, set t(v) { this._t = v; draw(v); } };
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo(clock, { t: 0 }, { t: DUR, duration: DUR, ease: "none" }, 0);
+      MF.ready && MF.ready().then(() => { layout(); draw(clock.t); });
+      draw(0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

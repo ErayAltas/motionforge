@@ -1,0 +1,160 @@
+<!doctype html>
+<!--
+  motionforge style preview: retro-anime-cel
+  © 2026 motionforge contributors, MIT
+  Held key frame with two-tone cel shapes and a painted, banded dusk sky (an object in the scene),
+  then impact frame -> white flash -> speed lines + zoom punch as the title slams in, lens flare.
+  The silhouette figure is original. Inter 800 (skewed, outlined) stands in for Anton / Bebas Neue.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      :root { --ink: #1b1426; --neon: #5cf2e6; --acc: #ff4f7b; --mf-grain-opacity: .07; }
+      html, body { background: var(--ink); }
+      #root { background: var(--ink); }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 62%, rgba(10,5,20,.45) 100%); }
+      #cam { position: absolute; inset: 0; transform-origin: 540px 900px; }
+      #world { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      #fx { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      #title { position: absolute; left: 0; right: 0; top: 700px; text-align: center; transform-origin: 50% 50%; }
+      #title div { font: 800 186px/0.9 var(--mf-font-display); letter-spacing: -0.02em; color: var(--acc); transform: skewX(-8deg);
+                   -webkit-text-stroke: 12px var(--ink); paint-order: stroke fill; text-shadow: 10px 10px 0 var(--neon); }
+      #title div.s { font-size: 132px; color: #fff; }
+      #cap { position: absolute; left: 0; right: 0; top: 1460px; text-align: center; font: 700 50px/1.2 var(--mf-font-body); color: #fff;
+             -webkit-text-stroke: 8px var(--ink); paint-order: stroke fill; }
+      #flash { position: absolute; inset: 0; background: #fff; opacity: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="cam" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <svg id="world" viewBox="0 0 1080 1920">
+          <g id="pan">
+            <!-- banded dusk sky (cel: flat bands, no soft gradient) -->
+            <rect x="-100" y="0" width="1300" height="560" fill="#2b1e4f" />
+            <rect x="-100" y="560" width="1300" height="180" fill="#5a2650" />
+            <rect x="-100" y="740" width="1300" height="160" fill="#a8395a" />
+            <rect x="-100" y="900" width="1300" height="140" fill="#e0605a" />
+            <rect x="-100" y="1040" width="1300" height="200" fill="#f2785c" />
+            <rect x="-100" y="1240" width="1300" height="300" fill="#f7a26b" />
+            <!-- stars -->
+            <g id="stars" fill="#f6d3b3"></g>
+            <!-- sun with retro cuts -->
+            <g>
+              <circle cx="560" cy="1060" r="280" fill="#ffd08a" />
+              <path d="M280 1060 A280 280 0 0 1 840 1060 Z" fill="#ffe3a8" />
+              <rect x="260" y="1110" width="600" height="18" fill="#f2785c" />
+              <rect x="260" y="1170" width="600" height="26" fill="#f7a26b" />
+              <rect x="260" y="1240" width="600" height="34" fill="#f7a26b" />
+            </g>
+            <!-- two-tone clouds with ink lines -->
+            <g stroke="#1b1426" stroke-width="4" stroke-linejoin="round">
+              <path d="M60 700 C 80 640, 160 630, 190 660 C 220 610, 320 610, 340 670 C 400 660, 430 700, 420 730 L60 730 Z" fill="#f6b38a" />
+              <path d="M80 730 C 150 712, 300 712, 420 730 Z" fill="#c9566a" />
+              <path d="M690 820 C 710 770, 790 760, 820 790 C 860 750, 950 760, 960 810 C 1010 810, 1030 840, 1020 860 L690 860 Z" fill="#f6b38a" />
+              <path d="M700 860 C 800 842, 930 842, 1020 860 Z" fill="#c9566a" />
+            </g>
+            <!-- far city silhouette -->
+            <path d="M-100 1320 L-100 1180 L0 1180 L0 1120 L70 1120 L70 1200 L140 1200 L140 1060 L230 1060 L230 1160 L300 1160 L300 1230 L380 1230 L380 1140 L450 1140 L450 1260 L700 1260 L700 1150 L760 1150 L760 1090 L840 1090 L840 1190 L900 1190 L900 1130 L990 1130 L990 1210 L1200 1210 L1200 1320 Z" fill="#3a2350" />
+            <!-- near ridge + rooftop in ink, neon rim on top edges -->
+            <path d="M-100 1560 L-100 1380 C 100 1340, 300 1400, 520 1370 C 700 1350, 900 1300, 1200 1330 L1200 1560 Z" fill="#1b1426" />
+            <path d="M-100 1380 C 100 1340, 300 1400, 520 1370 C 700 1350, 900 1300, 1200 1330" fill="none" stroke="#5cf2e6" stroke-width="4" />
+            <rect x="-100" y="1520" width="1300" height="420" fill="#1b1426" />
+            <rect x="600" y="1460" width="520" height="70" fill="#1b1426" />
+            <path d="M600 1460 H1120" stroke="#5cf2e6" stroke-width="4" />
+          </g>
+          <!-- figure on the rooftop (on twos) -->
+          <g id="fig" transform="translate(830 1460) scale(1.45)">
+            <path d="M-30 0 L-22 -120 L-36 -230 C -30 -260, 30 -260, 36 -230 L22 -120 L30 0 Z" fill="#1b1426" />
+            <circle cx="0" cy="-285" r="38" fill="#1b1426" />
+            <path d="M-38 -300 C -20 -340, 30 -335, 40 -296" fill="none" stroke="#5cf2e6" stroke-width="4" />
+            <path d="M36 -230 L22 -120" stroke="#5cf2e6" stroke-width="4" />
+            <path id="scarf" d="" fill="#ff4f7b" stroke="#1b1426" stroke-width="4" stroke-linejoin="round" />
+          </g>
+        </svg>
+        <svg id="fx" viewBox="0 0 1080 1920">
+          <rect id="impact" width="1080" height="1920" fill="#ff4f7b" opacity="0" />
+          <g id="impactSil" opacity="0" fill="#1b1426">
+            <circle cx="560" cy="1060" r="280" />
+            <path d="M-100 1560 L-100 1380 C 100 1340, 300 1400, 520 1370 C 700 1350, 900 1300, 1200 1330 L1200 1920 L-100 1920 Z" />
+            <g transform="translate(830 1460) scale(1.45)"><path d="M-30 0 L-22 -120 L-36 -230 C -30 -260, 30 -260, 36 -230 L22 -120 L30 0 Z" /><circle cx="0" cy="-285" r="38" /></g>
+          </g>
+          <g id="speed"></g>
+          <g id="flare" opacity="0">
+            <circle cx="840" cy="560" r="70" fill="#5cf2e6" opacity=".35" />
+            <circle cx="700" cy="760" r="30" fill="#ffffff" opacity=".5" />
+            <circle cx="430" cy="1150" r="110" fill="#5cf2e6" opacity=".18" />
+            <circle cx="300" cy="1330" r="44" fill="#ff4f7b" opacity=".35" />
+            <path d="M840 420 V700 M700 560 H980" stroke="#ffffff" stroke-width="5" opacity=".8" />
+          </g>
+        </svg>
+        <div id="title"><div>RETRO</div><div class="s">ANIME CEL</div></div>
+      </div>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="1">an ordinary moment, staged<br />like a series opening</div>
+      <div id="flash" class="clip" data-start="0" data-duration="4.5" data-track-index="2"></div>
+    </div>
+
+    <script>
+      const DUR = 4.5, HIT = 1.5;
+      const NS = "http://www.w3.org/2000/svg";
+      const sr = MF.rng("anime-stars");
+      const stars = document.getElementById("stars");
+      for (let i = 0; i < 40; i++) {
+        const c = document.createElementNS(NS, "rect");
+        const s = sr() < 0.2 ? 6 : 3;
+        c.setAttribute("x", sr.range(-80, 1180).toFixed(0)); c.setAttribute("y", sr.range(40, 520).toFixed(0));
+        c.setAttribute("width", s); c.setAttribute("height", s);
+        stars.appendChild(c);
+      }
+      const speed = document.getElementById("speed");
+      const scarf = document.getElementById("scarf");
+      const FX = 560, FY = 900;
+
+      function draw(t) {
+        const f2 = Math.floor(t * 12);                    // characters on twos (24 fps base)
+        const w = Math.sin(f2 * 0.9) * 18;
+        scarf.setAttribute("d", `M-34 -250 C -80 ${-262 + w}, -140 ${-236 - w}, -190 ${-250 + w * 0.6} L-180 ${-226 + w * 0.6} C -130 ${-214 - w}, -80 ${-228 + w}, -30 -226 Z`);
+        // speed lines on ones for ~9 frames after the hit
+        const k = t - (HIT + 0.08);
+        if (k >= 0 && k < 0.32) {
+          const r = MF.rng("speed-" + Math.floor(t * 30));
+          let html = "";
+          for (let i = 0; i < 46; i++) {
+            const a = r.range(0, Math.PI * 2), r0 = r.range(330, 520), r1 = 1500, wd = r.range(0.004, 0.014);
+            const p = (ang, rad) => `${(FX + Math.cos(ang) * rad).toFixed(0)},${(FY + Math.sin(ang) * rad).toFixed(0)}`;
+            html += `<polygon points="${p(a, r0)} ${p(a - wd, r1)} ${p(a + wd, r1)}" fill="${i % 5 ? "#ffffff" : "#5cf2e6"}" opacity="${(0.9 - k * 2).toFixed(2)}"/>`;
+          }
+          speed.innerHTML = html;
+        } else speed.innerHTML = "";
+      }
+
+      const clock = { _t: 0, get t() { return this._t; }, set t(v) { this._t = v; draw(v); } };
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo(clock, { t: 0 }, { t: DUR, duration: DUR, ease: "none" }, 0);
+      // slow linear pan across the painted background (camera on ones)
+      tl.fromTo("#pan", { x: 60 }, { x: 0, duration: HIT, ease: "none" }, 0);   // the key frame pans; after the hit the shot holds
+      // impact frame (2 frames) -> white flash -> zoom punch
+      tl.set("#impact", { opacity: 1 }, HIT); tl.set("#impactSil", { opacity: 1 }, HIT);
+      tl.set("#impact", { opacity: 0 }, HIT + 0.067); tl.set("#impactSil", { opacity: 0 }, HIT + 0.067);
+      tl.set("#flash", { opacity: 1 }, HIT + 0.067);
+      tl.to("#flash", { opacity: 0, duration: 0.18, ease: "power2.out" }, HIT + 0.1);
+      tl.fromTo("#cam", { scale: 1 }, { scale: 1.08, duration: 0.05, ease: "none", immediateRender: false }, HIT + 0.07);
+      tl.to("#cam", { scale: 1, duration: 0.12, ease: "power3.out" }, HIT + 0.12);
+      // title slams in
+      tl.fromTo("#title", { opacity: 0, scale: 1.7 }, { opacity: 1, scale: 1, duration: 0.12, ease: "power4.in" }, HIT + 0.08);
+      tl.fromTo("#title div.s", { x: -60 }, { x: 0, duration: 0.2, ease: "power3.out" }, HIT + 0.16);
+      tl.fromTo("#flare", { opacity: 0 }, { opacity: 1, duration: 0.15 }, HIT + 0.12);
+      tl.to("#flare", { opacity: 0.45, duration: 1.2, ease: "power1.out" }, HIT + 0.5);
+      tl.fromTo("#cap", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }, HIT + 0.7);
+      draw(0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

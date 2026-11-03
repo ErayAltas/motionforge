@@ -1,0 +1,255 @@
+<!doctype html>
+<!--
+  motionforge style preview: pixel-quest
+  © 2026 motionforge contributors, MIT
+  A 270x480 canvas scaled x4 with nearest-neighbour; every pixel is drawn from t (the GSAP
+  timeline drives a proxy whose setter redraws the canvas). Text uses a small original 5x7 bitmap font.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      html, body { background: #1a1c2c; }
+      #root { background: #1a1c2c; }
+      #root::before, #root::after { display: none; }
+      #screen { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; image-rendering: pixelated; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <canvas id="screen" class="clip" width="270" height="480" data-start="0" data-duration="4.5" data-track-index="0"></canvas>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const cv = document.getElementById("screen");
+      const g = cv.getContext("2d");
+      g.imageSmoothingEnabled = false;
+
+      // Sweetie-16-like limited palette
+      const C = {
+        night: "#1a1c2c", plum: "#5d275d", red: "#b13e53", orange: "#ef7d57", sand: "#ffcd75",
+        lime: "#a7f070", grass: "#38b764", teal: "#257179", navy: "#29366f", blue: "#3b5dc9",
+        sky: "#41a6f6", cyan: "#73eff7", white: "#f4f4f4", pale: "#94b0c2", slate: "#566c86", deep: "#333c57",
+      };
+
+      // Original 5x7 bitmap font (only the glyphs this scene needs)
+      const FONT = {
+        A: ["01110","10001","10001","11111","10001","10001","10001"],
+        C: ["01111","10000","10000","10000","10000","10000","01111"],
+        D: ["11110","10001","10001","10001","10001","10001","11110"],
+        E: ["11111","10000","10000","11110","10000","10000","11111"],
+        F: ["11111","10000","10000","11110","10000","10000","10000"],
+        I: ["11111","00100","00100","00100","00100","00100","11111"],
+        L: ["10000","10000","10000","10000","10000","10000","11111"],
+        N: ["10001","11001","10101","10011","10001","10001","10001"],
+        O: ["01110","10001","10001","10001","10001","10001","01110"],
+        P: ["11110","10001","10001","11110","10000","10000","10000"],
+        Q: ["01110","10001","10001","10001","10101","10010","01101"],
+        S: ["01111","10000","10000","01110","00001","00001","11110"],
+        T: ["11111","00100","00100","00100","00100","00100","00100"],
+        U: ["10001","10001","10001","10001","10001","10001","01110"],
+        V: ["10001","10001","10001","10001","10001","01010","00100"],
+        W: ["10001","10001","10001","10101","10101","10101","01010"],
+        X: ["10001","10001","01010","00100","01010","10001","10001"],
+        Y: ["10001","10001","01010","00100","00100","00100","00100"],
+        "0": ["01110","10011","10101","10101","11001","10001","01110"],
+        "5": ["11111","10000","11110","00001","00001","10001","01110"],
+        "+": ["00000","00100","00100","11111","00100","00100","00000"],
+        "!": ["00100","00100","00100","00100","00100","00000","00100"],
+        " ": ["00000","00000","00000","00000","00000","00000","00000"],
+      };
+      function text(str, x, y, s, col) {
+        g.fillStyle = col;
+        let cx = Math.round(x);
+        for (const ch of str) {
+          const gl = FONT[ch] || FONT[" "];
+          for (let r = 0; r < 7; r++) for (let c = 0; c < 5; c++) if (gl[r][c] === "1") g.fillRect(cx + c * s, Math.round(y) + r * s, s, s);
+          cx += 6 * s;
+        }
+      }
+      const textW = (str, s) => str.length * 6 * s - s;
+
+      // sprites: '.' transparent; letters map to palette
+      const MAP = { k: C.night, o: C.orange, r: C.red, s: C.sand, b: C.sky, n: C.navy, w: C.white, d: C.deep };
+      const HERO = [
+        [ // stand / step A
+          "...rrrr...",
+          "..rrrrrr..",
+          "..ssssss..",
+          "..skssks..",
+          "..ssssss..",
+          "...ssss...",
+          ".bboooobb.",
+          ".boooooob.",
+          ".soooooos.",
+          "..oooooo..",
+          "..nn..nn..",
+          "..nn..nn..",
+          ".kkk..kkk.",
+        ],
+        [ // step B
+          "...rrrr...",
+          "..rrrrrr..",
+          "..ssssss..",
+          "..skssks..",
+          "..ssssss..",
+          "...ssss...",
+          ".bboooobb.",
+          ".boooooob.",
+          ".soooooos.",
+          "..oooooo..",
+          "...nnnn...",
+          "..nn..nn..",
+          "..kk...kk.",
+        ],
+      ];
+      function sprite(rows, x, y, flash) {
+        for (let r = 0; r < rows.length; r++) for (let c = 0; c < rows[r].length; c++) {
+          const ch = rows[r][c];
+          if (ch === ".") continue;
+          g.fillStyle = flash ? C.white : MAP[ch];
+          g.fillRect(Math.round(x) + c * 2, Math.round(y) + r * 2, 2, 2);
+        }
+      }
+
+      const rnd = MF.rng("pixel-quest-stars");
+      const STARS = Array.from({ length: 46 }, () => [Math.floor(rnd() * 270), Math.floor(rnd() * 210) + 4, rnd() < 0.25, Math.floor(rnd() * 4)]);
+      const GROUND = 300; // native y of the walking surface
+
+      function hills(color, base, amp, period, phase) {
+        g.fillStyle = color;
+        for (let x = 0; x < 270; x++) {
+          const h = Math.round(amp * (0.5 + 0.5 * Math.sin((x + phase) / period)) + amp * 0.35 * Math.sin((x + phase) / (period * 0.37)));
+          g.fillRect(x, base - h, 1, GROUND - base + h);
+        }
+      }
+
+      function draw(t) {
+        const f8 = Math.floor(t * 8);           // sprite clock: 8 fps
+        // sky with a dithered band toward the horizon (no gradients)
+        g.fillStyle = C.night; g.fillRect(0, 0, 270, 480);
+        g.fillStyle = C.navy; g.fillRect(0, 176, 270, 130);
+        g.fillStyle = C.navy;
+        for (let y = 160; y < 176; y++) for (let x = (y % 2); x < 270; x += 2) g.fillRect(x, y, 1, 1);
+        g.fillStyle = C.blue;
+        for (let y = 226; y < 240; y++) for (let x = (y % 2); x < 270; x += 2) g.fillRect(x, y, 1, 1);
+        g.fillRect(0, 240, 270, 60);
+        // stars (twinkle stepped from t)
+        for (const [x, y, big, ph] of STARS) {
+          if (y > 170) continue;
+          const on = (Math.floor(t * 4) + ph) % 4 !== 0;
+          g.fillStyle = on ? C.white : C.pale;
+          g.fillRect(x, y, 1, 1);
+          if (big && on) { g.fillRect(x - 1, y, 3, 1); g.fillRect(x, y - 1, 1, 3); }
+        }
+        // moon
+        g.fillStyle = C.sand; g.fillRect(240, 196, 14, 14); g.fillRect(238, 198, 18, 10); g.fillRect(242, 194, 10, 18);
+        g.fillStyle = C.navy; g.fillRect(246, 196, 10, 10); g.fillRect(248, 194, 6, 4);
+        // parallax hills (camera drifts with the hero)
+        const cam = Math.floor(Math.min(t, 2) * 6);
+        hills(C.teal, 262, 26, 22, cam * 0.3);
+        hills(C.grass, 286, 14, 13, cam * 0.6 + 40);
+        // ground tiles (16 px)
+        for (let tx = -16; tx < 286; tx += 16) {
+          const x = tx - (cam % 16);
+          g.fillStyle = C.grass; g.fillRect(x, GROUND, 16, 4);
+          g.fillStyle = C.lime; g.fillRect(x + 2, GROUND, 3, 1); g.fillRect(x + 9, GROUND, 4, 1);
+          for (let ty = GROUND + 4; ty < 480; ty += 8) {
+            g.fillStyle = C.slate; g.fillRect(x, ty, 16, 8);
+            g.fillStyle = C.deep; g.fillRect(x, ty + 7, 16, 1); g.fillRect(x + ((ty / 8) % 2 ? 7 : 15), ty, 1, 7);
+          }
+        }
+        // floating chest block the hero bumps
+        const bump = t > 1.86 && t < 2.0 ? -3 : 0;
+        const BX = 132, BY = 226 + bump;
+        g.fillStyle = C.red; g.fillRect(BX, BY, 24, 20);
+        g.fillStyle = C.orange; g.fillRect(BX, BY, 24, 2);
+        g.fillStyle = C.sand; g.fillRect(BX, BY + 8, 24, 2); g.fillRect(BX + 10, BY + 7, 4, 6);
+        g.fillStyle = C.plum; g.fillRect(BX, BY + 19, 24, 1); g.fillRect(BX + 23, BY, 1, 20);
+
+        // hero: walk 0.2–1.5 s, jump 1.5–2.25 s
+        let hx = 30, hy = GROUND - 26, frame = 0;
+        if (t > 0.2) hx = 30 + Math.min(t - 0.2, 1.3) / 1.3 * 103;
+        if (t > 0.2 && t < 1.5) frame = f8 % 2;
+        if (t >= 1.5 && t < 2.25) {
+          const p = (t - 1.5) / 0.75;
+          hy -= Math.round(4 * 30 * p * (1 - p));
+          frame = 1;
+        }
+        const hitFlash = t > 1.86 && t < 1.94; // 2 frames white
+        sprite(HERO[frame], Math.round(hx), hy, hitFlash);
+
+        // coin pops out of the chest, spins (width steps), rises and fades into "+50 XP"
+        if (t > 1.9 && t < 2.35) {
+          const p = (t - 1.9) / 0.45;
+          const cy = BY - 16 - Math.round(p * 20);
+          const w = [8, 6, 2, 6][f8 % 4];
+          g.fillStyle = C.sand; g.fillRect(BX + 12 - w, cy, w * 2, 14);
+          g.fillStyle = C.orange; if (w > 2) g.fillRect(BX + 12 - w + 2, cy + 3, 2, 8);
+        }
+        if (t > 2.25 && t < 3.3 && Math.floor(t * 10) % 2 === 0) text("+50 XP", BX - 6, BY - 28, 1, C.sand);
+
+        // title (drops in on 4 steps)
+        const TITLE1 = "PIXEL", TITLE2 = "QUEST";
+        const drop = t < 0.5 ? [-40, -24, -10, 2, 0][Math.floor(t / 0.1)] : 0;
+        const ts = 5;
+        text(TITLE1, (270 - textW(TITLE1, ts)) / 2 + 1, 104 + drop + 1, ts, C.red);
+        text(TITLE1, (270 - textW(TITLE1, ts)) / 2, 104 + drop, ts, C.sand);
+        text(TITLE2, (270 - textW(TITLE2, ts)) / 2 + 1, 146 + drop + 1, ts, C.red);
+        text(TITLE2, (270 - textW(TITLE2, ts)) / 2, 146 + drop, ts, C.orange);
+
+        // HUD: hearts + XP bar at native y 62
+        for (let i = 0; i < 3; i++) {
+          const hx2 = 16 + i * 12;
+          g.fillStyle = C.red;
+          g.fillRect(hx2, 64, 3, 2); g.fillRect(hx2 + 4, 64, 3, 2); g.fillRect(hx2 - 1, 66, 9, 2); g.fillRect(hx2, 68, 7, 2); g.fillRect(hx2 + 1, 70, 5, 1); g.fillRect(hx2 + 2, 71, 3, 1); g.fillRect(hx2 + 3, 72, 1, 1);
+        }
+        text("XP", 152, 63, 1, C.white);
+        g.fillStyle = C.deep; g.fillRect(166, 62, 88, 11);
+        g.fillStyle = C.night; g.fillRect(167, 63, 86, 9);
+        const xp = t < 2.3 ? 0.18 : Math.min(1, 0.18 + (t - 2.3) / 0.7 * 0.82);
+        const segs = Math.floor(xp * 21);          // fills in 4-px steps
+        g.fillStyle = C.orange; g.fillRect(168, 64, segs * 4, 7);
+        g.fillStyle = C.sand; g.fillRect(168, 64, segs * 4, 1);
+
+        // LEVEL UP flash (blinks at 5 Hz, then holds)
+        if (t > 3.0) {
+          const on = t > 3.6 || Math.floor((t - 3.0) * 8) % 2 === 0;
+          if (on) {
+            const s = 3, L = "LEVEL UP!";
+            const x = (270 - textW(L, s)) / 2;
+            g.fillStyle = C.night; g.fillRect(x - 6, 190, textW(L, s) + 12, 33);
+            g.fillStyle = C.sand; g.fillRect(x - 6, 190, textW(L, s) + 12, 1); g.fillRect(x - 6, 222, textW(L, s) + 12, 1);
+            text(L, x, 196, s, C.lime);
+          }
+        }
+
+        // dialogue box (y 334..378 native = 1336..1512 px)
+        g.fillStyle = C.white; g.fillRect(10, 336, 250, 46);
+        g.fillStyle = C.deep; g.fillRect(12, 338, 246, 42);
+        g.fillStyle = C.night; g.fillRect(13, 339, 244, 40);
+        const LINE1 = "YOU FOUND A", LINE2 = "NEW STYLE!";
+        const typed = Math.max(0, Math.floor((t - 0.4) * 32));     // 32 chars/s
+        text(LINE1.slice(0, typed), 22, 347, 2, C.white);
+        text(LINE2.slice(0, Math.max(0, typed - LINE1.length - 4)), 22, 364, 2, C.sand);
+        if (typed > LINE1.length + LINE2.length + 4 && Math.floor(t * 3) % 2 === 0) {
+          g.fillStyle = C.orange; g.fillRect(242, 370, 7, 2); g.fillRect(243, 372, 5, 2); g.fillRect(244, 374, 3, 1);
+        }
+      }
+
+      // The timeline drives a proxy; its setter redraws, so any seek(t) gives the same frame.
+      const clock = { _t: 0, get t() { return this._t; }, set t(v) { this._t = v; draw(v); } };
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo(clock, { t: 0 }, { t: DUR, duration: DUR, ease: "none" }, 0);
+      draw(0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

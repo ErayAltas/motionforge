@@ -1,0 +1,120 @@
+<!doctype html>
+<!--
+  motionforge style preview: ink-crosshatch
+  © 2026 motionforge contributors, MIT
+  Outlines first, then hatch layers (45°, 135°, horizontal, stipple), darkest last; one wash colour.
+  Lines are seeded and stay still once drawn. Instrument Serif Italic stands in for EB Garamond.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      :root { --paper: #f3ecdd; --ink: #1c1a17; --wash: #b5482f; }
+      html, body { background: var(--paper); }
+      #root { background: radial-gradient(1000px 1100px at 50% 45%, #f7f1e4 0%, var(--paper) 60%, #e6dcc6 100%); color: var(--ink); }
+      #root::before { mix-blend-mode: multiply; opacity: .12; }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 60%, rgba(90,60,20,.18) 100%); }
+      #kick { position: absolute; left: 0; right: 0; top: 226px; text-align: center; font: 400 44px/1 var(--mf-font-accent); font-style: italic; letter-spacing: .14em; color: #5b5345; }
+      #title { position: absolute; left: 0; right: 0; top: 285px; text-align: center; font: 400 150px/1 var(--mf-font-accent); font-style: italic; letter-spacing: -0.01em; color: var(--ink); }
+      #art { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      .o { fill: none; stroke: var(--ink); stroke-linecap: round; stroke-linejoin: round; }
+      .h line { stroke: var(--ink); stroke-width: 2.2; stroke-linecap: round; }
+      #cap { position: absolute; left: 0; right: 0; top: 1420px; text-align: center; font: 400 58px/1.2 var(--mf-font-accent); font-style: italic; color: #3a352d; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage light" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="kick" class="clip" data-start="0" data-duration="4.5" data-track-index="0">an illustrated essay</div>
+      <div id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="1">Ink &amp; Crosshatch</div>
+      <svg id="art" class="clip" viewBox="0 0 1080 1920" data-start="0" data-duration="4.5" data-track-index="2">
+        <defs>
+          <filter id="fibre" x="0" y="0" width="100%" height="100%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.9 0.05" numOctaves="2" seed="11" />
+            <feColorMatrix values="0 0 0 0 .45  0 0 0 0 .38  0 0 0 0 .28  0 0 0 .10 0" />
+          </filter>
+          <filter id="bleed" x="-20%" y="-20%" width="140%" height="140%">
+            <feTurbulence type="fractalNoise" baseFrequency="0.012" numOctaves="3" seed="3" result="n" />
+            <feDisplacementMap in="SourceGraphic" in2="n" scale="45" result="d" />
+            <feGaussianBlur in="d" stdDeviation="3" />
+          </filter>
+          <!-- shadow regions: sphere minus a lit circle offset toward the light (top-left) -->
+          <mask id="m1"><rect width="1080" height="1920" fill="#000" /><circle cx="540" cy="860" r="232" fill="#fff" /><circle cx="490" cy="800" r="236" fill="#000" />
+            <ellipse cx="680" cy="1105" rx="250" ry="46" fill="#fff" /></mask>
+          <mask id="m2"><rect width="1080" height="1920" fill="#000" /><circle cx="540" cy="860" r="232" fill="#fff" /><circle cx="470" cy="780" r="250" fill="#000" />
+            <ellipse cx="660" cy="1105" rx="190" ry="36" fill="#fff" /></mask>
+          <mask id="m3"><rect width="1080" height="1920" fill="#000" /><circle cx="540" cy="860" r="232" fill="#fff" /><circle cx="455" cy="765" r="262" fill="#000" />
+            <ellipse cx="620" cy="1100" rx="120" ry="24" fill="#fff" /></mask>
+          <clipPath id="r1"><rect id="rv1" x="250" y="560" width="0" height="620" /></clipPath>
+          <clipPath id="r2"><rect id="rv2" x="250" y="560" width="0" height="620" /></clipPath>
+          <clipPath id="r3"><rect id="rv3" x="250" y="560" width="0" height="620" /></clipPath>
+          <clipPath id="r4"><rect id="rv4" x="250" y="560" width="0" height="620" /></clipPath>
+        </defs>
+        <rect width="1080" height="1920" filter="url(#fibre)" />
+        <ellipse id="wash" cx="530" cy="850" rx="255" ry="245" fill="#b5482f" opacity="0" filter="url(#bleed)" style="mix-blend-mode: multiply" />
+        <g clip-path="url(#r1)"><g class="h" id="h1" mask="url(#m1)"></g></g>
+        <g clip-path="url(#r2)"><g class="h" id="h2" mask="url(#m2)"></g></g>
+        <g clip-path="url(#r3)"><g class="h" id="h3" mask="url(#m3)"></g></g>
+        <g clip-path="url(#r4)"><g id="h4" mask="url(#m3)"></g></g>
+        <path id="o1" class="o" stroke-width="4.5" d="M540 628 C 668 628, 772 732, 772 860 C 772 988, 668 1092, 540 1092 C 412 1092, 308 988, 308 860 C 308 732, 412 628, 548 630" />
+        <path id="o2" class="o" stroke-width="2" d="M545 632 C 668 634, 768 736, 768 862 C 766 986, 664 1088, 538 1088" />
+        <path id="o3" class="o" stroke-width="3" d="M150 1110 C 260 1106, 330 1112, 420 1108 M700 1108 C 800 1104, 880 1110, 950 1106" />
+        <path id="o4" class="o" stroke-width="2" d="M220 1150 C 300 1148, 360 1152, 430 1149 M640 1150 C 720 1147, 800 1151, 880 1148" opacity=".55" />
+      </svg>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="3">tone comes from lines, not grey</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const NS = "http://www.w3.org/2000/svg";
+      const r = MF.rng("ink-crosshatch");
+      // hatch layer: parallel lines at angle deg, spacing sp, over the drawing's bounding box
+      function hatch(id, deg, sp) {
+        const g = document.getElementById(id);
+        const a = deg * Math.PI / 180, dx = Math.cos(a), dy = Math.sin(a);
+        const nx = -dy, ny = dx, cx = 560, cy = 900, R = 520;
+        for (let o = -R; o <= R; o += sp) {
+          const j = r.range(-1.2, 1.2), tilt = r.range(-0.012, 0.012);
+          const ox = cx + nx * (o + j), oy = cy + ny * (o + j);
+          const l = document.createElementNS(NS, "line");
+          l.setAttribute("x1", (ox - dx * R).toFixed(1)); l.setAttribute("y1", (oy - dy * R - tilt * R).toFixed(1));
+          l.setAttribute("x2", (ox + dx * R).toFixed(1)); l.setAttribute("y2", (oy + dy * R + tilt * R).toFixed(1));
+          l.setAttribute("stroke-width", r.range(1.6, 2.6).toFixed(2));
+          g.appendChild(l);
+        }
+      }
+      hatch("h1", 45, 9);
+      hatch("h2", 135, 9);
+      hatch("h3", 0, 8);
+      const h4 = document.getElementById("h4");
+      for (let i = 0; i < 520; i++) {
+        const c = document.createElementNS(NS, "circle");
+        c.setAttribute("cx", r.range(300, 900).toFixed(1)); c.setAttribute("cy", r.range(620, 1130).toFixed(1));
+        c.setAttribute("r", r.range(1.2, 2.4).toFixed(1)); c.setAttribute("fill", "#1c1a17");
+        h4.appendChild(c);
+      }
+      ["o1", "o2", "o3", "o4"].forEach((id) => document.getElementById(id).setAttribute("pathLength", "1"));
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this; keeps the linter happy)
+      tl.fromTo("#kick", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 0.05);
+      tl.fromTo("#title", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.7, ease: "power2.out" }, 0.15);
+      // outlines in stroke order
+      tl.fromTo("#o1", { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.9, ease: "power1.inOut" }, 0.3);
+      tl.fromTo("#o2", { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.5, ease: "power1.inOut" }, 0.9);
+      tl.fromTo(["#o3", "#o4"], { strokeDasharray: 1, strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 0.5, ease: "power1.inOut", stagger: 0.1 }, 1.0);
+      // hatch layers sweep in, darkest last
+      ["#rv1", "#rv2", "#rv3", "#rv4"].forEach((sel, i) => {
+        tl.fromTo(sel, { attr: { width: 0 } }, { attr: { width: 700 }, duration: 0.45, ease: "power1.inOut" }, 1.55 + i * 0.45);
+      });
+      // one wash for the subject
+      tl.fromTo("#wash", { opacity: 0, scale: 0.85, transformOrigin: "530px 850px" }, { opacity: 0.3, scale: 1, duration: 0.8, ease: "power2.out" }, 3.3);
+      tl.fromTo("#cap", { opacity: 0 }, { opacity: 1, duration: 0.5 }, 3.5);
+      tl.seek(0);
+    </script>
+  </body>
+</html>
