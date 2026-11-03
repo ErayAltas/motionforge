@@ -10,7 +10,7 @@
     "eyebrow": {"type": "string", "default": "Example plan", "description": "Small label above the title."},
     "title": {"type": "string", "default": "Two floors, {four} rooms", "description": "Headline; wrap one word in {braces} for the italic serif accent."},
     "subline": {"type": "string", "default": "Total <b>94 m²</b> · plot 420 m² · example", "description": "Line at the bottom. Simple HTML allowed (<b> = accent)."},
-    "rooms": {"type": "array", "default": [{"name": "Living", "area": 38, "at": [-1.4, 1.4, 0.6]}], "description": "Room labels {name, area, at}. at = [x, y, z] in metres in the model: x -4..4 (left-right), z -2.5..2.5 (back-front), ground floor y ≈ 1.4, upper floor y ≈ 4.6, roof terrace y ≈ 3.5 at x < -1.3."},
+    "rooms": {"type": "array", "default": [{"name": "Living", "area": 38, "at": [-1.6, 1.0, 1.2]}], "description": "Room labels {name, area, at}. at = [x, y, z] in metres in the model: x -4..4 (left-right), z -2.5..2.5 (back-front), ground floor y ≈ 1.4, upper floor y ≈ 4.6, roof terrace y ≈ 3.5 at x < -1.3."},
     "unit": {"type": "string", "default": "m²", "description": "Area unit shown after each number (m², sq ft)."},
     "wallColor": {"type": "string", "default": "#ece9e3", "description": "Render colour of the ground-floor walls."},
     "woodColor": {"type": "string", "default": "#8a6446", "description": "Cladding colour of the upper volume."},

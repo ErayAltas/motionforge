@@ -16,7 +16,8 @@ Talk to the user in **their** language. Write the script, on-screen text and cap
 |---|---|
 | `skills/script-and-hooks` | hooks, script, claim list, banned phrases per language |
 | `skills/voice-and-timing` | TTS (paid, consent gate), word timings, captions, loudness, mixing |
-| `skills/style-library` | the look: one `STYLE.md` per style |
+| `skills/style-library` | the look: 100 styles in 20 categories, one `STYLE.md` each |
+| `skills/faceless-ugc` | no-face formats, 3D characters, photo avatars, AI avatars and lip-sync, UGC ad formats |
 | `skills/brand-kit` | `brand.json`: colors, fonts, logos, tone, do/don't |
 | `skills/qa-review` | contact sheets, text checks, safe areas, loudness, independent critic |
 
@@ -78,8 +79,8 @@ Use `script-and-hooks` to write the script in the video language, with a scene t
 Then `voice-and-timing`: pick a voice path. Paid TTS: state characters and estimated cost, wait for yes. **G3.** No paid audio exists until then; build with a scratch voice if needed.
 
 ### 6. Style
-Open `skills/style-library/` and read the catalog. Shortlist 2–3 styles that fit the subject and the format, one line each on why. Show their sample frames if present. User picks. **G4.**
-Hand-drawn or procedural styles (ink, paper, pixel, riso and similar) build on `engines/canvas`; everything else on `engines/hyperframes`.
+Open `skills/style-library/styles/README.md`, go to the category that matches the account (creator, shop, real estate, sports, documentary, …) and shortlist 2–3 styles that fit the subject and the format, one line each on why. Show their sample frames if present. User picks. **G4.**
+Hand-drawn or procedural styles (ink, paper, pixel, riso and similar) build on `engines/canvas`; everything else on `engines/hyperframes`. If the video has no person on camera, or the user wants a character or avatar instead of their face, follow `skills/faceless-ugc` for that part.
 
 ### 7. Brand kit
 If the video is for a brand, use `brand-kit` to load or create `brand.json`. If no brand exists, the style's own palette and fonts apply. Never invent a logo, a color or a tagline for a real company.
@@ -95,6 +96,7 @@ Follow [building-scenes](references/building-scenes.md) and [motion-craft](refer
 - Optional: **Remotion** for the compositor/timeline (React). License note: free for individuals and companies of up to 3 employees; larger companies need a Remotion Company License. Ask before choosing it for a company.
 - **Canvas engine** (`engines/canvas`) for hand-drawn and procedural styles: one `<canvas>`, every frame a pure function of `t`.
 - Start from `templates/` (kinetic title, word-synced captions, stat counter, browser window, phone UI, chat thread, checklist reveal, cover still) before writing from zero.
+- **3D** (`engines/hyperframes/three`, three.js) when depth carries meaning: a product to turn, a globe, a location in a city, a house, a pitch, a 3D chart. Templates: `product-turntable-3d`, `globe-arcs-3d`, `city-pin-3d`, `house-build-3d`, `pitch-tactics-3d`, `bars-3d`; presenters: `character-3d`, `photo-avatar`. 3D renders in software are slow: draft at `-q draft` first.
 - **The voice is the clock.** Every entrance is cued from `audio/words.json`, never from a hand-typed frame number.
 - Real logos and real screenshots in browser/phone frames. Mock UI with invented names or numbers must be disclosed at delivery.
 

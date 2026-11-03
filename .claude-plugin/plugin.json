@@ -1,8 +1,8 @@
 {
   "name": "motionforge",
   "displayName": "motionforge",
-  "description": "AI motion design toolkit: describe a video and the agent writes the story and hooks, times the voice, picks a style and brand kit, builds the scenes in code (HyperFrames by default, Remotion optional, canvas for hand-drawn looks), renders, and checks its own work before delivery.",
-  "version": "0.1.0",
+  "description": "AI motion design toolkit: describe a video and the agent writes the story and hooks, times the voice, picks a style and brand kit, picks one of 100 styles, builds 2D and 3D scenes in code (HyperFrames + three.js by default, Remotion optional, canvas for hand-drawn looks), makes talking 3D characters and photo avatars for faceless videos, renders, and checks its own work before delivery.",
+  "version": "0.2.0",
   "author": {
     "name": "motionforge contributors"
   },
@@ -17,6 +17,12 @@
     "kinetic-typography",
     "captions",
     "text-to-speech",
-    "brand-kit"
+    "brand-kit",
+    "threejs",
+    "3d",
+    "avatar",
+    "lip-sync",
+    "faceless",
+    "ugc"
   ]
 }

@@ -134,7 +134,7 @@
         if (gx === 0 && gz === 0) continue; // the plot under the pin stays for the highlighted building
         if (r() < 0.08 && d > 2) { parks.push([ox, oz, bw, bd]); continue; }
         // split the block into 1-4 lots
-        const nx = r() < 0.5 ? 1 : 2, nz = r() < 0.5 ? 1 : 2;
+        const nx = r() < 0.8 ? 1 : 2, nz = r() < 0.8 ? 1 : 2;
         for (let i = 0; i < nx; i++) for (let j = 0; j < nz; j++) {
           const w = bw / nx - 0.06, dd = bd / nz - 0.06;
           const x = ox - bw / 2 + (i + 0.5) * (bw / nx), z = oz - bd / 2 + (j + 0.5) * (bd / nz);
@@ -155,14 +155,18 @@
         return mesh;
       }
       const S = new THREE.Vector3(), T = new THREE.Vector3(), Q = new THREE.Quaternion();
-      instanced(pads, new THREE.MeshStandardMaterial({ color: "#36383d", roughness: 0.9 }), (m, [x, z, w, d]) => m.compose(T.set(x, 0, z), Q, S.set(w, 0.04, d)));
+      instanced(pads, new THREE.MeshStandardMaterial({ color: "#2c2e32", roughness: 0.9 }), (m, [x, z, w, d]) => m.compose(T.set(x, 0, z), Q, S.set(w, 0.04, d)));
       instanced(parks, new THREE.MeshStandardMaterial({ color: "#46553f", roughness: 1 }), (m, [x, z, w, d]) => m.compose(T.set(x, 0.04, z), Q, S.set(w - 0.06, 0.03, d - 0.06)));
       for (const [x, z, w, d] of parks) for (let k = 0; k < 5; k++) trees.push([x + r.range(-0.35, 0.35) * w, z + r.range(-0.35, 0.35) * d, r.range(0.09, 0.15)]);
       const treeMesh = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 0), new THREE.MeshStandardMaterial({ color: "#6f8a5e", roughness: 0.9, flatShading: true }), trees.length);
       trees.forEach(([x, z, s], i) => treeMesh.setMatrixAt(i, new THREE.Matrix4().compose(T.set(x, 0.07 + s, z), Q, S.set(s, s * 1.3, s))));
       treeMesh.castShadow = true;
       scene.add(treeMesh);
-      const buildings = instanced(lots, new THREE.MeshStandardMaterial({ color: "#d8d5ce", roughness: 0.8 }), (m, [x, z, w, d, h]) => m.compose(T.set(x, 0.04, z), Q, S.set(w, h, d)));
+      const buildings = instanced(lots, new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.8 }), (m, [x, z, w, d, h]) => m.compose(T.set(x, 0.04, z), Q, S.set(w, h, d)));
+      // light clay near the pin, darker towards the edge: keeps the eye on the walkable area
+      const near = new THREE.Color("#e2dfd8"), far = new THREE.Color("#2a2b2e"), col = new THREE.Color();
+      lots.forEach(([x, z], i) => buildings.setColorAt(i, col.copy(near).lerp(far, Math.min(1, Math.max(0, (Math.hypot(x, z) - R * 0.22) / (R * 0.3))))));
+      buildings.instanceColor.needsUpdate = true;
 
       // the highlighted building under the pin
       const home = new THREE.Mesh(box, new THREE.MeshStandardMaterial({ color: ACCENT, roughness: 0.5, emissive: ACCENT, emissiveIntensity: 0.15 }));
@@ -197,7 +201,7 @@
       // ---- walking-radius rings (drawn over the city so they read as map overlay) ----
       const minutes = (P.minutes || [5, 10, 15]).slice(0, 4);
       const maxMin = Math.max(...minutes, ...(P.labels || []).map((l) => l.minutes), 1);
-      const RMAX = R * 0.62;
+      const RMAX = R * 0.42;
       const radiusOf = (min) => (min / maxMin) * RMAX;
       const rings = minutes.map((min, i) => {
         const rad = radiusOf(min);
@@ -239,8 +243,8 @@
         // camera: top-down -> 44° tilt with a slow turn and push-in
         const k = ease.inOutCubic(seg(t, 0.2, 2.6));
         const pitch = lerp(88, 46, k) * (Math.PI / 180);
-        const yaw = lerp(24, -8, ease.inOutSine(seg(t, 0, P.duration))) * (Math.PI / 180);
-        const dist = lerp(50, 37, ease.outCubic(seg(t, 0, P.duration)));
+        const yaw = lerp(24, -6, ease.inOutSine(seg(t, 0, 4.2))) * (Math.PI / 180); // settles, so the labels hold still
+        const dist = lerp(50, 38, ease.outCubic(seg(t, 0, 4.2)));
         camera.position.set(target.x + Math.sin(yaw) * Math.cos(pitch) * dist, target.y + Math.sin(pitch) * dist, target.z + Math.cos(yaw) * Math.cos(pitch) * dist);
         camera.lookAt(target);
         camera.updateMatrixWorld();
@@ -275,7 +279,10 @@
           a.head.getWorldPosition(wp);
           const p = project(wp, camera);
           a.el.style.opacity = ease.outCubic(seg(t, a.start + 0.2, 0.35)) * (p.visible ? 1 : 0);
-          a.el.style.transform = `translate(${p.x}px, ${p.y - 18}px) translate(-50%, -100%)`;
+          // keep the tag inside the frame (its anchor dot stays where it is)
+          const half = a.el.offsetWidth / 2;
+          const x = Math.min(1080 - 24 - half, Math.max(24 + half, p.x));
+          a.el.style.transform = `translate(${x}px, ${p.y - 18}px) translate(-50%, -100%)`;
         }
         rings.forEach((rg, i) => {
           // label on the ring, at the point nearest the bottom-right of the frame

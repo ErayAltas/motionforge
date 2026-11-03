@@ -17,7 +17,10 @@ motionforge does **not** bundle any of the software below. Each item is installe
 | [rembg](https://github.com/danielgatis/rembg) | talking-head cut-out | MIT | models download on first use; check each model's own license |
 | [Pillow](https://python-pillow.org) | images in Python tools | MIT-CMU (HPND) | |
 | [fontTools](https://github.com/fonttools/fonttools) | glyph coverage check | MIT | optional |
+| [NumPy](https://numpy.org) | `mouth_curve.py`, `avatar/sync_check.py` | BSD-3-Clause | |
+| [fal-client](https://pypi.org/project/fal-client/) | optional: fal.ai calls in `tools/avatar` | MIT | `pip install fal-client`; used only with your `FAL_KEY` after you approve the cost |
+| [MediaPipe](https://github.com/google-ai-edge/mediapipe) | optional: automatic face landmarks (`tools/avatar/landmarks.py`) | Apache-2.0 | `pip install mediapipe`; the face landmarker model file is downloaded by you |
 | [Kokoro](https://github.com/hexgrad/kokoro) | optional local TTS | Apache-2.0 | optional |
 | [Inter](https://rsms.me/inter/), [Instrument Serif](https://github.com/Instrument/instrument-serif), [JetBrains Mono](https://www.jetbrains.com/lp/mono/) | default fonts in examples and templates | SIL Open Font License 1.1 | installed via `@fontsource/*` packages, not bundled |
 
-Paid APIs (ElevenLabs, OpenAI and others) are called only with your own key and only after you approve the stated cost. Their terms of service apply to what you generate.
+Paid APIs (ElevenLabs, OpenAI, fal.ai, Wiro and others) are called only with your own key and only after you approve the stated cost. Their terms of service apply to what you generate.

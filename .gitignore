@@ -11,3 +11,4 @@ renders/
 !templates/**/preview.mp4
 .env
 .env.*
+.mf-cache/

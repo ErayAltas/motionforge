@@ -95,8 +95,9 @@ cannot reach it produces an empty canvas without an error you will notice.
 ## Performance budget (software rendering)
 
 Renders usually run without a GPU: Chrome draws WebGL through SwiftShader on the CPU. It handles shadows
-and tone mapping, but every pixel costs. A 6 s, 1080x1920, 30 fps scene from the templates takes roughly
-1–6 minutes on 4 cores; more when other renders share the machine.
+and tone mapping, but every pixel costs. The six templates (6–6.5 s, 1080x1920, 30 fps) took 1.5–4 minutes
+each on a 4-core machine (bar chart fastest, city slowest); expect several times that when other renders
+share the CPU.
 
 | Item | Budget |
 |---|---|
@@ -152,3 +153,15 @@ scene.add(model);
 * Text overlays are HTML (house fonts, crisp, translatable, checked by `textcheck.mjs`), not 3D text,
   unless the text has to sit in the scene (a number painted on a token, a sign on a building).
 * Lint and look: `npx hyperframes lint`, then watch the MP4 at full size once.
+
+## Voice-driven mouth
+
+`tools/mouth_curve.py` turns a voice-over into a per-frame mouth curve that `templates/character-3d` and `templates/photo-avatar` read:
+
+```bash
+python3 tools/mouth_curve.py voice.mp3 -o scenes/<name>/mouth.json --fps 30
+```
+
+Format: `{"version":1,"fps":30,"duration":<s>,"open":[0..1 per frame],"shape":["closed"|"open"|"wide"|"round" per frame],"source":"<file>"}`. The templates load `mouth.json` with a request, so preview and render them through `npx hyperframes preview|render`, not by opening the file directly. Check the result with `python3 tools/avatar/sync_check.py out.mp4 voice.wav`.
+
+Software rendering is slow for characters (about 2–2.5 s per 1080×1920 frame with shadows): use `-q draft`, short durations and `"shadows": false` while iterating.

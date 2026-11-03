@@ -24,6 +24,7 @@
       #labels { position: absolute; inset: 0; }
       .note { position: absolute; left: 0; top: 0; padding: 12px 18px; border-radius: 12px; white-space: nowrap; background: var(--mf-accent); color: var(--mf-accent-ink);
               font: 700 25px/1 var(--mf-font-mono); letter-spacing: 0.1em; text-transform: uppercase; box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45); will-change: transform, opacity; }
+      #shade-bottom { position: absolute; left: 0; right: 0; bottom: 0; height: 380px; background: linear-gradient(0deg, var(--mf-bg) 0%, rgba(14, 15, 17, 0.85) 45%, transparent 100%); }
       #legend { position: absolute; left: 0; right: 0; top: 1720px; display: flex; justify-content: center; gap: 48px; font: 500 26px/1 var(--mf-font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--mf-muted); }
       #legend span { display: inline-flex; align-items: center; gap: 14px; }
       #legend i { width: 22px; height: 22px; border-radius: 50%; border: 3px solid #fff; }
@@ -33,6 +34,7 @@
   <body>
     <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="6" data-width="1080" data-height="1920">
       <canvas id="gl" class="clip" width="1080" height="1920" data-start="0" data-duration="6" data-track-index="0"></canvas>
+      <div id="shade-bottom"></div>
       <div id="labels" class="clip" data-start="0" data-duration="6" data-track-index="1"></div>
       <div id="eyebrow" class="eyebrow clip" data-start="0" data-duration="6" data-track-index="2"></div>
       <h1 id="title" class="title clip" data-start="0" data-duration="6" data-track-index="3"></h1>
@@ -52,13 +54,13 @@
     { "id": "A5", "team": "away", "n": 5, "from": [7, -37], "to": [10, -38], "move": [1.0, 2.0] },
     { "id": "A2", "team": "away", "n": 2, "from": [21, -35], "to": [19, -37], "move": [3.2, 1.2] },
     { "id": "A3", "team": "away", "n": 3, "from": [-21, -35], "to": [-18, -35], "move": [1.0, 2.0] },
-    { "id": "A6", "team": "away", "n": 6, "from": [0, -27], "to": [-4, -21], "move": [1.9, 1.0] },
+    { "id": "A6", "team": "away", "n": 6, "from": [-3, -27], "to": [-4, -21], "move": [1.9, 1.0] },
     { "id": "A8", "team": "away", "n": 8, "from": [-11, -24], "to": [-8, -16], "move": [1.9, 1.0] },
     { "id": "A10", "team": "away", "n": 10, "from": [11, -25], "to": [3, -16], "move": [1.9, 1.0] },
     { "id": "H6", "team": "home", "n": 6, "from": [-6, -4], "to": [-4, -8], "move": [0.6, 1.2] },
     { "id": "H8", "team": "home", "n": 8, "from": [12, -8], "to": [13, -14], "move": [0.6, 1.4] },
     { "id": "H10", "team": "home", "n": 10, "from": [-1, -15], "to": [-3, -18], "move": [0.8, 1.2] },
-    { "id": "H9", "team": "home", "n": 9, "from": [1, -29], "to": [6, -41], "move": [3.4, 1.4] },
+    { "id": "H9", "team": "home", "n": 9, "from": [4, -30], "to": [6, -41], "move": [3.4, 1.4] },
     { "id": "H7", "team": "home", "n": 7, "from": [25, -22], "to": [27, -36], "move": [2.9, 1.4] },
     { "id": "H11", "team": "home", "n": 11, "from": [-24, -23], "to": [-21, -33], "move": [3.0, 1.4] },
     { "id": "H2", "team": "home", "n": 2, "from": [27, -2], "to": [28, -10], "move": [1.5, 1.6] }
@@ -203,7 +205,7 @@
         t.colorSpace = THREE.SRGBColorSpace;
         return t;
       }
-      const TOKEN_R = 1.45;
+      const TOKEN_R = 1.6;
       const team = (k) => (k === "away" ? P.away : P.home);
       const players = {};
       const playerList = (P.players || []).map((p) => {
@@ -212,6 +214,7 @@
         const top = new THREE.MeshStandardMaterial({ color: "#ffffff", roughness: 0.5 });
         const mesh = new THREE.Mesh(new THREE.CylinderGeometry(TOKEN_R, TOKEN_R, 0.6, 48), [side, top, side]);
         mesh.position.y = 0.3;
+        mesh.rotation.y = Math.PI / 2; // turns the cap texture so numbers read upright from the camera side
         mesh.castShadow = true;
         const g = new THREE.Group();
         g.add(mesh);
@@ -339,9 +342,9 @@
       });
 
       // ---- camera: fit the attacking half, then push in slightly toward the play ----
-      const BOX = { left: 30, right: 1050, top: 600, bottom: 1660 };
+      const BOX = { left: 20, right: 1060, top: 470, bottom: 1520 };
       camera.setViewOffset(1080, 1920, 0, -((BOX.top + BOX.bottom) / 2 - 960), 1080, 1920);
-      const corners = [[-WID / 2 - 1, 8], [WID / 2 + 1, 8], [-WID / 2 - 1, -L / 2 - 2], [WID / 2 + 1, -L / 2 - 2]];
+      const corners = [[-WID / 2 - 1, -4], [WID / 2 + 1, -4], [-WID / 2 - 1, -L / 2 - 2], [WID / 2 + 1, -L / 2 - 2]];
       function pose(tz, tilt, dist, yaw) {
         const tlt = (tilt * Math.PI) / 180, yw = (yaw * Math.PI) / 180;
         camera.position.set(Math.sin(yw) * Math.cos(tlt) * dist, Math.sin(tlt) * dist, tz + Math.cos(yw) * Math.cos(tlt) * dist);

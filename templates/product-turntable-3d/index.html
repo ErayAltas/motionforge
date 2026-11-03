@@ -108,7 +108,7 @@
       // ---- pedestal: a low cylinder with a thin accent ring on its top edge ----
       const PED_R = 1.32, PED_H = 0.44;
       const pedestal = new THREE.Group();
-      const pedMat = new THREE.MeshStandardMaterial({ color: light ? "#d9d7d2" : "#151619", roughness: 0.6, metalness: 0.1, envMapIntensity: 0.5 });
+      const pedMat = new THREE.MeshStandardMaterial({ color: light ? "#d9d7d2" : "#151619", roughness: 0.6, metalness: 0.1, envMapIntensity: 0.3 });
       const ped = new THREE.Mesh(new THREE.CylinderGeometry(PED_R, PED_R, PED_H, 128, 1), pedMat);
       ped.position.y = PED_H / 2;
       ped.castShadow = true;
@@ -148,15 +148,15 @@
           cap.rotation.x = Math.PI / 2;
           cap.position.z = -depth * 0.85;
           d.add(ring, cone, cap);
-          d.position.set(0, y, D / 2 + 0.02);
+          d.position.set(0, y, D / 2 + 0.035 + depth); // no hole in the baffle: the cone sits in front of it
           return d;
         }
-        g.add(driver(0.43, H * 0.33, 0.16));
-        const tw = driver(0.17, H * 0.75, 0.04);
+        g.add(driver(0.43, H * 0.33, 0.07));
+        const tw = driver(0.17, H * 0.75, 0.025);
         g.add(tw);
         // accent ring around the tweeter + a status light
         const glow = new THREE.Mesh(new THREE.TorusGeometry(0.25, 0.012, 12, 96), new THREE.MeshBasicMaterial({ color: ACCENT }));
-        glow.position.set(0, H * 0.75, D / 2 + 0.02);
+        glow.position.set(0, H * 0.75, D / 2 + 0.03);
         const led = new THREE.Mesh(new THREE.SphereGeometry(0.025, 16, 8), new THREE.MeshBasicMaterial({ color: ACCENT }));
         led.position.set(0, H - 0.26, D / 2 + 0.02);
         // volume dial on top
