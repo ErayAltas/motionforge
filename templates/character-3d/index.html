@@ -211,7 +211,7 @@
         eyebrow.textContent = P.eyebrow || "";
         title.textContent = P.title || "";
         caption.textContent = P.caption || "";
-        const tl = MF.timeline("main", DUR);
+        const tl = MF.timeline("main", DUR); // = window.__timelines["main"]
         const t0 = P.titleStart ?? 0.3;
         // the card is visible from frame 0 (safe to cut into); it settles with a small scale-in
         if (P.layout === "lower-card") tl.fromTo("#card", { scale: 0.96 }, { scale: 1, duration: 0.6, ease: "power3.out" }, 0);
@@ -486,9 +486,9 @@
         const h2 = mesh(sphere(ES.r * 0.075, 10, 6), hl, gaze, { cast: false }); h2.position.set(0.3 * ES.r, -0.3 * ES.r, ES.r * 0.97);
         // eyelids: hemispheres that rotate around the eye's X axis
         const upper = new THREE.Group(); g.add(upper);
-        mesh(new THREE.SphereGeometry(ES.r * 1.09, 36, 14, 0, TAU, 0, Math.PI / 2), skinMat, upper, { cast: false }).material = skinMat;
+        mesh(new THREE.SphereGeometry(ES.r * 1.09, 36, 14, 0, TAU, 0, Math.PI / 2), skinMat, upper, { cast: false });
         if (ES.lash > 0 || C.eyes !== "dot") {
-          const lash = mesh(new THREE.TorusGeometry(ES.r * 1.1, ES.r * (0.05 + 0.05 * ES.lash), 6, 28, Math.PI), lashMat, upper, { r: [Math.PI / 2, 0, 0], cast: false });
+          mesh(new THREE.TorusGeometry(ES.r * 1.1, ES.r * (0.05 + 0.05 * ES.lash), 6, 28, Math.PI), lashMat, upper, { r: [Math.PI / 2, 0, 0], cast: false });
           if (ES.lash > 0.5) { // a small flick at the outer corner
             const flick = mesh(new THREE.ConeGeometry(ES.r * 0.09, ES.r * 0.45, 8), lashMat, upper, { cast: false });
             flick.position.set(s * ES.r * 1.12, ES.r * 0.05, ES.r * 0.12); flick.rotation.set(0, 0, -s * 1.1);
@@ -754,7 +754,6 @@
       if (C.headphones) {
         const hpm = std(C.headphonesColor, { roughness: 0.4, metalness: 0.2 });
         const band = mesh(new THREE.TorusGeometry(HEAD.rx * 1.13, 0.02, 10, 48, Math.PI), hpm, head, { p: [0, -0.01, -0.02], s: [1, 1.08, 1] });
-        band.rotation.set(0, 0, 0);
         for (const s of [-1, 1]) {
           const cup = new THREE.Group(); cup.position.set(s * (HEAD.rx + 0.035), -0.03, -0.02); cup.rotation.set(0, 0, Math.PI / 2); head.add(cup);
           mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.05, 32), hpm, cup);
@@ -781,8 +780,6 @@
           hand: new THREE.Group(),
           fingers: [],
         };
-        [a.sleeveU, a.sleeveF].forEach((m) => m && (m.material = sleeveMat));
-        if (a.sleeveU) { a.sleeveU.material = sleeveMat; }
         character.add(a.hand);
         mesh(sphere(1, 24, 16), skinMat, a.hand, { p: [0, 0, 0.045], s: [0.044, 0.024, 0.052] });
         for (let k = 0; k < 4; k++) {
@@ -892,7 +889,7 @@
           const a = (i / 9) * TAU + pr.range(-0.2, 0.2), tilt = pr.range(0.25, 0.8), len = pr.range(0.16, 0.26);
           const leaf = new THREE.Group(); leaf.position.set(0, 0.18, 0); leaf.rotation.set(0, a, 0); plant.add(leaf);
           const m = mesh(facet(1, 0), leafMat, leaf, { s: [0.045, len, 0.012] });
-          m.position.set(0, len * 0.9, 0); leaf.children[0].parent.rotation.z = 0; leaf.rotateX(tilt);
+          m.position.set(0, len * 0.9, 0); leaf.rotateX(tilt);
           m.material = leafMat.clone(); m.material.color.offsetHSL(pr.range(-0.02, 0.03), 0, pr.range(-0.06, 0.06));
         }
       }
@@ -900,7 +897,7 @@
         const nb = new THREE.Group(); nb.position.set(-0.58, 0, -0.08); nb.rotation.y = 0.35; room.add(nb);
         mesh(roundedBox(0.2, 0.018, 0.27, 0.006, 1), std("#e8e0cf", { roughness: 0.8 }), nb, { p: [0, 0.009, 0], receive: true });
         mesh(roundedBox(0.205, 0.006, 0.275, 0.004, 1), std("#2f5d62", { roughness: 0.7 }), nb, { p: [0, 0.02, 0], receive: true });
-        const pen = mesh(new THREE.CapsuleGeometry(0.006, 0.15, 4, 8), std("#1d1f22", { roughness: 0.3, metalness: 0.4 }), nb, { p: [0.13, 0.008, 0.02], r: [Math.PI / 2, 0, 0.2] });
+        mesh(new THREE.CapsuleGeometry(0.006, 0.15, 4, 8), std("#1d1f22", { roughness: 0.3, metalness: 0.4 }), nb, { p: [0.13, 0.008, 0.02], r: [Math.PI / 2, 0, 0.2] });
       }
 
       // ---- background: a painted, already-blurred room plate + bokeh sprites in front of it ----
