@@ -13,7 +13,7 @@
     "jaw": {"type": "number", "default": 0, "description": "Jaw drop in image px at full opening. 0: automatic (0.3 x mouth width)."},
     "openGain": {"type": "number", "default": 1, "description": "Multiplies the mouth curve (0.6 = calmer mouth, 1.3 = bigger)."},
     "upperLip": {"type": "number", "default": 0.18, "description": "How far the upper lip lifts, as a share of the jaw drop."},
-    "teeth": {"type": "number", "default": 0.75, "description": "Teeth hint strength 0..1 (0 = dark mouth only)."},
+    "teeth": {"type": "number", "default": 0.85, "description": "Teeth hint strength 0..1 (0 = dark mouth only)."},
     "innerColor": {"type": "string", "default": "#2a0d10", "description": "Inside of the mouth."},
     "teethColor": {"type": "string", "default": "#ece3d8", "description": "Teeth hint colour (keep it off-white)."},
     "motion": {"type": "number", "default": 1, "description": "Head sway, tilt, turn and nod amount (0 = still, 1 = natural, 1.5 = lively)."},

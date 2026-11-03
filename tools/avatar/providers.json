@@ -1,0 +1,92 @@
+{
+  "_about": "Model presets for tools/avatar/avatar.py. Edit freely. Placeholders in 'inputs': {prompt} {duration} {image} {video} {audio}; for fal they become uploaded file URLs, for wiro a value starting with @ is sent as a file. 'output' is the dotted path of the result video URL in the provider's JSON. Downloads are only accepted over https from 'download_hosts' (an entry '*.example.com' matches subdomains).",
+  "max_download_mb": 500,
+  "fal": {
+    "label": "fal.ai",
+    "verified": true,
+    "env": ["FAL_KEY"],
+    "client": "fal-client (pip install fal-client), MIT",
+    "pricing_page": "https://fal.ai/pricing",
+    "download_hosts": ["fal.media", "*.fal.media", "*.fal.ai", "*.fal.run"],
+    "defaults": { "image-to-video": "kling-i2v-standard", "lipsync": "kling-lipsync" },
+    "models": {
+      "kling-i2v-standard": {
+        "kind": "image-to-video",
+        "id": "fal-ai/kling-video/v2.1/standard/image-to-video",
+        "inputs": { "prompt": "{prompt}", "image_url": "{image}", "duration": "{duration}" },
+        "durations": ["5", "10"],
+        "output": "video.url"
+      },
+      "kling-lipsync": {
+        "kind": "lipsync",
+        "id": "fal-ai/kling-video/lipsync/audio-to-video",
+        "inputs": { "video_url": "{video}", "audio_url": "{audio}" },
+        "max_seconds": 10,
+        "min_seconds": 2,
+        "audio_ext": "mp3",
+        "output": "video.url"
+      },
+      "alt-lipsync": {
+        "kind": "lipsync",
+        "id": "",
+        "_fill": "Second lip-sync model of your choice: put its fal model id in 'id', match the input field names to its API page, add its price to pricing.json.",
+        "inputs": { "video_url": "{video}", "audio_url": "{audio}" },
+        "max_seconds": 10,
+        "min_seconds": 2,
+        "audio_ext": "mp3",
+        "output": "video.url"
+      }
+    }
+  },
+  "wiro": {
+    "label": "Wiro AI",
+    "verified": false,
+    "_unverified": "Endpoint paths, header names, the signature recipe, task fields and input field names below were written without access to Wiro's API docs. Check every one against the docs and your dashboard before the first paid run, then set verified to true.",
+    "env": ["WIRO_API_KEY", "WIRO_API_SECRET"],
+    "pricing_page": "https://wiro.ai",
+    "base": "https://api.wiro.ai/v1",
+    "run_path": "/Run/{owner}/{project}",
+    "detail_path": "/Task/Detail",
+    "headers": { "key": "x-api-key", "nonce": "x-nonce", "signature": "x-signature" },
+    "signature": { "signed": true, "algorithm": "hmac-sha256", "key": "{api_key}", "message": "{api_secret}{nonce}" },
+    "task_id_path": "taskid",
+    "detail_body": { "taskid": "{task_id}" },
+    "status_path": "tasklist.0.status",
+    "done_values": ["task_postprocess_end"],
+    "failed_values": ["task_cancel", "task_error", "task_failed"],
+    "output": "tasklist.0.outputs.0.url",
+    "poll_seconds": 5,
+    "timeout_seconds": 1800,
+    "download_hosts": ["wiro.ai", "*.wiro.ai"],
+    "defaults": { "image-to-video": "wiro-i2v", "lipsync": "wiro-lipsync" },
+    "models": {
+      "wiro-i2v": {
+        "kind": "image-to-video",
+        "owner": "<owner from your Wiro dashboard>",
+        "project": "<image-to-video project slug>",
+        "inputs": { "prompt": "{prompt}", "inputImage": "@{image}", "duration": "{duration}" },
+        "durations": ["5", "10"]
+      },
+      "wiro-lipsync": {
+        "kind": "lipsync",
+        "owner": "<owner from your Wiro dashboard>",
+        "project": "<lip-sync project slug>",
+        "inputs": { "inputVideo": "@{video}", "inputAudio": "@{audio}" },
+        "max_seconds": 10,
+        "min_seconds": 2,
+        "audio_ext": "mp3"
+      }
+    }
+  },
+  "local": {
+    "label": "your own lip-sync model (free, runs on your machine)",
+    "verified": true,
+    "env": ["MF_LIPSYNC_CMD"],
+    "_how": "Set MF_LIPSYNC_CMD to a command line with the placeholders {video} {audio} {out}, e.g. python /opt/lipsync/run.py --video {video} --audio {audio} --out {out}. It is split into arguments (no shell) and run once per chunk.",
+    "timeout_seconds": 3600,
+    "defaults": { "lipsync": "local-lipsync" },
+    "models": {
+      "local-lipsync": { "kind": "lipsync", "id": "local", "max_seconds": 10, "min_seconds": 1, "audio_ext": "wav" }
+    }
+  }
+}

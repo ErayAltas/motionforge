@@ -63,7 +63,7 @@
   "jaw": 0,
   "openGain": 1,
   "upperLip": 0.18,
-  "teeth": 0.75,
+  "teeth": 0.85,
   "innerColor": "#2a0d10",
   "teethColor": "#ece3d8",
   "motion": 1,
@@ -185,7 +185,7 @@
           float u = clamp((x - uMouth.x) / uMouth.z, -1.0, 1.0);
           return uMouth.y - uJawShape.w * u * u;
         }
-        float lipHalf() { return uMouth.z * (1.0 - 0.22 * uShape.y); }
+        float lipHalf() { return uMouth.z * (1.0 - 0.1 * uShape.y); }
         // upward displacement (negative y) of the upper lip at x
         float upperLift(float x) {
           float drop = uOpenParams.x * uOpenParams.y;
@@ -198,7 +198,7 @@
           float k = smoothstep(0.0, max(1.0, (uJawShape.x - uMouth.y) * 0.6), below);
           float hw = mix(lipHalf(), uJawShape.y, k);
           float u = abs(p.x - uMouth.x) / hw;
-          float gx = mix(G(u), sqrt(G(u)), uShape.y);       // rounder opening for "round"
+          float gx = mix(G(u), pow(G(u), 0.75), uShape.y);  // rounder opening for "round"
           float fy = 1.0 - smoothstep(uJawShape.x, uJawShape.x + uJawShape.z, p.y);
           return drop * gx * fy * (1.0 - 0.18 * uShape.x); // "wide" opens a little less, stretches more
         }
@@ -207,7 +207,7 @@
           float dx = p.x - uMouth.x, mh = uMouth.z;
           float rel = p.y - lineY(p.x);
           float bump = exp(-pow((abs(dx) - mh * 0.8) / (mh * 0.6), 2.0)) * exp(-pow(rel / (mh * 0.55), 2.0));
-          float amt = smoothstep(0.04, 0.3, uOpenParams.x) * (0.12 * uShape.x - 0.2 * uShape.y);
+          float amt = smoothstep(0.04, 0.3, uOpenParams.x) * (0.10 * uShape.x - 0.12 * uShape.y);
           return sign(dx) * bump * mh * amt;
         }
         float headWeight(vec2 p) {
@@ -266,13 +266,14 @@
           if (uBlink <= 0.001 || ax >= 1.0) return src;
           float span = sqrt(1.0 - ax * ax);
           float contour = e.y - span * e.w;                    // upper eye contour (lash line)
-          float margin = 0.75 * e.w + 2.0;                     // skin strip above it that becomes the lid
-          float top = contour - margin;
-          float edge = mix(contour, e.y + 0.85 * span * e.w, uBlink);
+          float pad = 0.22 * e.w + 1.0;                        // the lash line's lower half lies below the contour
+          float band = 0.75 * e.w + 2.0 + pad;                 // strip of skin + lash line that becomes the lid
+          float top = contour + pad - band;
+          float edge = mix(contour, e.y + 0.92 * span * e.w, uBlink) + pad;
           if (p.y < top || p.y > edge) return src;
           float t = (p.y - top) / max(edge - top, 1e-3);
-          float g = max(1.0, (edge - top) / margin);            // keeps the lash line its own thickness at the edge
-          return vec2(p.x, top + margin * pow(t, g));
+          float g = max(1.0, (edge - top) / band);              // stretch the skin, keep the lash line its own thickness
+          return vec2(p.x, top + band * pow(t, g));
         }
         void main() {
           vec2 p = vRest;
@@ -314,8 +315,8 @@
           float teethH = min(gap * 0.32, uMouth.z * 0.16);
           float inBand = (1.0 - smoothstep(teethH * 0.75, teethH, p.y - yU)) * (1.0 - smoothstep(0.5, 0.7, abs(u)));
           float show = uTeeth * smoothstep(0.22, 0.55, uOpenParams.x);
-          float shade = 0.82 + 0.18 * (1.0 - abs(u) / 0.7);
-          col = mix(col, uTeethCol * shade, inBand * show * 0.9);
+          float shade = (0.8 + 0.2 * (1.0 - abs(u) / 0.7)) * (1.0 - 0.18 * clamp((p.y - yU) / max(teethH, 1.0), 0.0, 1.0));
+          col = mix(col, uTeethCol * shade, inBand * show);
           // thin dark line just under the upper lip so the teeth do not touch it
           col *= 1.0 - 0.45 * (1.0 - smoothstep(0.0, 2.0, p.y - yU));
           gl_FragColor = vec4(col * uAlpha, uAlpha);
@@ -380,7 +381,8 @@
         uHeadMove: { value: new THREE.Vector4() }, uPivot: { value: new THREE.Vector2() }, uBody: { value: new THREE.Vector4() },
         uAlpha: { value: 1 },
       };
-      const hex = (h) => new THREE.Color(h).toArray().slice(0, 3);
+      // colours go to the shader as written (no sRGB -> linear step: the output is not converted back either)
+      const hex = (h) => { const n = parseInt(String(h).replace("#", "").padEnd(6, "0").slice(0, 6), 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; };
       let W = 1, H = 1, M, chinY, faceH;
 
       async function setup() {
@@ -399,7 +401,7 @@
         chinY = LM.chin ? LM.chin.y : M.y + m.w;
         faceH = chinY - eyeY;
         const eyeSpan = eyes.length === 2 ? Math.abs(eyes[1].x - eyes[0].x) : m.w * 1.4;
-        const head = LM.head || { x: eyeX, y: eyeY - faceH * 0.05, rx: Math.max(eyeSpan * 1.25, m.w * 1.7), ry: faceH * 1.7 };
+        const head = LM.head || { x: eyeX, y: eyeY - faceH * 0.1, rx: Math.max(eyeSpan * 1.25, m.w * 1.7), ry: faceH * 1.15 };
 
         const jaw = P.jaw > 0 ? P.jaw : 0.3 * m.w;
         U.uMouth.value.set(M.x, M.y, M.half);
@@ -421,8 +423,8 @@
         const mg = new THREE.PlaneGeometry(m.w + 8, jaw * (1.25 + (P.upperLip ?? 0.18)) + 16, 24, 8);
         mg.translate(M.x, M.y + jaw * 0.5 - M.curve * 0.5, 0);
         const mouthMat = new THREE.ShaderMaterial({
-          vertexShader: mouthVert, fragmentShader: mouthFrag, transparent: true, premultipliedAlpha: true, depthTest: false, depthWrite: false,
-          uniforms: { ...U, uInner: { value: new THREE.Vector3(...hex(P.innerColor || "#2a0d10")) }, uTeethCol: { value: new THREE.Vector3(...hex(P.teethColor || "#ece3d8")) }, uTeeth: { value: P.teeth ?? 0.75 } },
+          vertexShader: mouthVert, fragmentShader: mouthFrag, side: THREE.DoubleSide, transparent: true, premultipliedAlpha: true, depthTest: false, depthWrite: false,
+          uniforms: { ...U, uInner: { value: new THREE.Vector3(...hex(P.innerColor || "#2a0d10")) }, uTeethCol: { value: new THREE.Vector3(...hex(P.teethColor || "#ece3d8")) }, uTeeth: { value: P.teeth ?? 0.85 } },
         });
         const mouthMesh = new THREE.Mesh(mg, mouthMat);
         mouthMesh.frustumCulled = false;
@@ -430,7 +432,7 @@
 
         const eyeVec = (e) => new THREE.Vector4(e ? e.x : -1e5, e ? e.y : -1e5, e ? e.w / 2 : 1, e ? e.h / 2 : 1);
         const faceMat = new THREE.ShaderMaterial({
-          vertexShader: faceVert, fragmentShader: faceFrag, transparent: true, premultipliedAlpha: true, depthTest: false, depthWrite: false,
+          vertexShader: faceVert, fragmentShader: faceFrag, side: THREE.DoubleSide, transparent: true, premultipliedAlpha: true, depthTest: false, depthWrite: false,
           uniforms: { ...U, uTex: { value: tex }, uImg: { value: new THREE.Vector2(W, H) }, uEyeA: { value: eyeVec(eyes[0]) }, uEyeB: { value: eyeVec(eyes[1]) }, uBlink: { value: 0 } },
         });
         const faceMesh = new THREE.Mesh(buildFace(W, H, M), faceMat);

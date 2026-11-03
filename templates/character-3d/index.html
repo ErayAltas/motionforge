@@ -213,7 +213,8 @@
         caption.textContent = P.caption || "";
         const tl = MF.timeline("main", DUR);
         const t0 = P.titleStart ?? 0.3;
-        if (P.layout === "lower-card") tl.fromTo("#card", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0);
+        // the card is visible from frame 0 (safe to cut into); it settles with a small scale-in
+        if (P.layout === "lower-card") tl.fromTo("#card", { scale: 0.96 }, { scale: 1, duration: 0.6, ease: "power3.out" }, 0);
         if (P.eyebrow) tl.fromTo(eyebrow, { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }, t0);
         if (P.title) tl.fromTo(title, { opacity: 0, y: 40, filter: "blur(10px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.45, ease: "power3.out" }, t0 + 0.08);
         if (P.caption) tl.fromTo(caption, { opacity: 0, y: 24 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, t0 + 0.5);
@@ -357,8 +358,8 @@
         return geo;
       }
       // Shell over part of the head, by azimuth a (0 = front) and elevation e (radians).
-      function headShell(a0, a1, e0, e1, nA, nE, scale, eTop) {
-        const pos = [], idx = [], v = new V3();
+      function headShell(a0, a1, e0, e1, nA, nE, scale, eTop, alphaFn, skipFn) {
+        const pos = [], idx = [], cols = [], v = new V3();
         for (let j = 0; j <= nE; j++) {
           for (let i = 0; i <= nA; i++) {
             const a = lerp(a0, a1, i / nA);
@@ -367,14 +368,20 @@
             const d = new V3(Math.sin(a) * Math.cos(e), Math.sin(e), Math.cos(a) * Math.cos(e));
             headSurf(d, v).multiplyScalar(scale);
             pos.push(v.x, v.y, v.z);
+            if (alphaFn) cols.push(1, 1, 1, alphaFn(i / nA, j / nE));
           }
         }
         for (let j = 0; j < nE; j++) for (let i = 0; i < nA; i++) {
           const k = j * (nA + 1) + i;
+          if (skipFn) { // leave a hole where skipFn(direction of the quad centre) is true
+            const q = new V3(pos[k * 3] + pos[(k + nA + 2) * 3], pos[k * 3 + 1] + pos[(k + nA + 2) * 3 + 1], pos[k * 3 + 2] + pos[(k + nA + 2) * 3 + 2]).normalize();
+            if (skipFn(q)) continue;
+          }
           idx.push(k, k + 1, k + nA + 1, k + 1, k + nA + 2, k + nA + 1);
         }
         const g = new THREE.BufferGeometry();
         g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+        if (alphaFn) g.setAttribute("color", new THREE.Float32BufferAttribute(cols, 4));
         g.setIndex(idx); g.computeVertexNormals();
         return g;
       }
@@ -407,7 +414,7 @@
 
       // ---- outfit details ----
       if (C.outfit === "hoodie") {
-        const hood = mesh(new THREE.TorusGeometry(0.17, 0.075, 14, 36), outfitMat, body, { p: [0, 0.41, -0.035], r: [Math.PI / 2 - 0.35, 0, 0], s: [BUILD * 1.05, 0.95, 0.85] });
+        const hood = mesh(new THREE.TorusGeometry(0.16, 0.055, 14, 36), outfitMat, body, { p: [0, 0.405, -0.05], r: [Math.PI / 2 - 0.45, 0, 0], s: [BUILD * 1.05, 0.95, 0.85] });
         hood.receiveShadow = true;
         const cordMat = std(C.outfitColor2, { roughness: 0.7 });
         for (const s of [-1, 1]) {
@@ -539,7 +546,7 @@
       // ---- mouth: a grid laid on the face, rebuilt every frame from open / width / smile / shape ----
       const MOUTH_Y = -0.45, MC = 27, MR = 9;
       const beardFull = C.beard === "full";
-      const MOUTH_OFF = beardFull ? 0.03 : 0.0035;
+      const MOUTH_OFF = 0.0035;
       const mouthGeo = new THREE.BufferGeometry();
       mouthGeo.setAttribute("position", new THREE.Float32BufferAttribute(new Float32Array(MC * MR * 3), 3));
       mouthGeo.setAttribute("color", new THREE.Float32BufferAttribute(new Float32Array(MC * MR * 3), 3));
@@ -558,7 +565,7 @@
       function updateMouth(open, wide, round, smile, skew) {
         const pos = mouthGeo.attributes.position.array, colr = mouthGeo.attributes.color.array;
         const halfW = 0.2 * (1 + 0.16 * wide - 0.34 * round + 0.1 * Math.max(0, smile)) * (1 - 0.12 * open * round);
-        const hOpen = open * 0.17 * (1 + 0.35 * round);
+        const hOpen = open * 0.27 * (1 + 0.3 * round);
         const show = smooth((open - 0.06) / 0.18);
         for (let i = 0; i < MC; i++) {
           const u = (i / (MC - 1)) * 2 - 1;
@@ -599,7 +606,7 @@
       }
       function tuft(d, size, stretch, mat, lean = 0.4) {
         const q = new THREE.Quaternion().setFromUnitVectors(UP, d);
-        const m = mesh(facet(1, 1), mat, head);
+        const m = mesh(facet(1, 0), mat, head);
         m.position.copy(headSurf(d)).multiplyScalar(1.0);
         m.quaternion.copy(q);
         m.rotateX(lean);
@@ -608,44 +615,53 @@
         return m;
       }
       const sph = (az, el) => new V3(Math.sin(az) * Math.cos(el), Math.sin(el), Math.cos(az) * Math.cos(el));
+      const hatOn = C.hat === "cap" || C.hat === "beanie" || C.hat === "toque";
+      const underHat = (el) => hatOn && el > 0.5; // pieces a hat would cover are skipped
       if (C.hair !== "bald") {
         const flatHair = hairMat(true);
         if (C.hair === "messy") {
-          hairCap(1.38, 0.42, 0.045, true, 0.012);
-          for (let i = 0; i < 16; i++) {
-            const az = hr.range(-2.4, 2.4), el = hr.range(0.62, 1.35);
-            tuft(sph(az, el), hr.range(0.075, 0.105), hr.range(0.9, 1.4), flatHair, hr.range(0.2, 0.7));
+          hairCap(1.4, 0.42, 0.05, true, 0.01);
+          for (let i = 0; i < 18; i++) { // swept shards over the crown, leaning back
+            const az = hr.range(-2.3, 2.3), el = hr.range(0.7, 1.4);
+            if (underHat(el)) continue;
+            const m = tuft(sph(az, el), hr.range(0.055, 0.075), hr.range(1.7, 2.3), flatHair, -hr.range(0.6, 1.0));
+            m.scale.z *= 0.6; m.position.multiplyScalar(1.03);
           }
-          for (let i = 0; i < 5; i++) { // fringe falling forward
-            const az = -0.55 + i * 0.27 + hr.range(-0.05, 0.05);
-            const t = tuft(sph(az, 0.82 + hr.range(-0.05, 0.05)), 0.07 + hr.range(0, 0.02), 1.45, flatHair, 1.1);
-            t.position.multiplyScalar(1.02);
+          for (let i = 0; i < (hatOn ? 0 : 6); i++) { // fringe: shards sweeping forward and to one side
+            const az = -0.6 + i * 0.24 + hr.range(-0.04, 0.04);
+            const m = tuft(sph(az, 0.92 + hr.range(-0.05, 0.05)), 0.055 + hr.range(0, 0.012), 2.0, flatHair, 1.25);
+            m.scale.z *= 0.6; m.rotateZ(-0.35); m.position.multiplyScalar(1.03);
           }
         } else if (C.hair === "sidepart") {
           hairCap(1.42, 0.4, 0.04, false);
-          const sw = mesh(sphere(1, 36, 20), hairMat(false), head, { s: [0.24, 0.075, 0.16] });
-          sw.position.copy(headSurf(sph(0.35, 0.92))).multiplyScalar(1.05); sw.rotation.set(-0.35, 0.25, -0.35);
-          const sw2 = mesh(sphere(1, 30, 18), hairMat(false), head, { s: [0.15, 0.06, 0.13] });
-          sw2.position.copy(headSurf(sph(-0.5, 0.95))).multiplyScalar(1.04); sw2.rotation.set(-0.5, -0.2, 0.3);
+          if (!hatOn) {
+          const sw = mesh(sphere(1, 36, 20), hairMat(false), head, { s: [0.2, 0.055, 0.14] });
+          sw.position.copy(headSurf(sph(0.3, 0.98))).multiplyScalar(1.035); sw.rotation.set(-0.55, 0.2, -0.3);
+          const sw2 = mesh(sphere(1, 30, 18), hairMat(false), head, { s: [0.12, 0.045, 0.11] });
+          sw2.position.copy(headSurf(sph(-0.55, 1.0))).multiplyScalar(1.03); sw2.rotation.set(-0.6, -0.2, 0.3);
           const part = mesh(new THREE.CylinderGeometry(0.004, 0.004, 0.16, 6), std(col(C.hairColor).multiplyScalar(0.5)), head, { cast: false });
           part.position.copy(headSurf(sph(-0.3, 1.18))).multiplyScalar(1.045); part.rotation.set(Math.PI / 2 - 0.6, 0, 0.25);
+          }
         } else if (C.hair === "bun") {
           hairCap(1.5, 0.36, 0.02, false);
+          if (!hatOn) {
           const bunP = headSurf(sph(0, 1.15)).multiplyScalar(1.12).add(new V3(0, 0.02, -0.06));
           mesh(sphere(0.115, 36, 24), hairMat(false), head, { p: [bunP.x, bunP.y, bunP.z], s: [1, 0.88, 1] });
           mesh(new THREE.TorusGeometry(0.075, 0.016, 10, 28), std(ACCENT, { roughness: 0.5 }), head, { p: [bunP.x, bunP.y - 0.065, bunP.z + 0.01], r: [Math.PI / 2 - 0.4, 0, 0] });
+          }
           for (const s of [-1, 1]) { // loose strands at the temples
-            const st = mesh(sphere(1, 16, 12), hairMat(false), head, { s: [0.022, 0.11, 0.03] });
-            st.position.copy(headSurf(sph(s * 0.95, 0.15))).multiplyScalar(1.03); st.rotation.set(0.1, 0, s * 0.18);
+            const st = mesh(sphere(1, 16, 12), hairMat(false), head, { s: [0.016, 0.1, 0.022] });
+            st.position.copy(headSurf(sph(s * 1.05, 0.12))).multiplyScalar(1.02); st.rotation.set(0.1, 0, s * 0.18);
           }
         } else if (C.hair === "buzz") {
           const cap = hairCap(1.45, 0.4, 0.012, false);
           cap.material.color.copy(col(C.hairColor).lerp(col(C.skin), 0.22)); cap.material.roughness = 0.95; cap.material.sheen = 0.2;
         } else if (C.hair === "curly") {
           hairCap(1.42, 0.38, 0.05, true, 0.01);
-          for (let i = 0; i < 46; i++) {
-            const az = hr.range(-Math.PI, Math.PI), el = hr.range(0.45, 1.5);
+          for (let i = 0; i < 56; i++) {
+            const az = hr.range(-Math.PI, Math.PI), el = hr.range(0.2, 1.5);
             if (Math.cos(az) > 0.55 && el < 0.75) continue; // keep the forehead clear
+            if (underHat(el + 0.12)) continue;
             const d = sph(az, el); const m = mesh(facet(hr.range(0.05, 0.068), 1), flatHair, head);
             m.position.copy(headSurf(d)).multiplyScalar(1.07); m.rotation.set(hr.range(0, 3), hr.range(0, 3), 0);
           }
@@ -659,11 +675,15 @@
 
       // ---- beard ----
       if (C.beard === "stubble") {
-        const g = headShell(-1.65, 1.65, -1.45, -0.3, 40, 14, 1.006, (a) => -0.33 + 0.33 * Math.min(1, Math.abs(a) / 1.5));
-        mesh(g, new THREE.MeshStandardMaterial({ color: C.beardColor, roughness: 0.95, transparent: true, opacity: 0.32, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1 }), head, { cast: false });
+        // soft-edged shadow of hair along the jaw: alpha fades out towards the cheeks and the sides
+        const g = headShell(-1.5, 1.5, -1.45, -0.36, 40, 16, 1.004, (a) => -0.4 + 0.12 * Math.min(1, Math.abs(a) / 1.3),
+          (u, v) => smooth((1 - v) / 0.55) * smooth((0.5 - Math.abs(u - 0.5)) / 0.22));
+        mesh(g, new THREE.MeshStandardMaterial({ color: C.beardColor, vertexColors: true, roughness: 0.95, transparent: true, opacity: 0.38, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 }), head, { cast: false });
       } else if (C.beard === "full") {
         const br = rngOf("beard");
-        const g = headShell(-1.7, 1.7, -1.5, -0.2, 26, 10, 1.0, (a) => -0.28 + 0.3 * Math.min(1, Math.abs(a) / 1.4));
+        // a hole around the mouth (plane coords x +-0.3, y -0.7..-0.36) so the mouth sits on skin, framed by the beard
+        const g = headShell(-1.7, 1.7, -1.5, -0.2, 30, 14, 1.0, (a) => -0.28 + 0.3 * Math.min(1, Math.abs(a) / 1.4), null,
+          (q) => q.z > 0.5 && ((q.x / q.z) / 0.3) ** 2 + ((q.y / q.z + 0.53) / 0.17) ** 2 < 1);
         const pos = g.attributes.position, v = new V3();
         for (let i = 0; i < pos.count; i++) { // push outward, more at the chin, with a little seeded roughness
           v.fromBufferAttribute(pos, i); const n = v.clone().normalize();
@@ -676,9 +696,9 @@
       if (C.beard === "moustache" || C.beard === "full") {
         const mm = new THREE.MeshPhysicalMaterial({ color: C.beardColor, roughness: 0.65, flatShading: true, sheen: 0.6, sheenColor: col(C.beardColor).lerp(col("#ffd9a8"), 0.4) });
         for (const s of [-1, 1]) {
-          const d = faceDir(s * 0.1, -0.335);
+          const d = faceDir(s * 0.1, beardFull ? -0.3 : -0.32);
           const m = mesh(facet(1, 1), mm, head, { s: [0.075, 0.03, 0.035] });
-          m.position.copy(headSurf(d)).addScaledVector(d, MOUTH_OFF + 0.012); m.rotation.set(0.1, s * 0.25, -s * 0.2);
+          m.position.copy(headSurf(d)).addScaledVector(d, beardFull ? 0.022 : 0.012); m.rotation.set(0.1, s * 0.25, -s * 0.2);
         }
       }
 
@@ -686,11 +706,11 @@
       if (C.glasses === "round" || C.glasses === "square") {
         const gm = std(C.glassesColor, { roughness: 0.35, metalness: 0.3 });
         const lens = new THREE.MeshStandardMaterial({ color: "#d9ecff", roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.1, depthWrite: false });
-        const R = ES.r * 1.6;
+        const R = Math.min(ES.r * 1.5, 0.086);
         const ringGeo = C.glasses === "round"
           ? new THREE.TorusGeometry(R, 0.009, 8, 40)
           : (() => {
-              const sh = new THREE.Shape(); const w = R * 1.12, h = R * 0.86, rr = R * 0.35;
+              const sh = new THREE.Shape(); const w = R * 1.05, h = R * 0.82, rr = R * 0.35;
               sh.moveTo(-w + rr, -h); sh.lineTo(w - rr, -h); sh.quadraticCurveTo(w, -h, w, -h + rr); sh.lineTo(w, h - rr); sh.quadraticCurveTo(w, h, w - rr, h);
               sh.lineTo(-w + rr, h); sh.quadraticCurveTo(-w, h, -w, h - rr); sh.lineTo(-w, -h + rr); sh.quadraticCurveTo(-w, -h, -w + rr, -h);
               const pts = sh.getSpacedPoints(64).map((p) => new V3(p.x, p.y, 0));
@@ -699,15 +719,16 @@
         const rings = [];
         for (const s of [-1, 1]) {
           const d = faceDir(s * EYE_X, EYE_Y);
-          const g = new THREE.Group(); g.position.copy(headSurf(d)).addScaledVector(d, 0.045); g.lookAt(g.position.clone().add(new V3(s * 0.12, 0, 1))); head.add(g);
+          const g = new THREE.Group(); g.position.copy(headSurf(d)).addScaledVector(d, 0.045); g.position.x += s * 0.012; g.lookAt(g.position.clone().add(new V3(s * 0.12, 0, 1))); head.add(g);
           mesh(ringGeo, gm, g);
           mesh(new THREE.CircleGeometry(R, 32), lens, g, { cast: false });
           rings.push(g);
           const temple = mesh(roundedBox(0.012, 0.012, 0.3, 0.005), gm, head);
           temple.position.set(s * (HEAD.rx * 0.98), g.position.y + 0.01, g.position.z - 0.17); temple.rotation.set(0, -s * 0.12, 0);
         }
-        const bridge = mesh(new THREE.TorusGeometry(0.05, 0.007, 6, 16, Math.PI * 0.8), gm, head);
-        bridge.position.set(0, rings[0].position.y + 0.005, rings[0].position.z + 0.01); bridge.rotation.z = Math.PI * 0.1;
+        const gap = rings[1].position.x - rings[0].position.x - 2 * R * (C.glasses === "square" ? 1.05 : 1);
+        const bridge = mesh(new THREE.TorusGeometry(Math.max(0.012, gap / 2 + 0.006), 0.007, 6, 16, Math.PI), gm, head);
+        bridge.position.set(0, rings[0].position.y + 0.012, rings[0].position.z + 0.012);
       }
 
       // ---- hats and headphones ----
@@ -1055,10 +1076,10 @@
           }
           case "chin": {
             if (s < 0) return pose("rest", s, t, tl, talk);
-            return { p: v(0.06, 0.34, -0.31), f: v(-0.2, 1, 0.25), n: v(-0.1, 0.1, -1), curl: 1.25, idx: 0, pole: v(0.7, -1, 0.3) };
+            return { p: v(0.07, 0.4, -0.29), f: v(-0.25, 1, 0.15), n: v(-0.1, 0.1, -1), curl: 1.3, idx: 0, pole: v(0.6, -1, 0.35) };
           }
           default: // rest: hands on the desk
-            return { p: v(s * 0.2, 0.05, -0.2), f: v(-s * 0.35, -0.08, 1), n: v(0, -1, 0), curl: 0.45, idx: 0, pole: v(s * 0.75, -0.6, -0.5) };
+            return { p: v(s * 0.4, 0.05, -0.24), f: v(-s * 0.15, -0.08, 1), n: v(0, -1, 0), curl: 0.45, idx: 0, pole: v(s * 0.75, -0.6, -0.5) };
         }
       }
       function blendPose(a, b, k) {
@@ -1077,7 +1098,7 @@
       }
 
       // ---------- camera ----------
-      const FRAMES = { close: { cy: 0.66, h: 0.98, w: 0.9 }, medium: { cy: 0.42, h: 1.5, w: 1.45 }, wide: { cy: 0.3, h: 2.3, w: 2.7 } };
+      const FRAMES = { close: { cy: 0.7, h: 1.08, w: 0.95 }, medium: { cy: 0.42, h: 1.5, w: 1.45 }, wide: { cy: 0.3, h: 2.3, w: 2.7 } };
       const FR = FRAMES[P.framing] || FRAMES.medium;
       const tanV = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
       const baseDist = Math.max(FR.h / 2 / tanV, FR.w / 2 / (tanV * camera.aspect));
@@ -1151,7 +1172,7 @@
 
         // mouth
         const SH = { closed: [0, 0], open: [0, 0], wide: [1, 0], round: [0, 1] }[shape] || [0, 0];
-        const open = clamp(Math.max(ex.open, talk * 0.95 * (1 - 0.4 * Math.max(0, ex.smile - 0.6))));
+        const open = clamp(Math.max(ex.open, talk * (1 - 0.25 * Math.max(0, ex.smile - 0.6))));
         const smileNow = ex.smile * (1 - talk * 0.35);
         updateMouth(open, SH[0] + 0.25 * Math.max(0, ex.smile), Math.max(SH[1], ex.round), smileNow, ex.skew);
 

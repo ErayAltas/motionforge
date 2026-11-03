@@ -1,0 +1,26 @@
+{
+  "id": "globe-arcs-3d",
+  "title": "Globe with arcs (3D)",
+  "description": "A lit Earth (world-atlas land, dark ocean, atmosphere rim) turns to a region, pins drop on the cities and great-circle arcs draw between them; city names are HTML labels that follow the pins.",
+  "engine": "hyperframes",
+  "layers": ["three.js (hf-seek)", "HTML + GSAP"],
+  "size": [1080, 1920],
+  "requires": ["npm i three@0.170.0 world-atlas@2.0.2 topojson-client@3.1.0"],
+  "usage": "engines/hyperframes/scripts/new-scene.sh <name> --template globe-arcs-3d --params values.json",
+  "parameters": {
+    "eyebrow": {"type": "string", "default": "Example network", "description": "Small label above the title."},
+    "title": {"type": "string", "default": "Four cities. {One} team.", "description": "Headline; wrap one word in {braces} for the italic serif accent."},
+    "cities": {"type": "array", "default": [{"name": "Lisbon", "lat": 38.72, "lon": -9.14}, {"name": "Istanbul", "lat": 41.01, "lon": 28.98}], "description": "2-6 items {name, lat, lon} in degrees (north and east positive). Cities within ~100° of each other stay on the visible side."},
+    "arcs": {"type": "string", "enum": ["chain", "hub"], "default": "chain", "description": "chain: 1→2→3…; hub: the first city to every other city."},
+    "focus": {"type": "integer", "default": -1, "description": "Index of the city the globe turns to; -1 = the middle of all cities."},
+    "spinFrom": {"type": "number", "default": 75, "description": "Degrees of longitude the globe turns through before it settles."},
+    "pinStart": {"type": "number", "default": 1.6, "description": "Second the first pin drops (the others follow every 0.18 s)."},
+    "arcStart": {"type": "number", "default": 2.5, "description": "Second the first arc starts drawing (the others follow every 0.45 s)."},
+    "route": {"type": "string", "default": "", "description": "Line under the globe. Empty = the city names joined with arrows."},
+    "landColor": {"type": "string", "default": "#c3c9bf", "description": "Land colour on the texture."},
+    "oceanColor": {"type": "string", "default": "#0b1822", "description": "Ocean colour on the texture (keep it dark)."},
+    "lang": {"type": "string", "default": "en", "description": "Language of the copy (BCP 47). Sets <html lang>."},
+    "duration": {"type": "number", "default": 6, "description": "Scene length in seconds. new-scene.sh --params also rewrites data-duration to match."}
+  },
+  "checks": ["every city label is on the visible side when it appears", "no horizontal streaks on the globe texture", "map data credited: Natural Earth via world-atlas"]
+}

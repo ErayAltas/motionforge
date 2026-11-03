@@ -1,0 +1,36 @@
+{
+  "_about": "Rough cost estimates for tools/avatar/avatar.py. Prices change: check the provider's pricing page, update the numbers and 'last_checked', and tell the user the estimate is approximate. Cost of a call = ceil(seconds / unit_seconds) x usd_per_unit. null = unknown (the CLI then refuses a paid run unless --allow-unknown-cost).",
+  "last_checked": "2026-11",
+  "fal": {
+    "verify": "https://fal.ai/pricing (and the pricing line on each model's page)",
+    "models": {
+      "fal-ai/kling-video/v2.1/standard/image-to-video": {
+        "unit_seconds": 5,
+        "usd_per_unit": 0.28,
+        "range_usd_per_unit": [0.25, 0.30],
+        "approximate": true,
+        "billing": "per generated clip, 5 s or 10 s"
+      },
+      "fal-ai/kling-video/lipsync/audio-to-video": {
+        "unit_seconds": 5,
+        "usd_per_unit": 0.014,
+        "range_usd_per_unit": [0.014, 0.014],
+        "approximate": true,
+        "billing": "about $0.014 per 5 s of output in late 2026"
+      }
+    }
+  },
+  "wiro": {
+    "verify": "the model's page on wiro.ai / your Wiro dashboard",
+    "models": {
+      "wiro-i2v": { "unit_seconds": 5, "usd_per_unit": null, "approximate": true, "billing": "fill in from your dashboard" },
+      "wiro-lipsync": { "unit_seconds": 5, "usd_per_unit": null, "approximate": true, "billing": "fill in from your dashboard" }
+    }
+  },
+  "local": {
+    "verify": "runs on your own machine: no API cost (electricity and GPU time only)",
+    "models": {
+      "local": { "unit_seconds": 1, "usd_per_unit": 0, "range_usd_per_unit": [0, 0], "approximate": false }
+    }
+  }
+}
