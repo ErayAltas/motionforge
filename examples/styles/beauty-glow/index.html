@@ -1,0 +1,130 @@
+<!doctype html>
+<!--
+  motionforge style preview: beauty-glow
+  © 2026 motionforge contributors, MIT
+  Blush field with a top-left bloom; an original serum bottle (SVG) rises out of a soft blur, a white specular
+  streak glides across it (masked to the bottle), three ingredient callouts land on rosewood dots and
+  leader lines, then the signature drop and ripple: a droplet falls 160 px onto a cream swatch, a thin ring
+  spreads and the ingredient name appears at its edge.
+  Product and ingredients are sample content (no claims). Fonts: DM Serif Display, Figtree.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "DM Serif Display"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/dm-serif-display-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "DM Serif Display"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/dm-serif-display-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Figtree"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/figtree-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Figtree"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/figtree-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Figtree"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/figtree-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Figtree"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/figtree-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      /* fonts:end */
+      :root { --bg: #F3DDD3; --ink: #3A2626; --acc: #C2476A; --sup: #FFF7F3; --muted: #B89B8E; --mf-grain-opacity: .03; }
+      html, body { background: var(--bg); }
+      #root { background: radial-gradient(900px 800px at 20% 10%, rgba(255,247,243,.75) 0%, rgba(250,237,231,.4) 40%, transparent 70%), var(--bg); color: var(--ink); }
+      #root::before { mix-blend-mode: multiply; }
+      #root::after { background: radial-gradient(ellipse at 50% 45%, transparent 65%, rgba(120,60,50,.08) 100%); }
+      #chip { position: absolute; left: 70px; top: 246px; padding: 12px 20px; border-radius: 999px; background: var(--acc); font: 600 26px/1 "Figtree", sans-serif; letter-spacing: .16em; text-transform: uppercase; color: #fff; }
+      #title { position: absolute; left: 70px; top: 312px; font: 400 104px/1 "DM Serif Display", serif; letter-spacing: -0.01em; }
+      #prod { position: absolute; left: 340px; top: 470px; width: 400px; height: 760px; }
+      #lines { position: absolute; inset: 0; width: 1080px; height: 1920px; overflow: visible; }
+      #lines line { stroke: var(--muted); stroke-width: 2; }
+      #lines circle.d { fill: var(--muted); }
+      #lines circle.d.on { fill: var(--acc); }
+      .co { position: absolute; width: 290px; }
+      .co b { display: block; font: 400 46px/1.05 "DM Serif Display", serif; color: var(--ink); }
+      .co span { display: block; margin-top: 8px; font: 600 26px/1 "Figtree", sans-serif; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+      .co.on span { color: var(--acc); }
+      .co.r { text-align: right; }
+      #swatch { position: absolute; left: 250px; top: 1290px; width: 580px; height: 150px; }
+      #drop { position: absolute; left: 524px; top: 1100px; width: 32px; height: 44px; }
+      #ring { position: absolute; left: 440px; top: 1305px; width: 200px; height: 60px; border-radius: 50%; border: 2px solid var(--acc); opacity: 0; }
+      #ing { position: absolute; left: 650px; top: 1300px; font: 400 44px/1 "DM Serif Display", serif; color: var(--ink); }
+      #ing small { display: block; margin-top: 6px; font: 600 24px/1 "Figtree", sans-serif; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+      #cap { position: absolute; left: 0; right: 0; top: 1500px; text-align: center; font: 500 46px/1.2 "Figtree", sans-serif; color: var(--ink); }
+      #note { position: absolute; left: 0; right: 0; top: 1600px; text-align: center; font: 600 22px/1 "Figtree", sans-serif; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="chip" class="clip" data-start="0" data-duration="4.5" data-track-index="0">Step 1 / 3</div>
+      <div id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="1">Beauty glow</div>
+      <svg id="prod" class="clip" viewBox="0 0 400 760" data-start="0" data-duration="4.5" data-track-index="2" aria-hidden="true">
+        <defs>
+          <linearGradient id="gl" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d98d7a"/><stop offset=".25" stop-color="#f1b8a3"/><stop offset=".6" stop-color="#e7a28c"/><stop offset="1" stop-color="#b86d5d"/></linearGradient>
+          <linearGradient id="bulb" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e6d6cf"/><stop offset=".35" stop-color="#fff7f3"/><stop offset="1" stop-color="#cdb8ae"/></linearGradient>
+          <linearGradient id="streak" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#fff" stop-opacity="1"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+          <clipPath id="bot"><path d="M60 330 q0 -40 40 -40 h200 q40 0 40 40 v360 q0 50 -50 50 h-180 q-50 0 -50 -50Z"/><rect x="140" y="160" width="120" height="140" rx="20"/></clipPath>
+          <radialGradient id="cs" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#7a4038" stop-opacity=".28"/><stop offset="1" stop-color="#7a4038" stop-opacity="0"/></radialGradient>
+        </defs>
+        <ellipse cx="200" cy="744" rx="190" ry="16" fill="url(#cs)"/>
+        <path d="M60 330 q0 -40 40 -40 h200 q40 0 40 40 v360 q0 50 -50 50 h-180 q-50 0 -50 -50Z" fill="url(#gl)" opacity=".92"/>
+        <path d="M74 420 h252 v270 q0 38 -38 38 h-176 q-38 0 -38 -38Z" fill="#c9705e" opacity=".45"/>
+        <rect x="120" y="470" width="160" height="130" rx="8" fill="#FFF7F3" opacity=".92"/>
+        <text x="200" y="520" text-anchor="middle" font-family="DM Serif Display" font-size="30" fill="#3A2626">Dew serum</text>
+        <text x="200" y="560" text-anchor="middle" font-family="Figtree" font-weight="600" font-size="14" letter-spacing="3" fill="#B89B8E">30 ML · EXAMPLE</text>
+        <rect x="140" y="230" width="120" height="70" rx="10" fill="#e9dcd4"/>
+        <rect x="150" y="60" width="100" height="190" rx="50" fill="url(#bulb)"/>
+        <path d="M150 140 h100 M150 160 h100 M150 180 h100" stroke="#d8c6bd" stroke-width="3"/>
+        <rect x="84" y="320" width="18" height="380" rx="9" fill="#fff" opacity=".35"/>
+        <g clip-path="url(#bot)"><rect id="gloss" x="-160" y="0" width="120" height="800" fill="url(#streak)" opacity="0" transform="rotate(18 200 400)"/></g>
+      </svg>
+      <svg id="lines" class="clip" viewBox="0 0 1080 1920" data-start="0" data-duration="4.5" data-track-index="3"></svg>
+      <div id="co1" class="co clip" style="left:70px;top:640px" data-start="0" data-duration="4.5" data-track-index="4"><b>Niacinamide</b><span>5 % · from label</span></div>
+      <div id="co2" class="co r clip" style="left:720px;top:820px" data-start="0" data-duration="4.5" data-track-index="5"><b>Rose water</b><span>base</span></div>
+      <div id="co3" class="co clip" style="left:70px;top:1010px" data-start="0" data-duration="4.5" data-track-index="6"><b>Glycerin</b><span>humectant</span></div>
+      <svg id="swatch" class="clip" viewBox="0 0 580 150" data-start="0" data-duration="4.5" data-track-index="7" aria-hidden="true">
+        <defs><linearGradient id="cr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFF7F3"/><stop offset="1" stop-color="#f3dccf"/></linearGradient><filter id="sb"><feGaussianBlur stdDeviation="3"/></filter></defs>
+        <path d="M20 90 C 60 40 160 30 290 44 C 420 30 520 40 560 80 C 540 120 420 128 290 116 C 160 130 50 126 20 90Z" fill="#d8b1a2" opacity=".5" filter="url(#sb)" transform="translate(0 8)"/>
+        <path d="M20 84 C 60 36 160 28 290 40 C 420 28 520 36 560 76 C 540 114 420 122 290 110 C 160 124 50 120 20 84Z" fill="url(#cr)"/>
+        <path d="M80 70 C 180 50 360 52 480 66" stroke="#fff" stroke-width="8" fill="none" opacity=".8" stroke-linecap="round"/>
+      </svg>
+      <svg id="drop" class="clip" viewBox="0 0 32 44" data-start="0" data-duration="4.5" data-track-index="8"><path d="M16 2 C 22 14 30 22 30 30 A 14 14 0 0 1 2 30 C 2 22 10 14 16 2Z" fill="#f1b8a3" opacity=".9"/><circle cx="11" cy="30" r="4" fill="#fff" opacity=".8"/></svg>
+      <div id="ring" class="clip" data-start="0" data-duration="4.5" data-track-index="9"></div>
+      <div id="ing" class="clip" data-start="0" data-duration="4.5" data-track-index="10">Squalane<small>plant-derived</small></div>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="11">one drop, pressed in</div>
+      <div id="note" class="clip" data-start="0" data-duration="4.5" data-track-index="12">Sample product · ingredients as an example</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      const rise = (sel, at, d = 0.6) => tl.fromTo(sel, { opacity: 0, y: 20, filter: "blur(8px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: d, ease: "power2.out" }, at);
+      rise("#chip", 0.05, 0.5); rise("#title", 0.15, 0.6); rise("#prod", 0.3, 0.7);
+      tl.fromTo("#prod", { scale: 1 }, { scale: 1.05, duration: DUR - 0.3, ease: "none", transformOrigin: "50% 100%" }, 0.3);
+      // gloss pass: white streak slides across the bottle, masked to it, peak 0.7
+      tl.fromTo("#gloss", { attr: { x: -160 } }, { attr: { x: 460 }, duration: 1.2, ease: "sine.inOut" }, 0.8);
+      tl.fromTo("#gloss", { opacity: 0 }, { opacity: 0.7, duration: 0.6, ease: "sine.inOut", yoyo: true, repeat: 1 }, 0.8);
+      // callouts: dot back.out(1.7) 0.3 s, line draws 0.35 s, label fades 0.3 s
+      const NS = "http://www.w3.org/2000/svg", svg = document.getElementById("lines");
+      const C = [["#co1", [560, 690], [360, 690], true], ["#co2", [690, 880], [720, 880], false], ["#co3", [560, 1060], [360, 1060], false]];
+      C.forEach(([id, a, b, on], i) => {
+        const ln = document.createElementNS(NS, "line"); ln.setAttribute("x1", a[0]); ln.setAttribute("y1", a[1]); ln.setAttribute("x2", a[0]); ln.setAttribute("y2", a[1]);
+        const d = document.createElementNS(NS, "circle"); d.setAttribute("class", "d" + (on ? " on" : "")); d.setAttribute("cx", a[0]); d.setAttribute("cy", a[1]); d.setAttribute("r", 11);
+        svg.append(ln, d);
+        if (on) document.querySelector(id).classList.add("on");
+        const t = 1.35 + i * 0.3;
+        tl.fromTo(d, { scale: 0, transformOrigin: "50% 50%" }, { scale: 1, duration: 0.3, ease: "back.out(1.7)" }, t);
+        tl.to(ln, { attr: { x2: b[0], y2: b[1] }, duration: 0.35, ease: "power2.out" }, t + 0.15);
+        tl.fromTo(id, { opacity: 0 }, { opacity: 1, duration: 0.3 }, t + 0.4);
+      });
+      // drop and ripple
+      tl.fromTo("#swatch", { clipPath: "inset(0 100% 0 0)" }, { clipPath: "inset(0 0% 0 0)", duration: 0.6, ease: "power2.inOut" }, 2.2);
+      tl.fromTo("#drop", { opacity: 0, y: 0 }, { opacity: 1, duration: 0.1 }, 2.85);
+      tl.to("#drop", { y: 160, duration: 0.4, ease: "power2.in" }, 2.85);
+      tl.to("#drop", { opacity: 0, scaleY: 0.4, duration: 0.08 }, 3.25);
+      tl.fromTo("#ring", { opacity: 0.9, scale: 0 }, { scale: 1.6, opacity: 0, duration: 0.5, ease: "power2.out" }, 3.25);
+      tl.fromTo("#ing", { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.3, ease: "power2.out" }, 3.4);
+      rise("#cap", 3.0, 0.5);
+      tl.fromTo("#note", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 3.4);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

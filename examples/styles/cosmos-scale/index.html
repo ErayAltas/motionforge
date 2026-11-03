@@ -1,0 +1,156 @@
+<!doctype html>
+<!--
+  motionforge style preview: cosmos-scale
+  © 2026 motionforge contributors, MIT
+  Signature scene "decade pull-back": the camera starts on Earth and pulls back logarithmically
+  (distance = d0·10^(t/T), T = 2 s per decade, power2.inOut in log space); the amber counter rolls the
+  frame width with the zoom and the scale bar relabels itself at each decade; the Moon is found by the
+  camera at its true distance and size (radius and distance from published fact sheets), its orbit draws
+  in support blue, labels draw their 1 px leader then fade in, and a "you are here" marker pulses on a
+  deterministic 1.2 s sine. Earth's surface is a seeded procedural texture (illustration, labelled).
+  Static seeded starfield in three depth layers. three.js per engines/hyperframes/three.
+  Space Grotesk + Space Mono.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script type="importmap">{ "imports": { "three": "./assets/vendor/three.module.min.js", "three/addons/": "./assets/vendor/three-addons/" } }</script>
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 300; font-display: block; src: url("assets/fonts/space-grotesk-latin-300-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 300; font-display: block; src: url("assets/fonts/space-grotesk-latin-ext-300-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/space-grotesk-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/space-grotesk-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/space-grotesk-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Space Grotesk"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/space-grotesk-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Space Mono"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/space-mono-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Space Mono"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/space-mono-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      /* fonts:end */
+      :root { --mf-bg: #03050a; --ink: #e4eaf4; --acc: #ffb867; --sup: #6e86a8; --dim: #2a3446; --mf-grain-opacity: .04;
+        --sg: "Space Grotesk", system-ui, sans-serif; --sm: "Space Mono", ui-monospace, monospace; }
+      #root { background: #03050a; }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 65%, rgba(0,0,0,.5) 100%); z-index: 3; }
+      #stars { position: absolute; left: 0; top: 0; }
+      #gl { position: absolute; left: 0; top: 0; }
+      #title { position: absolute; left: 80px; top: 250px; font: 300 132px/1 var(--sg); letter-spacing: -0.02em; color: var(--ink); z-index: 4; }
+      #title b { font-weight: 700; }
+      #sub { position: absolute; left: 84px; top: 400px; font: 500 28px/1 var(--sg); letter-spacing: .14em; text-transform: uppercase; color: var(--sup); z-index: 4; }
+      .lbl { position: absolute; left: 0; top: 0; z-index: 4; }
+      .lbl svg { position: absolute; left: 0; top: 0; overflow: visible; }
+      .lbl span { position: absolute; white-space: nowrap; font: 500 30px/1 var(--sg); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); }
+      #here { position: absolute; left: 0; top: 0; z-index: 4; overflow: visible; }
+      #counter { position: absolute; left: 80px; top: 1450px; z-index: 4; }
+      #counter .k { font: 500 26px/1 var(--sg); letter-spacing: .14em; color: var(--sup); }
+      #counter .v { margin-top: 12px; font: 700 96px/1 var(--sm); color: var(--acc); font-variant-numeric: tabular-nums; }
+      #counter .v small { font-size: 40px; color: var(--sup); margin-left: 12px; }
+      #bar { position: absolute; left: 80px; top: 1640px; z-index: 4; }
+      #barL { height: 4px; background: var(--acc); position: relative; }
+      #barL::before, #barL::after { content: ""; position: absolute; top: -10px; width: 4px; height: 24px; background: var(--acc); }
+      #barL::before { left: 0; } #barL::after { right: 0; }
+      #barT { margin-top: 18px; font: 700 30px/1 var(--sm); color: var(--acc); }
+      #src { position: absolute; left: 80px; top: 1730px; width: 920px; font: 500 22px/1.4 var(--sg); color: var(--sup); z-index: 4; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <canvas id="stars" class="clip" width="1080" height="1920" data-start="0" data-duration="4.5" data-track-index="0"></canvas>
+      <canvas id="gl" class="clip" width="1080" height="1920" data-start="0" data-duration="4.5" data-track-index="1"></canvas>
+      <div id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="2">Cosmos <b>scale</b></div>
+      <div id="sub" class="clip" data-start="0" data-duration="4.5" data-track-index="3">Earth and Moon · sizes and distance to scale</div>
+      <svg id="here" class="clip" width="1080" height="1920" data-start="0" data-duration="4.5" data-track-index="4"><circle id="r1" r="20" fill="none" stroke="#ffb867" stroke-width="3" /><circle id="r2" r="20" fill="none" stroke="#ffb867" stroke-width="2" /><circle id="hd" r="7" fill="#ffb867" /></svg>
+      <div class="lbl clip" id="lE" data-start="0" data-duration="4.5" data-track-index="5"><svg width="1" height="1"><line id="lEl" stroke="#6e86a8" stroke-width="1" /></svg><span id="lEt">Earth · you are here</span></div>
+      <div class="lbl clip" id="lM" data-start="0" data-duration="4.5" data-track-index="6"><svg width="1" height="1"><line id="lMl" stroke="#6e86a8" stroke-width="1" /><circle id="mRing" r="16" fill="none" stroke="#6e86a8" stroke-width="1.5" /></svg><span id="lMt">Moon · 384,400 km</span></div>
+      <div id="counter" class="clip" data-start="0" data-duration="4.5" data-track-index="7"><div class="k">FRAME WIDTH</div><div class="v"><span id="cv">0</span><small>km</small></div></div>
+      <div id="bar" class="clip" data-start="0" data-duration="4.5" data-track-index="8"><div id="barL"></div><div id="barT"></div></div>
+      <div id="src" class="clip" data-start="0" data-duration="4.5" data-track-index="9">Mean radius 6,371 km and 1,737 km, mean distance 384,400 km (published fact sheets). Surface: illustration.</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      // static seeded starfield: three depth layers, power-law brightness (few bright stars)
+      { const c = document.getElementById("stars").getContext("2d"), r = MF.rng("cosmos-scale");
+        for (let layer = 0; layer < 3; layer++) for (let i = 0; i < [900, 350, 90][layer]; i++) {
+          const b = Math.pow(r(), 3.2), x = r() * 1080, y = r() * 1920, s = [1, 1.6, 2.5][layer] * (0.6 + b * 0.8);
+          c.fillStyle = `rgba(${215 + 40 * r()},${225 + 30 * r()},255,${0.25 + 0.75 * b})`; c.beginPath(); c.arc(x, y, s / 2 + 0.3, 0, Math.PI * 2); c.fill(); } }
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.fromTo(["#title", "#sub"], { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, stagger: 0.12, ease: "power2.out" }, 0.05);
+      tl.fromTo(["#counter", "#bar", "#src"], { opacity: 0 }, { opacity: 1, duration: 0.4, stagger: 0.08 }, 0.3);
+      tl.seek(0);
+    </script>
+    <script type="module">
+      import * as THREE from "three";
+      import { createStage, onSeek, ease, seg, lerp, rng, project } from "./assets/vendor/mf-three.js";
+      const { renderer, scene, camera, render } = createStage({ fov: 30, near: 0.05, far: 4000, shadows: false, toneMapping: "neutral" });
+      const RE = 6371, RM = 1737 / RE, DM = 384400 / RE;          // Earth radii
+      // procedural Earth surface (seeded value noise -> oceans, land, ice, clouds)
+      const W = 512, H = 256, cvs = document.createElement("canvas"); cvs.width = W; cvs.height = H;
+      const g = cvs.getContext("2d"), img = g.createImageData(W, H), r = rng("earth");
+      const grid = []; for (let i = 0; i < 64 * 32; i++) grid.push(r());
+      const vn = (x, y) => { const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi, s = (a) => a * a * (3 - 2 * a);
+        const v = (i, j) => grid[(((j % 32) + 32) % 32) * 64 + (((i % 64) + 64) % 64)];
+        return lerp(lerp(v(xi, yi), v(xi + 1, yi), s(xf)), lerp(v(xi, yi + 1), v(xi + 1, yi + 1), s(xf)), s(yf)); };
+      const fbm = (x, y) => vn(x, y) * 0.5 + vn(x * 2, y * 2) * 0.25 + vn(x * 4, y * 4) * 0.15 + vn(x * 8, y * 8) * 0.1;
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const u = x / W * 8, v = y / H * 4, n = fbm(u, v), lat = Math.abs(y / H - 0.5) * 2, cl = fbm(u * 1.7 + 9, v * 2.2 + 3), i = (y * W + x) * 4;
+        let c = n > 0.53 ? (lat > 0.55 ? [196, 186, 150] : [72 + 60 * (n - 0.53) * 4, 104, 58]) : [22, 56 + 30 * n, 112 + 40 * n];
+        if (lat > 0.86) c = [235, 240, 245];
+        const ca = Math.max(0, (cl - 0.55) * 3.2); c = c.map((k) => k * (1 - ca) + 245 * ca);
+        img.data[i] = c[0]; img.data[i + 1] = c[1]; img.data[i + 2] = c[2]; img.data[i + 3] = 255;
+      }
+      g.putImageData(img, 0, 0);
+      const tex = new THREE.CanvasTexture(cvs); tex.colorSpace = THREE.SRGBColorSpace;
+      const earth = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 32), new THREE.MeshStandardMaterial({ map: tex, roughness: 0.8 }));
+      earth.rotation.z = 0.41; scene.add(earth);
+      const atmo = new THREE.Mesh(new THREE.SphereGeometry(1.025, 64, 32), new THREE.MeshBasicMaterial({ color: "#6fa8ff", transparent: true, opacity: 0.12, side: THREE.BackSide }));
+      scene.add(atmo);
+      const MA = -0.5;   // the Moon's place on its orbit (radians)
+      const moonPos = new THREE.Vector3(Math.cos(MA) * DM, 0, Math.sin(MA) * DM);
+      const moon = new THREE.Mesh(new THREE.SphereGeometry(RM, 48, 24), new THREE.MeshStandardMaterial({ color: "#a9a6a0", roughness: 0.95 }));
+      moon.position.copy(moonPos); scene.add(moon);
+      const orbitPts = []; for (let i = 0; i <= 256; i++) { const a = i / 256 * Math.PI * 2; orbitPts.push(new THREE.Vector3(Math.cos(a) * DM, 0, Math.sin(a) * DM)); }
+      const orbitMat = new THREE.LineBasicMaterial({ color: "#6e86a8", transparent: true, opacity: 0 });
+      const orbit = new THREE.Line(new THREE.BufferGeometry().setFromPoints(orbitPts), orbitMat); scene.add(orbit);
+      const sun = new THREE.DirectionalLight(0xffffff, 3.2); sun.position.set(-1, 0.25, 0.55); scene.add(sun);
+      scene.add(new THREE.AmbientLight(0x22324a, 0.25));
+      // camera: logarithmic pull-back, elevation 24°, target drifts from Earth toward the Earth-Moon midpoint
+      const L0 = Math.log10(9.6), L1 = Math.log10(232), T0 = 0.5, TD = 3.4;
+      const $ = (id) => document.getElementById(id);
+      const fmt = (v) => Math.round(v).toLocaleString("en-US");
+      function draw(t) {
+        const k = ease.inOutCubic(seg(t, T0, TD)), d = Math.pow(10, lerp(L0, L1, k));
+        const tgt = new THREE.Vector3().lerpVectors(new THREE.Vector3(0, 0, 0), moonPos.clone().multiplyScalar(0.5), ease.inOutCubic(seg(t, T0 + 1.2, TD - 1.2)));
+        const el = 24 * Math.PI / 180, az = 0.35;
+        camera.position.set(tgt.x + d * Math.cos(el) * Math.sin(az), tgt.y + d * Math.sin(el), tgt.z + d * Math.cos(el) * Math.cos(az));
+        camera.lookAt(tgt);
+        camera.setViewOffset(1080, 1920, 0, -(900 - 960), 1080, 1920);
+        earth.rotation.y = 0.6 + t * 0.12;
+        orbitMat.opacity = 0.7 * seg(t, 2.6, 0.8);
+        render();
+        // frame width (km) at the target distance; counter and scale bar move with the zoom
+        const widthKm = 2 * d * Math.tan(15 * Math.PI / 180) * (1080 / 1920) * RE, pxPerKm = 1080 / widthKm;
+        $("cv").textContent = fmt(widthKm);
+        const L = Math.pow(10, Math.floor(Math.log10(400 / pxPerKm)));
+        $("barL").style.width = (L * pxPerKm).toFixed(1) + "px"; $("barT").textContent = fmt(L) + " km";
+        // labels with 1 px leaders; Earth label + "you are here" marker; Moon label once the camera finds it
+        const pe = project(new THREE.Vector3(0, 0, 0), camera), pm = project(moonPos, camera);
+        const ea = seg(t, 0.6, 0.3), ma = seg(t, 2.9, 0.3), lead = (id, a, b, f) => { const l = $(id); l.setAttribute("x1", a[0]); l.setAttribute("y1", a[1]); l.setAttribute("x2", lerp(a[0], b[0], f)); l.setAttribute("y2", lerp(a[1], b[1], f)); };
+        const er = 1 / (2 * d * Math.tan(15 * Math.PI / 180)) * 1920;     // Earth radius in px
+        const eA = [pe.x - Math.max(er * 0.7, 14), pe.y + Math.max(er * 0.7, 14)], eB = [eA[0] - 50, eA[1] + 90];
+        lead("lEl", eA, eB, ea); $("lEt").style.left = Math.max(40, eB[0] - 20) + "px"; $("lEt").style.top = eB[1] + 12 + "px"; $("lEt").style.opacity = seg(t, 0.9, 0.25);
+        $("mRing").setAttribute("cx", pm.x); $("mRing").setAttribute("cy", pm.y); $("mRing").setAttribute("opacity", ma);
+        const mA = [pm.x - 12, pm.y - 12], mB = [mA[0] - 60, mA[1] - 110];
+        lead("lMl", mA, mB, ma); $("lMt").style.left = Math.min(mB[0] - 160, 1040 - 330) + "px"; $("lMt").style.top = mB[1] - 44 + "px"; $("lMt").style.opacity = seg(t, 3.2, 0.25);
+        const ph = ((t % 1.2) / 1.2), show = seg(t, 1.8, 0.3);
+        for (const [id, off] of [["r1", 0], ["r2", 0.5]]) { const p = (ph + off) % 1, c = $(id); c.setAttribute("cx", pe.x); c.setAttribute("cy", pe.y); c.setAttribute("r", 12 + 34 * p); c.setAttribute("opacity", show * (1 - p)); }
+        $("hd").setAttribute("cx", pe.x); $("hd").setAttribute("cy", pe.y); $("hd").setAttribute("opacity", show);
+      }
+      onSeek(draw);
+    </script>
+  </body>
+</html>

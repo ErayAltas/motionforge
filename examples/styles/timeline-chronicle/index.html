@@ -1,0 +1,152 @@
+<!doctype html>
+<!--
+  motionforge style preview: timeline-chronicle
+  © 2026 motionforge contributors, MIT
+  Signature scenes "year dolly" + "era band": the whole track slides on x (1.2 s power3.inOut), the coral
+  fill grows along the line, the year rolls like an odometer (only changed columns, 0.6 s power2.out,
+  0.05 s apart), the next mounted card drops 120 px on its wire and swings 4° -> -2° -> 0
+  (elastic.out(1, 0.5)), the label plate fades, then an era band draws under the line.
+  Spacing is proportional to time (130 px per year) with a break mark over the 12-year gap.
+  The company, dates and pictures are fictional; the "photos" are vector illustrations, labelled.
+  DM Serif Display + Work Sans.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "DM Serif Display"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/dm-serif-display-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "DM Serif Display"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/dm-serif-display-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Work Sans"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/work-sans-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Work Sans"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/work-sans-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Work Sans"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/work-sans-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Work Sans"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/work-sans-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Work Sans"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/work-sans-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Work Sans"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/work-sans-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      /* fonts:end */
+      :root { --mf-bg: #17302f; --ink: #f3eee3; --acc: #ff8c61; --mount: #fbf8f1; --sup: #8fa6a1; --dark: #1e2523; --mf-grain-opacity: .05;
+        --ds: "DM Serif Display", Georgia, serif; --ws: "Work Sans", system-ui, sans-serif; }
+      #root { background: var(--mf-bg); }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 60%, rgba(0,0,0,.3) 100%); }
+      #spot { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; background: radial-gradient(600px 600px at 540px 850px, #234542 0%, rgba(35,69,66,0) 100%); }
+      #ttl { position: absolute; left: 80px; top: 214px; font: 700 56px/1 var(--ws); color: var(--ink); }
+      #ttl span { color: var(--sup); font-weight: 500; }
+      #year { position: absolute; left: 80px; top: 300px; height: 250px; display: flex; overflow: hidden; }
+      .yc { position: relative; width: 132px; height: 250px; overflow: hidden; }
+      .yc .strip { position: absolute; left: 0; top: 0; width: 100%; }
+      .yc .strip div { height: 250px; font: 400 250px/250px var(--ds); color: var(--ink); text-align: center; font-variant-numeric: lining-nums; }
+      #track { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      #lineBase { position: absolute; top: 1117px; left: -1200px; width: 4400px; height: 6px; background: rgba(143,166,161,.5); }
+      #lineFill { position: absolute; top: 1117px; left: -1200px; height: 6px; background: var(--acc); }
+      .tick { position: absolute; width: 2px; background: rgba(143,166,161,.8); }
+      .mk { position: absolute; top: 1104px; width: 32px; height: 32px; margin-left: -16px; border-radius: 50%; background: var(--sup); border: 5px solid var(--mf-bg); }
+      .card { position: absolute; top: 592px; width: 520px; height: 520px; margin-left: -260px; transform-origin: 50% -70px; }
+      .wire { position: absolute; left: 0; top: -70px; overflow: visible; }
+      .mount { position: absolute; inset: 0; background: var(--mount); padding: 24px; box-shadow: 0 18px 30px rgba(0,0,0,.35); }
+      .mount::after { content: ""; position: absolute; inset: 23px; border: 1px solid rgba(0,0,0,.18); }
+      .plate { position: absolute; top: 1180px; width: 400px; margin-left: -200px; padding: 18px 22px; background: var(--mount); color: var(--dark); }
+      .plate .h { font: 400 34px/1.15 var(--ws); }
+      .plate .c { margin-top: 10px; font: 500 22px/1 var(--ws); letter-spacing: .12em; text-transform: uppercase; color: #6c7a76; }
+      #brk { position: absolute; top: 1096px; overflow: visible; }
+      #era { position: absolute; top: 1140px; height: 22px; background: rgba(143,166,161,.25); transform-origin: left; }
+      #eraL { position: absolute; top: 1176px; font: 500 30px/1.3 var(--ws); color: var(--sup); }
+      #eraL b { color: var(--ink); font-weight: 700; }
+      #cap { position: absolute; left: 80px; top: 1470px; width: 920px; font: 500 46px/1.25 var(--ws); color: var(--ink); }
+      #note { position: absolute; left: 80px; top: 1640px; font: 500 22px/1 var(--ws); letter-spacing: .12em; color: rgba(143,166,161,.8); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="spot" class="clip" data-start="0" data-duration="4.5" data-track-index="0"></div>
+      <div id="ttl" class="clip" data-start="0" data-duration="4.5" data-track-index="1">Timeline <span>chronicle</span></div>
+      <div id="year" class="clip" data-start="0" data-duration="4.5" data-track-index="2"></div>
+      <div id="track" class="clip" data-start="0" data-duration="4.5" data-track-index="3">
+        <div id="lineBase"></div><div id="lineFill"></div>
+        <div id="era"></div><div id="eraL"><b>The garage years</b> 1978–1984</div>
+      </div>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="4">Six years later, the first real workshop.</div>
+      <div id="note" class="clip" data-start="0" data-duration="4.5" data-track-index="5">FICTIONAL COMPANY · ILLUSTRATED PICTURES</div>
+    </div>
+
+    <script>
+      const DUR = 4.5, PX = 130, Y0 = 1978, track = document.getElementById("track");
+      // events: year, x on the track (proportional; the 12-year gap is compressed with a break mark)
+      const EV = [[1978, 540, "Two benches in a garage"], [1984, 540 + 6 * PX, "First workshop opens"], [1996, 540 + 6 * PX + 900, "The shop on Quay Street"]];
+      const PICS = [
+        // sepia garage
+        `<svg width="472" height="472" viewBox="0 0 592 592"><rect width="592" height="592" fill="#c9b48e"/><rect y="380" width="592" height="212" fill="#8f7a58"/><path d="M60 380 V170 L296 70 L532 170 V380Z" fill="#a88f68"/><rect x="150" y="200" width="292" height="180" fill="#5d4a33"/>
+          <g stroke="#7d6a4c" stroke-width="5">${[0, 1, 2, 3, 4, 5].map((i) => `<line x1="150" y1="${220 + i * 30}" x2="442" y2="${220 + i * 30}"/>`).join("")}</g><rect x="180" y="330" width="230" height="16" fill="#3e3122"/><rect x="200" y="346" width="12" height="40" fill="#3e3122"/><rect x="380" y="346" width="12" height="40" fill="#3e3122"/>
+          <rect width="592" height="592" fill="#704214" opacity=".18"/></svg>`,
+        // workshop interior, faded colour
+        `<svg width="472" height="472" viewBox="0 0 592 592"><rect width="592" height="592" fill="#c7c1ad"/><rect x="330" y="60" width="210" height="250" fill="#e9e1c6"/><line x1="435" y1="60" x2="435" y2="310" stroke="#8d8672" stroke-width="8"/><line x1="330" y1="185" x2="540" y2="185" stroke="#8d8672" stroke-width="8"/>
+          <rect y="420" width="592" height="172" fill="#8a6f52"/><rect x="40" y="340" width="420" height="26" fill="#6b4f37"/><rect x="60" y="366" width="20" height="120" fill="#6b4f37"/><rect x="420" y="366" width="20" height="120" fill="#6b4f37"/>
+          <g fill="#4d5b55"><rect x="60" y="110" width="200" height="12"/><rect x="60" y="200" width="200" height="12"/></g><rect x="80" y="70" width="34" height="40" fill="#a35d3c"/><rect x="130" y="80" width="50" height="30" fill="#6f8a7e"/><rect x="200" y="160" width="40" height="40" fill="#b58b4c"/>
+          <circle cx="200" cy="320" r="26" fill="#3a3f3b"/><rect x="190" y="270" width="20" height="50" fill="#3a3f3b"/><rect width="592" height="592" fill="#d8b98a" opacity=".12"/></svg>`,
+        // storefront
+        `<svg width="472" height="472" viewBox="0 0 592 592"><rect width="592" height="592" fill="#b8c4c2"/><rect x="40" y="120" width="512" height="472" fill="#7d4b3a"/><rect x="80" y="230" width="250" height="250" fill="#2d3a3b"/><rect x="370" y="230" width="140" height="362" fill="#2d3a3b"/><rect x="40" y="140" width="512" height="60" fill="#e8dfc8"/></svg>`,
+      ];
+      const ticks = [];
+      for (let y = Y0 - 6; y <= 1990; y++) { const x = 540 + (y - Y0) * PX; const t = document.createElement("div"); t.className = "tick"; const big = y % 10 === 0;
+        Object.assign(t.style, { left: x + "px", top: (1120 - (big ? 24 : 10)) + "px", height: (big ? 48 : 20) + "px" }); track.appendChild(t); }
+      // break mark (two slanted ticks) in the compressed gap
+      const bx = EV[1][1] + 6 * PX + 60;
+      track.insertAdjacentHTML("beforeend", `<svg id="brk" width="60" height="50" style="left:${bx}px"><line x1="10" y1="44" x2="26" y2="6" stroke="#8fa6a1" stroke-width="4"/><line x1="28" y1="44" x2="44" y2="6" stroke="#8fa6a1" stroke-width="4"/></svg>`);
+      EV.forEach(([yr, x, h], i) => {
+        track.insertAdjacentHTML("beforeend", `<div class="mk" id="m${i}" style="left:${x}px"></div>
+          <div class="card" id="c${i}" style="left:${x}px"><svg class="wire" width="520" height="80"><path d="M120 70 L260 8 L400 70" fill="none" stroke="#c9c2b0" stroke-width="1.5"/><circle cx="260" cy="8" r="6" fill="#8fa6a1"/></svg>
+            <div class="mount">${PICS[i]}</div></div>
+          <div class="plate" id="p${i}" style="left:${x}px"><div class="h">${h}</div><div class="c">${yr} · illustration</div></div>`);
+      });
+      // year odometer: four columns; only the changed ones roll
+      const yearEl = document.getElementById("year"), cols = [];
+      const A = String(EV[0][0]), B = String(EV[1][0]);
+      [...A].forEach((d, i) => {
+        const c = document.createElement("div"); c.className = "yc"; const s = document.createElement("div"); s.className = "strip";
+        const from = +d, to = +B[i], steps = (to - from + 10) % 10;
+        for (let k = 0; k <= steps; k++) { const e = document.createElement("div"); e.textContent = (from + k) % 10; s.appendChild(e); }
+        c.appendChild(s); yearEl.appendChild(c); cols.push({ s, steps });
+      });
+      const era = document.getElementById("era"), eraL = document.getElementById("eraL");
+      Object.assign(era.style, { left: EV[0][1] + "px", width: (EV[1][1] - EV[0][1]) + "px" });
+      eraL.style.left = (EV[1][1] - 470) + "px";
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      gsap.set("#lineFill", { width: 1200 + EV[0][1] });
+      gsap.set("#m0", { backgroundColor: "#ff8c61" });
+      tl.fromTo(["#ttl", "#year"], { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, stagger: 0.1, ease: "power2.out" }, 0.05);
+      tl.fromTo(["#lineBase", ".tick", ".mk"], { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.1);
+      tl.fromTo("#c0", { y: -120, rotate: 4, opacity: 0 }, { y: 0, opacity: 1, duration: 0.3, ease: "power2.in" }, 0.15);
+      tl.to("#c0", { keyframes: [{ rotate: -2, duration: 0.3 }, { rotate: 0, duration: 0.3 }], ease: "sine.inOut" }, 0.45);
+      tl.fromTo("#p0", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.5);
+      gsap.set(["#c1", "#p1"], { opacity: 0 });
+      // the dolly: track slides, coral fill grows, current marker turns coral, the old one support
+      const D0 = 1.0;
+      tl.to("#track", { x: -(EV[1][1] - 540), duration: 1.2, ease: "power3.inOut" }, D0);
+      tl.to("#lineFill", { width: 1200 + EV[1][1], duration: 1.2, ease: "power3.inOut" }, D0);
+      tl.to("#m0", { backgroundColor: "#8fa6a1", duration: 0.3 }, D0 + 0.6);
+      tl.to("#m1", { backgroundColor: "#ff8c61", duration: 0.3 }, D0 + 0.9);
+      tl.to(["#c0", "#p0"], { opacity: 0.7, duration: 0.4 }, D0 + 0.4);
+      // year rolls: changed columns, 0.6 s power2.out, 0.05 s after the last
+      let k = 0;
+      cols.forEach((c) => { if (c.steps) { tl.to(c.s, { y: -250 * c.steps, duration: 0.6, ease: "power2.out" }, D0 + 0.3 + k * 0.05); k++; } });
+      // card drops 120 px on its wire and swings 4 -> -2 -> 0 (elastic.out(1, 0.5))
+      tl.fromTo("#c1", { opacity: 0, y: -120, rotate: 4 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.in" }, D0 + 0.85);
+      tl.fromTo("#c1", { rotate: 4 }, { rotate: 0, duration: 0.9, ease: "elastic.out(1, 0.5)", immediateRender: false }, D0 + 1.2);
+      tl.to("#p1", { opacity: 1, duration: 0.3 }, D0 + 1.5);
+      tl.fromTo("#cap", { opacity: 0 }, { opacity: 1, duration: 0.3 }, D0 + 1.6);
+      // era band under the line
+      tl.fromTo("#era", { scaleX: 0 }, { scaleX: 1, duration: 0.8, ease: "power2.inOut" }, 3.0);
+      tl.fromTo("#eraL", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 3.5);
+      tl.fromTo("#note", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.4);
+      // hold push 1.5 %
+      tl.fromTo("#track", { scale: 1 }, { scale: 1.015, duration: 2.2, ease: "none", transformOrigin: "540px 900px", immediateRender: false }, 2.3);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

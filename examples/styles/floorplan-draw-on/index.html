@@ -1,0 +1,146 @@
+<!doctype html>
+<!--
+  motionforge style preview: floorplan-draw-on
+  © 2026 motionforge contributors, MIT
+  A fictional two-bedroom plan on drafting vellum: outer walls trace from the entrance (1.2 s), inner walls
+  (0.8 s), the graphite poché fills in one sweep, windows and door swings follow, then rooms take the ochre
+  highlighter in walking order with a label stamp and an area count-up. Areas are sample values marked approx.
+  Fonts: Archivo variable (width 87.5) and Overpass Mono (Fontsource, OFL).
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Archivo"; font-style: normal; font-weight: 100 900; font-stretch: 62% 125%; font-display: block; src: url("assets/fonts/archivo-latin-wdth-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Archivo"; font-style: normal; font-weight: 100 900; font-stretch: 62% 125%; font-display: block; src: url("assets/fonts/archivo-latin-ext-wdth-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Overpass Mono"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/overpass-mono-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Overpass Mono"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/overpass-mono-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      /* fonts:end */
+      :root { --vellum: #F0ECE3; --poche: #2B2926; --ink: #3A3733; --fine: #8C867C; --acc: #E8A317; --sup: #7C9AA6; --mf-grain-opacity: .05; }
+      html, body { background: var(--vellum); }
+      #root { background: var(--vellum); color: var(--ink); }
+      #root::before { mix-blend-mode: multiply; opacity: .08; }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 62%, rgba(60,50,30,.10) 100%); }
+      #title { position: absolute; left: 80px; top: 262px; white-space: nowrap; font: 700 86px/1 "Archivo", sans-serif; font-stretch: 87.5%; letter-spacing: .02em; text-transform: uppercase; }
+      #sub { position: absolute; left: 84px; top: 380px; font: 500 26px/1 "Overpass Mono", monospace; letter-spacing: .06em; color: var(--fine); }
+      #plan { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: visible; transform-origin: 540px 930px; }
+      .wall { fill: var(--poche); fill-opacity: 0; stroke: var(--poche); stroke-width: 2; }
+      .fine { fill: none; stroke: var(--fine); stroke-width: 1.5; }
+      .room { fill: var(--acc); opacity: 0; }
+      .lab { position: absolute; transform: translate(-50%, -50%); text-align: center; opacity: 0; }
+      .lab b { display: block; font: 600 42px/1 "Archivo", sans-serif; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
+      .lab span { display: block; margin-top: 10px; font: 500 34px/1 "Overpass Mono", monospace; color: var(--ink); font-variant-numeric: tabular-nums; }
+      #north { position: absolute; left: 90px; top: 1400px; width: 60px; height: 70px; }
+      #scale { position: absolute; left: 170px; top: 1420px; font: 500 22px/1 "Overpass Mono", monospace; color: var(--ink); }
+      #scale i { display: flex; width: 200px; height: 10px; margin-bottom: 8px; border: 1.5px solid var(--ink); }
+      #scale i em { flex: 1; } #scale i em:nth-child(odd) { background: var(--ink); }
+      #total { position: absolute; right: 180px; top: 1404px; padding: 14px 22px; border-radius: 12px; background: #fff8e6; border: 1.5px solid var(--ink); font: 500 30px/1 "Overpass Mono", monospace; color: var(--ink); }
+      #cap { position: absolute; left: 80px; right: 80px; top: 1530px; font: 600 54px/1.15 "Archivo", sans-serif; color: var(--ink); }
+      #note { position: absolute; left: 80px; top: 1650px; font: 500 22px/1 "Overpass Mono", monospace; color: var(--fine); }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="0">Floorplan draw-on</div>
+      <div id="sub" class="clip" data-start="0" data-duration="4.5" data-track-index="1">Flat 4B · 2 bedrooms · sample plan</div>
+      <svg id="plan" class="clip" viewBox="0 0 1080 1920" data-start="0" data-duration="4.5" data-track-index="2">
+        <defs>
+          <pattern id="tile" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M0 0 H24 V24" fill="none" stroke="#8C867C" stroke-width="1" opacity=".5"/></pattern>
+        </defs>
+        <g id="rooms">
+          <rect id="rLiving" class="room" x="132" y="512" width="816" height="362"/>
+          <rect id="rBed" class="room" x="132" y="886" width="282" height="462"/>
+          <rect id="rBath" class="room" x="666" y="886" width="282" height="228"/>
+        </g>
+        <rect x="666" y="886" width="282" height="228" fill="url(#tile)" opacity=".16"/>
+        <g id="furn" class="fine">
+          <rect x="170" y="690" width="300" height="110" rx="14"/><rect x="170" y="690" width="300" height="34" rx="10"/>
+          <rect x="230" y="560" width="180" height="90" rx="8"/>
+          <rect x="700" y="512" width="248" height="70"/><circle cx="760" cy="547" r="20"/><circle cx="820" cy="547" r="20"/><rect x="870" y="525" width="60" height="44" rx="6"/>
+          <rect x="700" y="660" width="170" height="120" rx="6"/><circle cx="700" cy="720" r="16"/><circle cx="870" cy="720" r="16"/>
+          <rect x="170" y="1080" width="220" height="250" rx="8"/><rect x="185" y="1095" width="85" height="50" rx="8"/><rect x="290" y="1095" width="85" height="50" rx="8"/>
+          <rect x="800" y="900" width="140" height="200" rx="30"/><circle cx="700" cy="1060" r="22"/>
+          <rect x="700" y="1260" width="240" height="70"/><rect x="760" y="1200" width="60" height="50" rx="6"/>
+        </g>
+        <g id="glazing" stroke="#7C9AA6" stroke-width="2">
+          <g class="win"><rect x="230" y="488" width="200" height="24" fill="#F0ECE3" stroke="none"/><path d="M230 495 H430 M230 505 H430"/></g>
+          <g class="win"><rect x="560" y="488" width="240" height="24" fill="#F0ECE3" stroke="none"/><path d="M560 495 H800 M560 505 H800"/></g>
+          <g class="win"><rect x="108" y="1050" width="24" height="200" fill="#F0ECE3" stroke="none"/><path d="M115 1050 V1250 M125 1050 V1250"/></g>
+          <g class="win"><rect x="948" y="1190" width="24" height="140" fill="#F0ECE3" stroke="none"/><path d="M955 1190 V1330 M965 1190 V1330"/></g>
+        </g>
+        <g id="walls"></g>
+        <g id="doors" class="fine" stroke="#3A3733"></g>
+      </svg>
+      <div id="lLiving" class="lab clip" style="left:600px;top:760px" data-start="0" data-duration="4.5" data-track-index="3"><b>Living · kitchen</b><span>0.0 m²</span></div>
+      <div id="lBed" class="lab clip" style="left:273px;top:980px" data-start="0" data-duration="4.5" data-track-index="4"><b>Bedroom</b><span>0.0 m²</span></div>
+      <div id="lBath" class="lab clip" style="left:740px;top:960px" data-start="0" data-duration="4.5" data-track-index="5"><b>Bath</b><span>0.0 m²</span></div>
+      <svg id="north" class="clip" viewBox="0 0 60 70" data-start="0" data-duration="4.5" data-track-index="6"><path d="M30 4 L 46 50 L 30 40 L 14 50Z" fill="#3A3733"/><text x="30" y="68" text-anchor="middle" font-family="Overpass Mono" font-size="18" fill="#3A3733">N</text></svg>
+      <div id="scale" class="clip" data-start="0" data-duration="4.5" data-track-index="7"><i><em></em><em></em><em></em><em></em></i>0 &nbsp; 1 &nbsp; 2 m</div>
+      <div id="total" class="clip" data-start="0" data-duration="4.5" data-track-index="8">Total 64.2 m² net</div>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="9">Walk in, living room first</div>
+      <div id="note" class="clip" data-start="0" data-duration="4.5" data-track-index="10">Sample plan · areas approx. · furniture illustrative</div>
+    </div>
+
+    <script>
+      const NS = "http://www.w3.org/2000/svg";
+      const W = document.getElementById("walls"), D = document.getElementById("doors");
+      const rect = (x, y, w, h, cls) => { const r = document.createElementNS(NS, "rect"); Object.entries({ x, y, width: w, height: h }).forEach(([k, v]) => r.setAttribute(k, v)); r.setAttribute("class", "wall " + cls); W.appendChild(r); return r; };
+      // outer walls, clockwise from the entrance (bottom, x 500..590)
+      [[590, 1348, 382, 24], [948, 488, 24, 884], [108, 488, 864, 24], [108, 488, 24, 884], [108, 1348, 392, 24]].forEach((a) => rect(...a, "outer"));
+      // inner walls
+      [[132, 874, 308, 12], [640, 874, 308, 12], [414, 886, 12, 294], [414, 1260, 12, 88], [654, 886, 12, 74], [654, 1040, 12, 160], [654, 1280, 12, 68], [666, 1114, 282, 12]].forEach((a) => rect(...a, "inner"));
+      // doors: leaf + quarter arc (1 px), swing 0 -> 90 deg in walk order
+      const door = (hx, hy, len, a0, dir) => {
+        const g = document.createElementNS(NS, "g"); g.setAttribute("class", "door");
+        const leaf = document.createElementNS(NS, "line"); leaf.setAttribute("x1", hx); leaf.setAttribute("y1", hy);
+        const arc = document.createElementNS(NS, "path"); arc.setAttribute("stroke-width", 1); arc.setAttribute("stroke-dasharray", "6 5");
+        g.append(arc, leaf); D.appendChild(g);
+        return { set(k) { const a = (a0 + dir * 90 * k) * Math.PI / 180, b = a0 * Math.PI / 180;
+          leaf.setAttribute("x2", hx + len * Math.cos(a)); leaf.setAttribute("y2", hy + len * Math.sin(a));
+          arc.setAttribute("d", `M${hx + len * Math.cos(b)} ${hy + len * Math.sin(b)} A ${len} ${len} 0 0 ${dir > 0 ? 1 : 0} ${hx + len * Math.cos(a)} ${hy + len * Math.sin(a)}`); } };
+      };
+      const doors = [door(500, 1360, 90, 0, -1), door(420, 1180, 80, 90, 1), door(660, 960, 80, 90, -1), door(660, 1280, 80, -90, 1)];
+      doors.forEach((d) => d.set(0));
+
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.fromTo("#title", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0);
+      tl.fromTo("#sub", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.2);
+      // wall trace: outlines draw (outer 1.2 s from the entrance, inner 0.8 s), then the poché fills in 0.3 s
+      const outer = gsap.utils.toArray("#walls .outer"), inner = gsap.utils.toArray("#walls .inner");
+      [...outer, ...inner].forEach((r) => { const L = 2 * (+r.getAttribute("width") + +r.getAttribute("height")); r.style.strokeDasharray = L; r.style.strokeDashoffset = L; });
+      outer.forEach((r, i) => tl.to(r, { strokeDashoffset: 0, duration: 1.2 / outer.length, ease: "none" }, 0.2 + i * 1.2 / outer.length));
+      tl.to(inner, { strokeDashoffset: 0, duration: 0.8, ease: "power1.inOut", stagger: 0.03 }, 0.8);
+      tl.to([...outer, ...inner], { fillOpacity: 1, duration: 0.3, ease: "power1.inOut" }, 1.65);
+      tl.fromTo("#furn", { opacity: 0 }, { opacity: 1, duration: 0.4 }, 1.6);
+      tl.fromTo(".win", { opacity: 0 }, { opacity: 1, duration: 0.2, stagger: 0.05 }, 1.85);
+      doors.forEach((d, i) => { const o = { k: 0 }; tl.to(o, { k: 1, duration: 0.35, ease: "power2.out", onUpdate: () => d.set(o.k) }, 2.0 + i * 0.08); });
+      tl.fromTo(["#north", "#scale"], { opacity: 0 }, { opacity: 1, duration: 0.3 }, 1.9);
+      tl.fromTo("#total", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.3 }, 2.1);
+      // room beats in walking order: ochre wipe from the door (32 %), label stamp, area counts up
+      const beat = (room, lab, area, t, from) => {
+        tl.fromTo(room, { opacity: 0.32, clipPath: from[0] }, { clipPath: from[1], duration: 0.5, ease: "power2.out" }, t);
+        tl.fromTo(lab, { opacity: 0, scale: 1.12 }, { opacity: 1, scale: 1, duration: 0.25, ease: "back.out(1.4)" }, t + 0.15);
+        const span = document.querySelector(lab + " span"), o = { v: 0 };
+        tl.fromTo(o, { v: 0 }, { v: area, duration: 0.6, ease: "power2.out", onUpdate: () => { span.textContent = o.v.toFixed(1) + " m²"; } }, t + 0.15);
+      };
+      beat("#rLiving", "#lLiving", 31.4, 2.35, ["inset(100% 0 0 0)", "inset(0% 0 0 0)"]);
+      tl.to("#rLiving", { opacity: 0, duration: 0.3 }, 3.3);
+      beat("#rBed", "#lBed", 12.6, 3.35, ["inset(0 0 0 100%)", "inset(0 0 0 0%)"]);
+      tl.fromTo("#cap", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.3, ease: "power2.out" }, 2.4);
+      tl.call(() => {}, null, 0);
+      const cap = document.getElementById("cap");
+      tl.call(() => { cap.textContent = "Walk in, living room first"; }, null, 0.01);
+      tl.call(() => { cap.textContent = "Then the quiet bedroom"; }, null, 3.35);
+      tl.fromTo("#note", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 2.6);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

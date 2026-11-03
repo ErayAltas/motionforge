@@ -1,0 +1,135 @@
+<!doctype html>
+<!--
+  motionforge style preview: interview-doc
+  © 2026 motionforge contributors, MIT
+  Signature scenes "chapter card" + "name super": the chapter card fades in from black (0.4 s), holds and
+  fades out; the interview shot is framed off-centre with eyes at y ≈ 700 and look-room to the right,
+  pushes in slowly, and the super builds: amber rule 0 -> 420 px (0.35 s power3.out), the name rises out
+  of a mask 0.1 s later, the role 0.08 s after it; full verbatim subtitles sit below.
+  No footage: the speaker and the workshop are a vector illustration standing in for the interview
+  (labelled on screen); the person, place and quote are fictional. Source Serif 4 + Public Sans.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Source Serif 4"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/source-serif-4-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Source Serif 4"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/source-serif-4-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Source Serif 4"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/source-serif-4-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Source Serif 4"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/source-serif-4-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Source Serif 4"; font-style: italic; font-weight: 400; font-display: block; src: url("assets/fonts/source-serif-4-latin-400-italic.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Source Serif 4"; font-style: italic; font-weight: 400; font-display: block; src: url("assets/fonts/source-serif-4-latin-ext-400-italic.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Public Sans"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/public-sans-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Public Sans"; font-style: normal; font-weight: 400; font-display: block; src: url("assets/fonts/public-sans-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Public Sans"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/public-sans-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Public Sans"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/public-sans-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      /* fonts:end */
+      :root { --mf-bg: #101211; --ink: #eeeae2; --acc: #e3a63c; --sup: #8d918c; --mf-grain-opacity: .05;
+        --ss: "Source Serif 4", Georgia, serif; --ps: "Public Sans", system-ui, sans-serif; }
+      #root { background: var(--mf-bg); }
+      #root::after { z-index: 2; background: radial-gradient(ellipse at 50% 50%, transparent 60%, rgba(0,0,0,.4) 100%); }
+      #shot { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; overflow: hidden; }
+      #scene { position: absolute; left: 0; top: 0; transform-origin: 40% 40%; }
+      #scrim { position: absolute; left: 0; right: 0; bottom: 0; height: 680px; background: linear-gradient(0deg, rgba(16,18,17,.62) 0%, rgba(16,18,17,.55) 55%, rgba(16,18,17,0) 100%); }
+      #super { position: absolute; left: 80px; top: 1240px; width: 900px; height: 170px; }
+      #rule { position: absolute; left: 0; top: 0; width: 420px; height: 4px; background: var(--acc); transform-origin: left; }
+      .mask { position: absolute; left: 0; overflow: hidden; }
+      #nm { font: 600 50px/1.2 var(--ps); color: var(--ink); }
+      #role { font: 400 36px/1.25 var(--ps); color: var(--ink); }
+      #place { font: 400 30px/1.25 var(--ps); color: var(--sup); }
+      #subs { position: absolute; left: 80px; right: 80px; top: 1452px; text-align: center; font: 600 46px/1.3 var(--ps); color: var(--ink); text-shadow: 0 2px 2px rgba(0,0,0,.6); }
+      #note { position: absolute; left: 80px; top: 1640px; font: 600 22px/1 var(--ps); letter-spacing: .12em; color: rgba(238,234,226,.5); }
+      #chapter { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 50%, #161917 0%, #101211 60%, #080908 100%); z-index: 3; }
+      #chapter .no { position: absolute; left: 0; right: 0; top: 820px; text-align: center; font: 600 30px/1 var(--ps); letter-spacing: .2em; color: var(--acc); }
+      #chapter .tt { position: absolute; left: 0; right: 0; top: 876px; text-align: center; font: 600 112px/1.05 var(--ss); letter-spacing: -0.01em; color: var(--ink); }
+      #chapter .st { position: absolute; left: 0; right: 0; top: 1020px; text-align: center; font: italic 400 40px/1 var(--ss); color: var(--sup); }
+      #black { position: absolute; inset: 0; background: #000; z-index: 4; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="shot" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <svg id="scene" width="1080" height="1920" viewBox="0 0 1080 1920">
+          <defs>
+            <linearGradient id="wall" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a2e24" /><stop offset=".6" stop-color="#211a15" /><stop offset="1" stop-color="#141110" /></linearGradient>
+            <filter id="bl" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="22" /></filter>
+            <filter id="bl2" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="9" /></filter>
+            <radialGradient id="skin" cx=".62" cy=".42" r=".7"><stop offset="0" stop-color="#d9a77f" /><stop offset=".7" stop-color="#a87352" /><stop offset="1" stop-color="#7d523a" /></radialGradient>
+            <linearGradient id="sweater" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2c3631" /><stop offset=".7" stop-color="#46564d" /><stop offset="1" stop-color="#5f7266" /></linearGradient>
+          </defs>
+          <rect width="1080" height="1920" fill="url(#wall)" />
+          <g filter="url(#bl)">
+            <rect x="700" y="180" width="380" height="760" fill="#e9c88f" opacity=".42" />
+            <rect x="740" y="220" width="10" height="700" fill="#2a211b" opacity=".6" /><rect x="700" y="560" width="380" height="10" fill="#2a211b" opacity=".6" />
+            <rect x="40" y="420" width="420" height="16" fill="#6b4f37" /><rect x="40" y="760" width="420" height="16" fill="#6b4f37" />
+            <rect x="70" y="330" width="60" height="90" fill="#8a6a4a" /><rect x="150" y="350" width="40" height="70" fill="#5d6b63" /><rect x="220" y="300" width="90" height="120" fill="#7a5a3c" />
+            <rect x="90" y="680" width="120" height="80" fill="#5a4636" /><rect x="260" y="700" width="70" height="60" fill="#8f7a5a" />
+            <rect x="560" y="1260" width="520" height="40" fill="#5a4030" /><rect x="0" y="1300" width="1080" height="620" fill="#1a1512" />
+          </g>
+          <g id="bokeh" filter="url(#bl2)"></g>
+          <!-- the speaker: three-quarter view facing right, off-centre left -->
+          <g id="person" transform="translate(-90 0)">
+            <path d="M120 1920 C120 1500 170 1170 300 1060 C350 1020 420 1000 470 996 C540 1000 600 1020 650 1060 C760 1150 820 1450 840 1920 Z" fill="url(#sweater)" />
+            <path d="M380 1000 C400 1060 470 1090 540 1060 L560 1000 Z" fill="#cdbfa6" />
+            <path d="M398 860 C398 930 404 980 410 1010 C450 1040 510 1040 552 1010 C556 980 556 930 556 880 Z" fill="#a46e4e" />
+            <g transform="translate(0 46)">
+            <ellipse cx="470" cy="700" rx="128" ry="160" fill="url(#skin)" />
+            <path d="M594 690 C612 712 616 736 600 746 C592 750 588 744 590 736 Z" fill="#c4906b" />
+            <ellipse cx="368" cy="716" rx="22" ry="40" fill="#9b6646" />
+            <path d="M342 690 C330 590 380 520 470 512 C560 506 610 556 606 620 C570 590 520 586 470 600 C430 612 400 640 392 700 C380 690 360 688 342 690 Z" fill="#2a1d16" />
+            <path d="M598 640 C612 700 608 770 580 820 C560 850 530 862 506 862" fill="none" stroke="#f2cf9a" stroke-width="5" opacity=".55" />
+            <path d="M532 664 Q552 654 572 662 M540 694 Q552 700 566 694" fill="none" stroke="#4a3022" stroke-width="5" stroke-linecap="round" opacity=".8" />
+            <path d="M548 790 Q566 796 580 788" fill="none" stroke="#7d4a36" stroke-width="5" stroke-linecap="round" opacity=".7" />
+            </g>
+            <path d="M650 1060 C760 1150 820 1450 840 1920" fill="none" stroke="#e9c88f" stroke-width="6" opacity=".35" />
+          </g>
+        </svg>
+        <div id="scrim"></div>
+      </div>
+      <div id="super" class="clip" data-start="0" data-duration="4.5" data-track-index="1">
+        <div id="rule"></div>
+        <div class="mask" style="top:16px;height:62px"><div id="nm">Ines Halloran</div></div>
+        <div class="mask" style="top:78px;height:48px"><div id="role">Furniture maker, founder</div></div>
+        <div class="mask" style="top:126px;height:40px"><div id="place">Kesswick · 2026</div></div>
+      </div>
+      <div id="subs" class="clip" data-start="0" data-duration="4.5" data-track-index="2">We started with two benches<br />and a borrowed lathe.</div>
+      <div id="note" class="clip" data-start="0" data-duration="4.5" data-track-index="3">ILLUSTRATION IN PLACE OF FOOTAGE · FICTIONAL INTERVIEW</div>
+      <div id="chapter" class="clip" data-start="0" data-duration="4.5" data-track-index="4"><div class="no">02</div><div class="tt">Interview doc</div><div class="st">The first workshop</div></div>
+      <div id="black" class="clip" data-start="0" data-duration="4.5" data-track-index="5"></div>
+    </div>
+
+    <script>
+      const DUR = 4.5, r = MF.rng("interview-doc");
+      const bok = document.getElementById("bokeh");
+      for (let i = 0; i < 14; i++) {
+        const x = r.range(640, 1060), y = r.range(900, 1250), rr = r.range(14, 34);
+        bok.insertAdjacentHTML("beforeend", `<circle cx="${x}" cy="${y}" r="${rr}" fill="${r.pick(["#f0c27a", "#e3a63c", "#f7dfb0"])}" opacity="${r.range(0.15, 0.4).toFixed(2)}" />`);
+      }
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      // chapter card: fade in from black 0.4 s, hold, fade out 0.4 s
+      tl.fromTo("#black", { opacity: 1 }, { opacity: 0, duration: 0.4, ease: "none" }, 0);
+      tl.fromTo("#chapter .no", { opacity: 0, y: 10 }, { opacity: 1, y: 0, duration: 0.35 }, 0.25);
+      tl.to("#black", { opacity: 1, duration: 0.35, ease: "none" }, 1.55);
+      tl.set("#chapter", { opacity: 0 }, 1.9);
+      tl.to("#black", { opacity: 0, duration: 0.01 }, 1.9);
+      // A-roll: slow push 1.5 % over the shot
+      tl.fromTo("#scene", { scale: 1.0 }, { scale: 1.02, duration: 2.6, ease: "sine.inOut" }, 1.9);
+      tl.fromTo(["#subs", "#note"], { opacity: 0 }, { opacity: 1, duration: 0.01 }, 1.95);
+      // name super: rule 0 -> 420 px, name rises 0.1 s later, role 0.08 s after
+      const S = 2.5;
+      tl.fromTo("#rule", { scaleX: 0 }, { scaleX: 1, duration: 0.35, ease: "power3.out" }, S);
+      tl.fromTo("#nm", { y: 64 }, { y: 0, duration: 0.4, ease: "power3.out" }, S + 0.1);
+      tl.fromTo("#role", { y: 50 }, { y: 0, duration: 0.4, ease: "power3.out" }, S + 0.18);
+      tl.fromTo("#place", { y: 42 }, { y: 0, duration: 0.4, ease: "power3.out" }, S + 0.26);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

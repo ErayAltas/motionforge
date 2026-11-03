@@ -1,0 +1,163 @@
+<!doctype html>
+<!--
+  motionforge style preview: map-flyover-pins
+  © 2026 motionforge contributors, MIT
+  A fictional, procedurally drawn street map (seeded SVG: river, major and minor roads, footprints; no real
+  map data) tilted 35 deg in CSS 3D. The coral route draws itself over 2.2 s while the camera trails its head
+  by 0.25 s with a mid-flight pull-back and a small bearing change; the destination pin drops 120 px with
+  back.out(2), pulses once, and its distance chip types on at 24 chars/s. Distances are sample values.
+  Fonts: Manrope, DM Mono (Fontsource, OFL).
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Manrope"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/manrope-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Manrope"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/manrope-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Manrope"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/manrope-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Manrope"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/manrope-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Manrope"; font-style: normal; font-weight: 800; font-display: block; src: url("assets/fonts/manrope-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Manrope"; font-style: normal; font-weight: 800; font-display: block; src: url("assets/fonts/manrope-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "DM Mono"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/dm-mono-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "DM Mono"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/dm-mono-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      /* fonts:end */
+      :root { --land: #0E1C22; --water: #08131A; --minor: #2C4048; --major: #3E5660; --ink: #EDF3F0; --acc: #FF6A3D; --sup: #7FA3A6; --mf-grain-opacity: .02; }
+      html, body { background: var(--land); }
+      #root { background: radial-gradient(900px 700px at 50% 600px, #13252c 0%, var(--land) 70%); }
+      #root::before { z-index: 8; }
+      #root::after { z-index: 8; background: radial-gradient(ellipse at 50% 45%, transparent 55%, rgba(0,0,0,.45) 100%); }
+      #cam { position: absolute; inset: 0; perspective: 1500px; perspective-origin: 540px 820px; overflow: hidden; }
+      #plane { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 540px 820px; transform-style: preserve-3d; }
+      #world { position: absolute; left: 0; top: 0; width: 2400px; height: 3000px; transform-style: preserve-3d; }
+      #map { position: absolute; left: 0; top: 0; width: 2400px; height: 3000px; }
+      .pin { position: absolute; width: 0; height: 0; transform-style: preserve-3d; }
+      .pin .up { position: absolute; left: -40px; top: -120px; width: 80px; height: 120px; transform-origin: 40px 120px; transform: rotateX(-35deg); }
+      .pin svg { position: absolute; left: 0; top: 0; width: 80px; height: 104px; }
+      .pin .sh { position: absolute; left: -26px; top: -9px; width: 52px; height: 18px; border-radius: 50%; background: rgba(0,0,0,.55); }
+      .pin .ring { position: absolute; left: -45px; top: -45px; width: 90px; height: 90px; border-radius: 50%; border: 4px solid var(--acc); opacity: 0; }
+      .chip { position: absolute; left: 340px; top: 880px; z-index: 6; text-align: center; min-width: 380px; padding: 16px 22px; border-radius: 20px; background: rgba(14,28,34,.86); border: 1px solid rgba(255,255,255,.14); white-space: nowrap; }
+      .chip b { display: block; font: 700 40px/1 "Manrope", sans-serif; color: var(--ink); }
+      .chip span { display: block; margin-top: 10px; min-height: 30px; font: 500 30px/1 "DM Mono", monospace; letter-spacing: .12em; color: var(--acc); }
+      .plab { position: absolute; transform: translate(-50%, -50%); font: 600 30px/1 "Manrope", sans-serif; color: var(--sup); white-space: nowrap; text-shadow: 0 0 6px var(--land), 0 0 6px var(--land), 0 0 10px var(--land); }
+      #scrim { position: absolute; left: 0; top: 0; width: 1080px; height: 560px; background: linear-gradient(rgba(14,28,34,.95) 45%, rgba(14,28,34,0)); z-index: 5; }
+      #title { position: absolute; left: 70px; top: 260px; font: 800 100px/1 "Manrope", sans-serif; letter-spacing: -0.02em; color: var(--ink); z-index: 6; }
+      #sub { position: absolute; left: 74px; top: 378px; font: 500 28px/1 "DM Mono", monospace; letter-spacing: .12em; text-transform: uppercase; color: var(--sup); z-index: 6; }
+      #bscrim { position: absolute; left: 0; top: 1380px; width: 1080px; height: 540px; background: linear-gradient(rgba(14,28,34,0), rgba(14,28,34,.92) 40%); z-index: 5; }
+      #cap { position: absolute; left: 70px; right: 70px; top: 1460px; font: 700 56px/1.15 "Manrope", sans-serif; color: var(--ink); z-index: 6; }
+      #cap em { font-style: normal; color: var(--acc); }
+      #credit { position: absolute; left: 48px; top: 1650px; font: 500 22px/1 "DM Mono", monospace; letter-spacing: .08em; color: var(--sup); z-index: 6; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="cam" class="clip" data-start="0" data-duration="4.5" data-track-index="0">
+        <div id="plane"><div id="world"><svg id="map" viewBox="0 0 2400 3000"></svg></div></div>
+      </div>
+      <div id="scrim"></div>
+      <div id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="1">Map flyover pins</div>
+      <div id="sub" class="clip" data-start="0" data-duration="4.5" data-track-index="2">Studio → river market</div>
+      <div id="bscrim"></div>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="3">Six minutes to the <em>river market</em></div>
+      <div id="credit" class="clip" data-start="0" data-duration="4.5" data-track-index="4">Fictional map · sample route and times</div>
+    </div>
+
+    <script>
+      const NS = "http://www.w3.org/2000/svg";
+      const map = document.getElementById("map"), world = document.getElementById("world");
+      const r = MF.rng("map-flyover-pins");
+      const el = (tag, attrs, parent = map) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.appendChild(e); return e; };
+      el("rect", { width: 2400, height: 3000, fill: "#0E1C22" });
+      // parks (4 % lighter than land, no green)
+      el("path", { d: "M300 700 C 520 640 640 760 600 940 C 560 1100 360 1120 280 980 C 220 860 200 740 300 700Z", fill: "#13242b" });
+      el("path", { d: "M1650 2050 C 1900 1980 2050 2150 1980 2320 C 1900 2480 1680 2440 1620 2300 C 1570 2190 1560 2090 1650 2050Z", fill: "#13242b" });
+      // building footprints (seeded)
+      const fp = el("g", { fill: "#12232a" });
+      for (let i = 0; i < 200; i++) {
+        const x = r.range(0, 2400), y = r.range(0, 3000), w = r.range(24, 70), h = r.range(20, 60), a = r.range(-25, 25);
+        el("rect", { x, y, width: w * 1.4, height: h * 1.4, transform: `rotate(${a} ${x} ${y})` }, fp);
+      }
+      // river
+      el("path", { d: "M-100 1900 C 400 1780 700 2050 1100 1980 C 1500 1910 1700 1700 2100 1740 C 2300 1760 2400 1820 2500 1860", fill: "none", stroke: "#08131A", "stroke-width": 150 });
+      // minor roads: short curved segments in many directions
+      const mn = el("g", { fill: "none", stroke: "#2C4048", "stroke-width": 10, "stroke-linecap": "round" });
+      for (let i = 0; i < 60; i++) {
+        const x = r.range(0, 2400), y = r.range(0, 3000), a = r.range(0, Math.PI), L = r.range(200, 520), b = r.range(-80, 80);
+        const x2 = x + Math.cos(a) * L, y2 = y + Math.sin(a) * L;
+        el("path", { d: `M${x} ${y} Q ${(x + x2) / 2 + b} ${(y + y2) / 2 - b} ${x2} ${y2}` }, mn);
+      }
+      // major roads
+      const mj = el("g", { fill: "none", stroke: "#3E5660", "stroke-width": 22, "stroke-linecap": "round" });
+      ["M-50 600 C 600 700 1200 520 2450 760", "M300 -50 C 420 900 700 1500 760 3050", "M2100 -50 C 1900 900 1600 1700 1500 3050", "M-50 2500 C 700 2380 1400 2600 2450 2300", "M-50 1300 C 800 1250 1500 1400 2450 1200"].forEach((d) => el("path", { d }, mj));
+      // bridges
+      el("path", { d: "M760 1890 L 800 2100", stroke: "#3E5660", "stroke-width": 26, fill: "none" });
+      // route: casing (land colour) + coral line
+      const RD = "M560 820 C 640 1020 720 1180 760 1400 C 790 1600 780 1800 800 2000 C 830 2160 1000 2200 1200 2180 C 1350 2160 1420 2240 1460 2320";
+      el("path", { d: RD, fill: "none", stroke: "#0E1C22", "stroke-width": 24, "stroke-linecap": "round", "stroke-linejoin": "round", id: "casing" });
+      const route = el("path", { d: RD, fill: "none", stroke: "#FF6A3D", "stroke-width": 12, "stroke-linecap": "round", "stroke-linejoin": "round", id: "route" });
+      const RL = route.getTotalLength();
+      route.setAttribute("stroke-dasharray", RL); document.getElementById("casing").setAttribute("stroke-dasharray", RL);
+      // place labels (fictional)
+      [["Kiln Street", 980, 1040], ["Old Mill", 380, 1600], ["Ferry Steps", 1250, 1860], ["Larch Park", 430, 860]].forEach(([n, x, y]) => {
+        const d = document.createElement("div"); d.className = "plab"; d.textContent = n; d.style.left = x + "px"; d.style.top = y + "px"; world.appendChild(d);
+      });
+      const pinSVG = (c) => `<svg viewBox="0 0 80 104"><path d="M40 102 C 40 102 6 62 6 38 A 34 34 0 0 1 74 38 C 74 62 40 102 40 102Z" fill="${c}"/><circle cx="40" cy="38" r="13" fill="#0E1C22"/></svg>`;
+      function pin(id, x, y, color, chip) {
+        const p = document.createElement("div"); p.className = "pin"; p.id = id; p.style.left = x + "px"; p.style.top = y + "px";
+        p.innerHTML = `<div class="ring"></div><div class="sh"></div><div class="up"><div class="drop">${pinSVG(color)}</div>${chip ? `<div class="chip"><b>${chip[0]}</b><span></span></div>` : ""}</div>`;
+        world.appendChild(p); return p;
+      }
+      pin("pA", 560, 820, "#7FA3A6", null);
+      pin("pB", 1460, 2320, "#FF6A3D", null);
+      const cB = document.createElement("div"); cB.id = "chipB"; cB.className = "chip clip"; cB.dataset.start = "0"; cB.dataset.duration = "4.5"; cB.dataset.trackIndex = "5";
+      cB.innerHTML = "<b>River market · by bike</b><span></span>"; document.getElementById("root").appendChild(cB);
+      // one extra dot (unlabelled)
+      el("circle", { cx: 1200, cy: 2180, r: 10, fill: "#7FA3A6" });
+
+      const DUR = 4.5, R0 = 0.4, RD_ = 2.2;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      const p1io = (x) => -(Math.cos(Math.PI * x) - 1) / 2;          // power1.inOut-like
+      const clamp = (x) => Math.max(0, Math.min(1, x));
+      const p2io = (x) => (x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2);
+      const ups = document.querySelectorAll(".pin .up");
+      const plane = document.getElementById("plane"), casing = document.getElementById("casing");
+      const clock = { t: 0 };
+      tl.fromTo(clock, { t: 0 }, { t: DUR, duration: DUR, ease: "none", onUpdate: () => {
+        const t = clock.t;
+        const k = p1io(clamp((t - R0) / RD_));
+        route.setAttribute("stroke-dashoffset", RL * (1 - k)); casing.setAttribute("stroke-dashoffset", RL * (1 - k));
+        const kc = p1io(clamp((t - R0 - 0.25) / RD_));                 // camera trails the head by 0.25 s
+        const h = route.getPointAtLength(RL * kc);
+        const f = p2io(clamp(t / (R0 + RD_ + 0.25)));
+        const zoom = 1.25 - 0.32 * Math.sin(Math.PI * clamp((t - R0) / (RD_ + 0.4)));   // pull back mid-flight
+        const pitch = 35 * p2io(clamp(t / 1.2));
+        plane.style.transform = `rotateX(${pitch}deg) rotateZ(${-12 * f}deg) scale(${zoom})`;
+        world.style.transform = `translate(${540 - h.x}px, ${820 - h.y}px)`;
+        ups.forEach((u) => { u.style.transform = `rotateZ(${12 * f}deg) rotateX(${-pitch}deg)`; });
+      } }, 0);
+      // pins: drop 120 px with back.out(2), shadow 0.4 -> 1, one ring pulse, chip slides 24 px and types on
+      function drop(id, t, text) {
+        tl.fromTo(`#${id} .drop`, { y: -120, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "back.out(2)" }, t);
+        tl.fromTo(`#${id} .sh`, { scale: 0.4, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.45, ease: "power2.out" }, t);
+        tl.fromTo(`#${id} .ring`, { scale: 0, opacity: 0.6 }, { scale: 1, opacity: 0, duration: 0.6, ease: "power2.out" }, t + 0.4);
+        const chip = id === "pB" ? "#chipB" : null;
+        if (chip) tl.fromTo(chip, { opacity: 0, x: -24 }, { opacity: 1, x: 0, duration: 0.3, ease: "power3.out" }, t + 0.35);
+        const span = chip ? document.querySelector(chip + " span") : null;
+        if (span && text) { const o = { n: 0 }; tl.fromTo(o, { n: 0 }, { n: text.length, duration: text.length / 24, ease: "none", onUpdate: () => { span.textContent = text.slice(0, Math.round(o.n)); } }, t + 0.5); }
+      }
+      drop("pA", 0.2, "");
+      
+      drop("pB", 2.6, "2.4 KM · 6 MIN");
+      tl.fromTo("#title", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, 0);
+      tl.fromTo("#sub", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.25);
+      tl.fromTo("#cap", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.3, ease: "power3.out" }, 2.9);
+      tl.seek(0);
+    </script>
+  </body>
+</html>
