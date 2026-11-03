@@ -1,0 +1,132 @@
+<!doctype html>
+<!--
+  motionforge style preview: budget-infographic
+  © 2026 motionforge contributors, MIT
+  Signature scene "donut split": a neutral ring draws itself, splits into segments with 6 px gaps,
+  the discussed category slides out 24 px in green and its share counts up; icons pop, a savings
+  card rises last. Outfit 700 + Atkinson Hyperlegible. All figures are sample data and say so.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      @font-face { font-family: "Outfit"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/outfit-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Outfit"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/outfit-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Atkinson Hyperlegible"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/atkinson-hyperlegible-latin-400-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Atkinson Hyperlegible"; font-weight: 400; font-style: normal; font-display: block; src: url("assets/fonts/atkinson-hyperlegible-latin-ext-400-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Atkinson Hyperlegible"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/atkinson-hyperlegible-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Atkinson Hyperlegible"; font-weight: 700; font-style: normal; font-display: block; src: url("assets/fonts/atkinson-hyperlegible-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      :root { --bg: #fbf4ea; --ink: #2b2a33; --acc: #11a37f; --pa: #f7c9b6; --pb: #c7daf2; --neu: #e4dccf; --mf-grain-opacity: 0.03; }
+      html, body { background: var(--bg); }
+      #root { background: radial-gradient(900px 800px at 50% 42%, #fffbf4 0%, transparent 70%), var(--bg); color: var(--ink); }
+      #root::before { mix-blend-mode: multiply; }
+      #root::after { background: radial-gradient(ellipse at 50% 50%, transparent 70%, rgba(43,42,51,.06) 100%); }
+      .sans { font-family: "Atkinson Hyperlegible", system-ui, sans-serif; }
+      #eyebrow { position: absolute; left: 90px; top: 250px; font: 700 30px/1 "Atkinson Hyperlegible", system-ui; letter-spacing: .08em; text-transform: uppercase; color: var(--ink); opacity: .7; }
+      #title { position: absolute; left: 90px; right: 90px; top: 310px; font: 700 94px/1 "Outfit", system-ui; letter-spacing: -0.02em; color: var(--ink); }
+      #donut { position: absolute; left: 220px; top: 500px; width: 640px; height: 640px; overflow: visible; }
+      #center { position: absolute; left: 220px; top: 500px; width: 640px; height: 640px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+      #pct { font: 700 170px/0.9 "Outfit", system-ui; letter-spacing: -0.03em; color: var(--acc); font-variant-numeric: tabular-nums; }
+      #pct small { font-size: 0.5em; letter-spacing: 0; }
+      #pctlab { margin-top: 14px; font: 700 34px/1 "Atkinson Hyperlegible", system-ui; color: var(--ink); }
+      #legend { position: absolute; left: 90px; right: 90px; top: 1190px; display: flex; justify-content: space-between; }
+      .lg { display: flex; align-items: center; gap: 22px; }
+      .disc { width: 112px; height: 112px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: none; }
+      .disc svg { width: 64px; height: 64px; fill: none; stroke: var(--ink); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; }
+      .lt b { display: block; font: 700 36px/1.1 "Atkinson Hyperlegible", system-ui; }
+      .lt span { font: 400 32px/1.2 "Atkinson Hyperlegible", system-ui; }
+      #card { position: absolute; left: 90px; right: 90px; top: 1380px; height: 190px; background: #fff; border-radius: 36px; box-shadow: 0 12px 30px rgba(43,42,51,.08); display: flex; align-items: center; justify-content: space-between; padding: 0 56px; }
+      #card .k { font: 700 40px/1.2 "Atkinson Hyperlegible", system-ui; }
+      #card .k span { display: block; font: 400 30px/1.3 "Atkinson Hyperlegible", system-ui; opacity: .7; }
+      #amt { font: 700 120px/1 "Outfit", system-ui; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+      #amt .cur { font-size: 0.6em; opacity: .55; margin-right: 6px; }
+      #src { position: absolute; left: 90px; top: 1630px; font: 400 30px/1.4 "Atkinson Hyperlegible", system-ui; opacity: .6; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="eyebrow" class="clip" data-start="0" data-duration="4.5" data-track-index="0">Where the money goes</div>
+      <h1 id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="1">Budget infographic</h1>
+      <svg id="donut" class="clip" viewBox="0 0 640 640" data-start="0" data-duration="4.5" data-track-index="2">
+        <g transform="rotate(-90 320 320)">
+          <circle id="ring" cx="320" cy="320" r="260" fill="none" stroke="#e4dccf" stroke-width="120" />
+          <g id="segs"></g>
+        </g>
+      </svg>
+      <div id="center" class="clip" data-start="0" data-duration="4.5" data-track-index="3"><div id="pct"><span>0</span><small>%</small></div><div id="pctlab">goes to savings</div></div>
+      <div id="legend" class="clip" data-start="0" data-duration="4.5" data-track-index="4">
+        <div class="lg"><div class="disc" style="background:#f7c9b6"><svg viewBox="0 0 64 64"><path d="M8 30 L32 10 L56 30 M16 24 V54 H48 V24 M27 54 V40 H37 V54" /></svg></div><div class="lt"><b>Housing</b><span>40%</span></div></div>
+        <div class="lg"><div class="disc" style="background:#c7daf2"><svg viewBox="0 0 64 64"><path d="M8 30 H56 C56 44 46 52 32 52 C18 52 8 44 8 30 Z M24 22 C22 18 26 15 24 10 M36 22 C34 18 38 15 36 10" /></svg></div><div class="lt"><b>Food</b><span>22%</span></div></div>
+        <div class="lg"><div class="disc" style="background:#e4dccf"><svg viewBox="0 0 64 64"><path d="M20 12 H44 M22 12 V18 C14 22 12 30 12 38 C12 50 20 56 32 56 C44 56 52 50 52 38 C52 30 50 22 42 18 V12 M26 36 H38 M32 30 V42" /></svg></div><div class="lt"><b>Savings</b><span>18%</span></div></div>
+      </div>
+      <div id="card" class="clip" data-start="0" data-duration="4.5" data-track-index="5"><div class="k">You keep<span>every month</span></div><div id="amt"><span class="cur">€</span><span id="amtv">0</span></div></div>
+      <div id="src" class="clip" data-start="0" data-duration="4.5" data-track-index="6">Sample data: a €3,000 monthly budget</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;   // explicit registration (MF.timeline already does this)
+
+      // segments: [share, final colour]; savings first so it sits top-right and slides out up-right
+      const R = 260, C = 2 * Math.PI * R, GAP = 6;
+      const SEGS = [[0.18, "#11a37f"], [0.40, "#f7c9b6"], [0.22, "#c7daf2"], [0.20, "#e4dccf"]];
+      const NS = "http://www.w3.org/2000/svg";
+      const g = document.getElementById("segs");
+      let acc = 0;
+      const segEls = SEGS.map(([s, col], i) => {
+        const c = document.createElementNS(NS, "circle");
+        c.setAttribute("cx", 320); c.setAttribute("cy", 320); c.setAttribute("r", R);
+        c.setAttribute("fill", "none"); c.setAttribute("stroke", "#e4dccf"); c.setAttribute("stroke-width", 120);
+        c.dataset.start = acc * C; c.dataset.len = s * C;
+        c.style.opacity = 0;
+        g.appendChild(c);
+        acc += s;
+        return c;
+      });
+      const split = { k: 0 };
+      function drawSplit() {
+        segEls.forEach((c) => {
+          const len = +c.dataset.len - GAP * split.k, st = +c.dataset.start + GAP * split.k / 2;
+          c.setAttribute("stroke-dasharray", `${len} ${C - len}`);
+          c.setAttribute("stroke-dashoffset", -st);
+        });
+      }
+      drawSplit();
+
+      const ring = document.getElementById("ring");
+      ring.setAttribute("stroke-dasharray", `${C} ${C}`);
+      tl.fromTo("#eyebrow", { opacity: 0, y: 30 }, { opacity: 0.7, y: 0, duration: 0.45, ease: "power3.out" }, 0.05);
+      tl.fromTo("#title", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0.15);
+      // 1) neutral ring draws itself
+      tl.fromTo(ring, { attr: { "stroke-dashoffset": C } }, { attr: { "stroke-dashoffset": 0 }, duration: 0.8, ease: "power2.inOut" }, 0.45);
+      // 2) splits into segments with gaps, colours arrive
+      tl.set(segEls, { opacity: 1 }, 1.25);
+      tl.set(ring, { opacity: 0 }, 1.25);
+      tl.to(split, { k: 1, duration: 0.3, ease: "power2.out", onUpdate: drawSplit }, 1.25);
+      segEls.forEach((c, i) => { if (i > 0) tl.to(c, { attr: { stroke: SEGS[i][1] }, duration: 0.3 }, 1.3); });
+      // 3) the highlight slides out 24 px along its bisector and turns green
+      const mid = (SEGS[0][0] / 2) * 2 * Math.PI;   // angle from the top, clockwise
+      tl.to(segEls[0], { attr: { stroke: "#11a37f" }, duration: 0.3 }, 1.6);
+      tl.to("#segs circle:first-child", { x: 24 * Math.cos(mid), y: 24 * Math.sin(mid), duration: 0.3, ease: "power2.out" }, 1.6);
+      // (the group is rotated -90deg, so x/y here are along the rotated axes: x = outward at angle 0)
+      const pctSpan = document.querySelector("#pct span");
+      const pc = { v: 0 };
+      tl.fromTo("#center", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.35, ease: "power3.out" }, 1.6);
+      tl.fromTo(pc, { v: 0 }, { v: 18, duration: 1.0, ease: "power2.out", onUpdate: () => { pctSpan.textContent = Math.round(pc.v); } }, 1.65);
+      // 4) icons pop, card rises, amount counts to the exact figure
+      tl.fromTo(".disc", { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: "back.out(2)", stagger: 0.08 }, 2.1);
+      tl.fromTo(".lt", { opacity: 0, x: -20 }, { opacity: 1, x: 0, duration: 0.3, ease: "power3.out", stagger: 0.08 }, 2.2);
+      tl.fromTo("#card", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 2.6);
+      const am = { v: 0 }, amEl = document.getElementById("amtv");
+      tl.fromTo(am, { v: 0 }, { v: 540, duration: 1.0, ease: "power2.out", onUpdate: () => { amEl.textContent = Math.round(am.v); } }, 2.75);
+      tl.fromTo("#src", { opacity: 0 }, { opacity: 0.6, duration: 0.4 }, 3.0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

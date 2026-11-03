@@ -1,0 +1,172 @@
+<!doctype html>
+<!--
+  motionforge style preview: code-diff
+  © 2026 motionforge contributors, MIT
+  Signature scene "strike and replace" + "review pin": the removed line tints red, strikes and folds
+  away, two added lines open and type in green at 40 chars/s, the tab counter ticks, then a yellow pin
+  drops on the gutter and a bubble explains the change. Red Hat Display + Fira Code (ligatures off).
+  The code is a fictional snippet written for this preview.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Red Hat Display"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/red-hat-display-latin-600-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Red Hat Display"; font-style: normal; font-weight: 600; font-display: block; src: url("assets/fonts/red-hat-display-latin-ext-600-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Red Hat Display"; font-style: normal; font-weight: 800; font-display: block; src: url("assets/fonts/red-hat-display-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Red Hat Display"; font-style: normal; font-weight: 800; font-display: block; src: url("assets/fonts/red-hat-display-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      @font-face { font-family: "Fira Code"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/fira-code-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+      @font-face { font-family: "Fira Code"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/fira-code-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+      /* fonts:end */
+      :root { --mf-bg: #16181d; --mf-glow: #22252c; --editor: #1c1f26; --ink: #d6dae0; --muted: #7d8590;
+        --add: #4cc38a; --add-bg: #183a2a; --rem: #f07178; --rem-bg: #3f1d24; --acc: #ffda5e; --mf-grain-opacity: .04;
+        --disp: "Red Hat Display", sans-serif; --code: "Fira Code", ui-monospace, monospace; }
+      #root::after { background: radial-gradient(ellipse at 50% 45%, transparent 60%, rgba(0,0,0,.45) 100%); }
+      #title { position: absolute; left: 60px; top: 250px; font: 800 100px/1 var(--disp); letter-spacing: -0.02em; color: var(--ink); }
+      #title span { color: var(--acc); }
+      #sub { position: absolute; left: 64px; top: 372px; font: 500 28px/1 var(--code); color: var(--muted); font-variant-ligatures: none; }
+      #sub b { color: var(--ink); font-weight: 500; }
+      #editor { position: absolute; left: 60px; top: 450px; width: 960px; height: 700px; background: var(--editor); border: 1px solid #2b2f38;
+        border-radius: 28px; box-shadow: 0 30px 60px rgba(0,0,0,.4); overflow: hidden; }
+      #tabs { position: absolute; left: 0; right: 0; top: 0; height: 64px; background: #181a20; border-bottom: 1px solid #2b2f38; }
+      .tab { position: absolute; top: 0; height: 64px; padding: 0 28px; display: flex; align-items: center; gap: 14px; font: 500 24px/1 var(--code); color: var(--muted); font-variant-ligatures: none; }
+      #tab1 { left: 0; background: var(--editor); color: var(--ink); border-right: 1px solid #2b2f38; box-shadow: inset 0 3px 0 var(--acc); }
+      #tab2 { left: 250px; }
+      #count { position: absolute; right: 28px; top: 0; height: 64px; display: flex; align-items: center; gap: 14px; font: 500 24px/1 var(--code); font-variant-numeric: tabular-nums; }
+      #count .p { color: var(--add); } #count .m { color: var(--rem); }
+      #code { position: absolute; left: 0; right: 0; top: 84px; }
+      .row { position: relative; height: 51px; overflow: hidden; }
+      .row .bg { position: absolute; inset: 0; opacity: 0; }
+      .row.rem .bg { background: var(--rem-bg); } .row.add .bg { background: var(--add-bg); opacity: 1; }
+      .row .num { position: absolute; left: 0; width: 70px; top: 0; height: 51px; display: flex; align-items: center; justify-content: flex-end; font: 500 26px/1 var(--code); color: #4d545e; }
+      .row .sg { position: absolute; left: 82px; top: 0; height: 51px; display: flex; align-items: center; font: 500 34px/1 var(--code); }
+      .row.rem .sg { color: var(--rem); } .row.add .sg { color: var(--add); }
+      .row .tx { position: absolute; left: 114px; top: 0; height: 51px; white-space: pre; font: 500 34px/51px var(--code); color: var(--ink); font-variant-ligatures: none; }
+      .row .strike { position: absolute; left: 110px; top: 25px; height: 3px; width: 600px; background: var(--rem); transform-origin: left; transform: scaleX(0); }
+      .k { color: #9ab4de; } .s { color: #cdb38e; } .c { color: var(--muted); }
+      #uline { position: absolute; height: 3px; background: var(--acc); transform-origin: left; transform: scaleX(0); }
+      #pin { position: absolute; left: 18px; width: 46px; height: 46px; border-radius: 50% 50% 50% 4px; background: var(--acc); transform: rotate(-45deg);
+        box-shadow: 0 6px 14px rgba(0,0,0,.4); }
+      #pin::after { content: ""; position: absolute; left: 15px; top: 15px; width: 16px; height: 16px; border-radius: 50%; background: #16181d; }
+      #lead { position: absolute; width: 2px; background: var(--acc); transform-origin: top; }
+      #bubble { position: absolute; left: 60px; top: 1190px; width: 960px; padding: 34px 40px; border-radius: 26px; background: var(--acc); color: #16181d;
+        transform-origin: 70px 0; }
+      #bubble .who { font: 500 24px/1 var(--code); letter-spacing: .04em; opacity: .7; margin-bottom: 16px; }
+      #bubble .msg { font: 600 44px/1.25 var(--disp); letter-spacing: -0.01em; }
+      #bubble code { font: 500 38px var(--code); background: rgba(22,24,29,.12); padding: 0 8px; border-radius: 6px; font-variant-ligatures: none; }
+      #tests { position: absolute; left: 60px; top: 1530px; width: 960px; height: 84px; border-radius: 18px; background: #101216; border: 1px solid #2b2f38;
+        display: flex; align-items: center; padding: 0 30px; font: 500 28px/1 var(--code); color: var(--muted); font-variant-ligatures: none; }
+      #tests b { color: var(--add); font-weight: 500; margin-right: 18px; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <h1 id="title" class="clip" data-start="0" data-duration="4.5" data-track-index="0">Code <span>diff</span></h1>
+      <div id="sub" class="clip" data-start="0" data-duration="4.5" data-track-index="1">fix: <b>retry on timeout</b> · example code</div>
+      <div id="editor" class="clip" data-start="0" data-duration="4.5" data-track-index="2">
+        <div id="tabs">
+          <div class="tab" id="tab1">src/load.ts</div>
+          <div class="tab" id="tab2">src/time.ts</div>
+          <div id="count"><span class="p">+<span id="cp">0</span></span><span class="m">−<span id="cm">0</span></span></div>
+        </div>
+        <div id="code"></div>
+        <div id="uline"></div>
+        <div id="pin"></div>
+      </div>
+      <div id="lead" class="clip" data-start="0" data-duration="4.5" data-track-index="5"></div>
+      <div id="bubble" class="clip" data-start="0" data-duration="4.5" data-track-index="3">
+        <div class="who">REVIEW · line 9</div>
+        <div class="msg">Back off and retry instead of failing on the first timeout: <code>200 ms</code>, then <code>400</code>, then <code>800</code>.</div>
+      </div>
+      <div id="tests" class="clip" data-start="0" data-duration="4.5" data-track-index="4"><b>✓ 14 passed</b> load.test.ts · 0.42 s</div>
+    </div>
+
+    <script>
+      const DUR = 4.5;
+      // [number, sign, text]; sign: " " context, "-" removed, "+" added
+      const LINES = [
+        [1, " ", 'import { sleep } from "./time";'],
+        [2, " ", ""],
+        [3, " ", "async function load(url, tries = 3) {"],
+        [4, " ", "  for (let i = 0; i < tries; i++) {"],
+        [5, " ", "    try {"],
+        [6, " ", "      return await get(url);"],
+        [7, " ", "    } catch (err) {"],
+        [8, "-", "      throw err;"],
+        [8, "+", "      if (i === tries - 1) throw err;"],
+        [9, "+", "      await sleep(200 * 2 ** i);"],
+        [10, " ", "    }"],
+        [11, " ", "  }"],
+        [12, " ", "}"],
+      ];
+      const KW = new Set(["import", "from", "async", "function", "for", "let", "try", "return", "await", "catch", "throw", "if"]);
+      // tokenise once into [text, class] pairs so a typed prefix keeps its colours
+      function tokens(src) {
+        const out = []; const re = /("[^"]*")|(\b[A-Za-z_]+\b)|(\d+)|(\s+)|([^\sA-Za-z_\d"]+)/g; let m;
+        while ((m = re.exec(src))) {
+          if (m[1]) out.push([m[1], "s"]);
+          else if (m[2]) out.push([m[2], KW.has(m[2]) ? "k" : ""]);
+          else if (m[3]) out.push([m[3], "s"]);
+          else out.push([m[0], ""]);
+        }
+        return out;
+      }
+      const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+      function html(tok, n) {
+        let s = "", left = n;
+        for (const [t, c] of tok) { if (left <= 0) break; const p = t.slice(0, left); left -= p.length; s += c ? `<span class="${c}">${esc(p)}</span>` : esc(p); }
+        return s;
+      }
+      const code = document.getElementById("code");
+      const rows = LINES.map(([n, sg, tx], i) => {
+        const r = document.createElement("div");
+        r.className = "row" + (sg === "-" ? " rem" : sg === "+" ? " add" : "");
+        r.id = "r" + i;
+        r.innerHTML = `<div class="bg"></div><div class="num">${n}</div><div class="sg">${sg === "-" ? "−" : sg === "+" ? "+" : ""}</div><div class="tx"></div>` + (sg === "-" ? '<div class="strike"></div>' : "");
+        const tok = tokens(tx);
+        r.querySelector(".tx").innerHTML = sg === "+" ? "" : html(tok, 999);
+        if (sg === "+") r.style.height = "0px";
+        code.appendChild(r);
+        return { el: r, tok, len: tx.length };
+      });
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.fromTo("#title", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.45, ease: "power3.out" }, 0.05);
+      tl.fromTo("#sub", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.3);
+      tl.fromTo("#editor", { opacity: 0, y: 80 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.15);
+      tl.fromTo(".row:not(.add)", { opacity: 0 }, { opacity: 1, duration: 0.15, stagger: 0.03 }, 0.4);
+      // removed line: tint, strike, collapse
+      tl.to("#r7 .bg", { opacity: 1, duration: 0.25 }, 1.15);
+      tl.to("#r7 .strike", { scaleX: 1, duration: 0.3, ease: "power2.out" }, 1.35);
+      tl.set("#cm", { textContent: "1" }, 1.4);
+      tl.to("#r7", { height: 0, duration: 0.35, ease: "power2.inOut" }, 1.75);
+      // added lines: open, type at 40 chars/s
+      [8, 9].forEach((ri, k) => {
+        const at = 2.0 + k * 0.55;
+        tl.to("#r" + ri, { height: 51, duration: 0.3, ease: "power2.inOut" }, at);
+        const row = rows[ri], tx = row.el.querySelector(".tx"), p = { n: 0 };
+        tl.to(p, { n: row.len, duration: row.len / 40, ease: "none", onUpdate: () => { tx.innerHTML = html(row.tok, Math.round(p.n)); } }, at + 0.1);
+        tl.set("#cp", { textContent: String(k + 1) }, at + 0.1);
+      });
+      tl.fromTo("#count", { scale: 1 }, { scale: 1.15, duration: 0.12, yoyo: true, repeat: 1 }, 2.1);
+      // review pin + bubble + underline on the new token
+      const ROW_Y = 84 + 8 * 51; // line 9 after the collapse
+      gsap.set("#pin", { top: ROW_Y + 2 });
+      gsap.set("#uline", { left: 114 + 12 * 20.4, top: 84 + 8 * 51 + 44, width: 19 * 20.4 });
+      gsap.set("#lead", { left: 100, top: 450 + ROW_Y + 48, height: 1190 - 450 - ROW_Y - 48 });
+      tl.fromTo("#pin", { y: -60, opacity: 0, rotate: -45 }, { y: 0, opacity: 1, rotate: -45, duration: 0.35, ease: "back.out(2)" }, 3.05);
+      tl.to("#uline", { scaleX: 1, duration: 0.3, ease: "power2.out" }, 3.2);
+      tl.fromTo("#lead", { scaleY: 0 }, { scaleY: 1, duration: 0.2, ease: "none" }, 3.25);
+      tl.fromTo("#bubble", { opacity: 0, scale: 0.6 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(1.6)" }, 3.35);
+      tl.fromTo("#tests", { opacity: 0, y: 60 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, 3.75);
+      tl.seek(0);
+    </script>
+  </body>
+</html>

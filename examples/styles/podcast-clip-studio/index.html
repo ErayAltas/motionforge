@@ -1,0 +1,178 @@
+<!doctype html>
+<!--
+  motionforge style preview: podcast-clip-studio
+  © 2026 motionforge contributors, MIT
+  Two stacked speaker windows (original rim-lit studio silhouettes drawn in SVG), the coral ring on the
+  active speaker and the support-blue ring on the second, a 64-bar waveform with a coral playhead, then the
+  signature pull-quote card: coral quote mark, Newsreader italic phrase by phrase, key words underlined.
+  Speakers, episode and quote are fictional sample content. Fonts: Manrope, Newsreader italic, IBM Plex Mono.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      /* fonts:begin */
+      @font-face { font-family: "Manrope"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/manrope-latin-700-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Manrope"; font-style: normal; font-weight: 700; font-display: block; src: url("assets/fonts/manrope-latin-ext-700-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Manrope"; font-style: normal; font-weight: 800; font-display: block; src: url("assets/fonts/manrope-latin-800-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Manrope"; font-style: normal; font-weight: 800; font-display: block; src: url("assets/fonts/manrope-latin-ext-800-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "Newsreader"; font-style: italic; font-weight: 500; font-display: block; src: url("assets/fonts/newsreader-latin-500-italic.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "Newsreader"; font-style: italic; font-weight: 500; font-display: block; src: url("assets/fonts/newsreader-latin-ext-500-italic.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      @font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+20AC, U+20BA, U+2122, U+2190-2193, U+2212; }
+      @font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500; font-display: block; src: url("assets/fonts/ibm-plex-mono-latin-ext-500-normal.woff2") format("woff2"); unicode-range: U+0100-0130, U+0132-0151, U+0154-024F, U+1E00-1EFF; }
+      /* fonts:end */
+      :root { --bg: #10151C; --panel: #1A2230; --ink: #F2F4F7; --acc: #FF6B4A; --sup: #8FB8DE; --muted: #7E8A9C; --mf-grain-opacity: .05; }
+      html, body { background: var(--bg); }
+      #root { background: radial-gradient(1100px 760px at 50% 0%, rgba(31,42,56,.5) 0%, transparent 70%), var(--bg); }
+      .win { position: absolute; left: 40px; width: 1000px; height: 560px; border-radius: 28px; overflow: hidden; border: 2px solid var(--panel); background: #0b0f14; }
+      #wA { top: 240px; } #wB { top: 830px; }
+      .win svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+      .ring { position: absolute; left: 30px; width: 1020px; height: 580px; border-radius: 36px; border: 4px solid var(--acc); opacity: 0; }
+      #rA { top: 230px; } #rB { top: 820px; border-color: var(--sup); }
+      .tag { position: absolute; left: 32px; top: 28px; padding: 10px 16px; border-radius: 10px; background: rgba(16,21,28,.78); font: 500 26px/1 "IBM Plex Mono", monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--ink); }
+      .name { position: absolute; left: 32px; bottom: 28px; display: flex; align-items: center; gap: 14px; padding: 12px 20px; border-radius: 12px; background: var(--panel); font: 800 34px/1 "Manrope", sans-serif; color: var(--ink); }
+      .name i { width: 6px; height: 34px; border-radius: 3px; background: var(--acc); }
+      #wB .name i { background: var(--sup); }
+      .name small { font: 500 24px/1 "IBM Plex Mono", monospace; letter-spacing: .1em; color: var(--muted); text-transform: uppercase; }
+      #cap { position: absolute; left: 0; right: 0; top: 1440px; text-align: center; font: 700 58px/1.1 "Manrope", sans-serif; color: var(--ink); }
+      #wave { position: absolute; left: 31px; top: 1580px; width: 1018px; height: 110px; }
+      #wave .b { position: absolute; bottom: 0; width: 10px; border-radius: 5px; background: #2b3647; }
+      #wave .b.on { background: #5d6b80; }
+      #ph { position: absolute; top: -10px; width: 4px; height: 130px; border-radius: 2px; background: var(--acc); }
+      #ph::before { content: ""; position: absolute; left: -8px; top: -12px; width: 20px; height: 20px; border-radius: 50%; background: var(--acc); }
+      #time { position: absolute; left: 31px; top: 1720px; width: 1018px; display: flex; justify-content: space-between; font: 500 26px/1 "IBM Plex Mono", monospace; letter-spacing: .14em; color: var(--muted); }
+      /* pull-quote card */
+      #quote { position: absolute; inset: 0; opacity: 0; background: radial-gradient(1100px 760px at 50% 0%, rgba(31,42,56,.55) 0%, transparent 70%), var(--bg); }
+      #qlabel { position: absolute; left: 90px; top: 250px; font: 500 28px/1 "IBM Plex Mono", monospace; letter-spacing: .14em; color: var(--muted); text-transform: uppercase; }
+      #qtitle { position: absolute; left: 90px; top: 300px; font: 800 92px/1.02 "Manrope", sans-serif; letter-spacing: -0.02em; color: var(--ink); }
+      #qmark { position: absolute; left: 70px; top: 470px; font: 500 italic 300px/1 "Newsreader", serif; color: var(--acc); }
+      #qtext { position: absolute; left: 90px; width: 840px; top: 690px; font: 500 italic 94px/1.18 "Newsreader", serif; color: var(--ink); }
+      #qtext .ph { display: inline; opacity: 0; }
+      #qtext .k { position: relative; display: inline-block; }
+      #qtext .k u { position: absolute; left: 0; right: 0; bottom: 4px; height: 6px; border-radius: 3px; background: var(--acc); transform-origin: left; transform: scaleX(0); }
+      #qwho { position: absolute; left: 90px; top: 1250px; font: 500 28px/1.5 "IBM Plex Mono", monospace; letter-spacing: .14em; color: var(--muted); text-transform: uppercase; }
+      #qwho b { color: var(--ink); font-weight: 500; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="4.5" data-width="1080" data-height="1920">
+      <div id="wA" class="win clip" data-start="0" data-duration="4.5" data-track-index="0"></div>
+      <div id="wB" class="win clip" data-start="0" data-duration="4.5" data-track-index="1"></div>
+      <div id="rA" class="ring clip" data-start="0" data-duration="4.5" data-track-index="2"></div>
+      <div id="rB" class="ring clip" data-start="0" data-duration="4.5" data-track-index="3"></div>
+      <div id="cap" class="clip" data-start="0" data-duration="4.5" data-track-index="4"></div>
+      <div id="quote" class="clip" data-start="0" data-duration="4.5" data-track-index="5">
+        <div id="qlabel">Style · podcast-clip-studio</div>
+        <div id="qtitle">Podcast clip studio</div>
+        <div id="qmark">“</div>
+        <div id="qtext"><span class="ph" id="p1">Start before you </span><span class="ph k" id="p2">feel ready.<u id="u2"></u></span><span class="ph" id="p3"> The plan shows up </span><span class="ph k" id="p4">later.<u id="u4"></u></span></div>
+        <div id="qwho"><b>Defne Aras</b> · guest<br />EP 112 · 00:41:12 · sample clip</div>
+      </div>
+      <div id="wave" class="clip" data-start="0" data-duration="4.5" data-track-index="6"><div id="ph"></div></div>
+      <div id="time" class="clip" data-start="0" data-duration="4.5" data-track-index="7"><span>00:41:08</span><span>Studio Hours · EP 112</span><span>00:41:16</span></div>
+    </div>
+
+    <script>
+      const DUR = 4.5, Q = 2.15;
+      // ---- original speaker art: rim-lit silhouettes in a dim studio ----
+      function speaker(id, o) {
+        return `<svg viewBox="0 0 1000 560" preserveAspectRatio="xMidYMid slice">
+          <defs>
+            <radialGradient id="bg${id}" cx="${o.lx}" cy=".25" r=".9"><stop offset="0" stop-color="${o.wall1}"/><stop offset="1" stop-color="#0b0f14"/></radialGradient>
+            <linearGradient id="rim${id}" x1="${o.flip ? 1 : 0}" y1="0" x2="${o.flip ? 0 : 1}" y2="0"><stop offset="0" stop-color="${o.rim}" stop-opacity=".95"/><stop offset=".22" stop-color="${o.rim}" stop-opacity="0"/></linearGradient>
+            <filter id="bk${id}"><feGaussianBlur stdDeviation="14"/></filter>
+            <filter id="sf${id}"><feGaussianBlur stdDeviation="1.4"/></filter>
+          </defs>
+          <rect width="1000" height="560" fill="url(#bg${id})"/>
+          <g filter="url(#bk${id})" opacity=".8">
+            <circle cx="${o.flip ? 140 : 860}" cy="120" r="34" fill="#ffcf8a" opacity=".55"/>
+            <circle cx="${o.flip ? 220 : 780}" cy="190" r="22" fill="#ffcf8a" opacity=".35"/>
+            <circle cx="${o.flip ? 90 : 910}" cy="260" r="26" fill="${o.rim}" opacity=".35"/>
+            <rect x="${o.flip ? 700 : 60}" y="60" width="220" height="330" rx="10" fill="#1a2433" opacity=".9"/>
+          </g>
+          <g id="person${id}" filter="url(#sf${id})" transform="translate(${o.px} 0)">
+            <path d="M330 560 C 330 450 380 405 500 395 C 620 405 670 450 670 560Z" fill="${o.top}"/>
+            <path d="M330 560 C 330 450 380 405 500 395 C 620 405 670 450 670 560Z" fill="url(#rim${id})"/>
+            <rect x="468" y="330" width="64" height="80" rx="24" fill="#141a22"/>
+            <g id="head${id}">
+              <ellipse cx="500" cy="250" rx="92" ry="112" fill="#151b24"/>
+              <ellipse cx="500" cy="250" rx="92" ry="112" fill="url(#rim${id})"/>
+              <path d="${o.hair}" fill="#0d1117"/>
+              <path d="M398 250 C 392 160 440 118 500 116 C 560 118 608 160 602 250" fill="none" stroke="#2b333f" stroke-width="16"/>
+              <rect x="${380}" y="228" width="34" height="74" rx="14" fill="#232b36"/>
+              <rect x="${586}" y="228" width="34" height="74" rx="14" fill="#232b36"/>
+            </g>
+          </g>
+          <g transform="translate(${o.flip ? -190 : 190} 0)">
+            <path d="M500 560 L 520 430 L 600 380" fill="none" stroke="#2a313b" stroke-width="12" stroke-linecap="round"/>
+            <rect x="${o.flip ? 560 : 580}" y="300" width="58" height="110" rx="26" fill="#2e3540" transform="rotate(${o.flip ? 18 : -18} 600 360)"/>
+            <rect x="${o.flip ? 566 : 586}" y="306" width="10" height="80" rx="5" fill="#59616d" opacity=".7" transform="rotate(${o.flip ? 18 : -18} 600 360)"/>
+          </g>
+        </svg>`;
+      }
+      document.getElementById("wA").innerHTML = speaker("A", { lx: ".8", wall1: "#2a2a2c", rim: "#ffb27a", top: "#1c232d", px: -90, flip: false,
+        hair: "M410 220 C 400 150 450 128 500 128 C 560 128 604 160 594 230 C 580 186 540 170 500 172 C 460 172 424 186 410 220Z" }) +
+        '<div class="tag">EP 112</div><div class="name"><i></i>Defne Aras <small>guest</small></div>';
+      document.getElementById("wB").innerHTML = speaker("B", { lx: ".2", wall1: "#1f2a36", rim: "#a9cbe8", top: "#222a33", px: 90, flip: true,
+        hair: "M404 240 C 392 150 446 124 500 124 C 566 124 612 160 598 250 C 600 200 570 176 540 176 C 520 196 470 190 440 176 C 420 190 406 210 404 240Z" }) +
+        '<div class="name"><i></i>Cem Ulu <small>host</small></div>';
+
+      // waveform: 64 bars, 10 px wide, 6 px gaps; heights are a seeded sample, not real audio
+      const wave = document.getElementById("wave"), r = MF.rng("podcast-clip-studio"), bars = [];
+      for (let i = 0; i < 64; i++) {
+        const env = 0.35 + 0.65 * Math.abs(Math.sin(i * 0.23 + 0.6)) ;
+        const h = Math.round(14 + 92 * env * (0.45 + 0.55 * r()));
+        const b = document.createElement("div"); b.className = "b"; b.style.left = (i * 16) + "px"; b.style.height = h + "px";
+        wave.insertBefore(b, wave.firstChild); bars.push(b);
+      }
+      bars.reverse();
+
+      const tl = MF.timeline("main", DUR);
+      window.__timelines = window.__timelines || {};
+      window.__timelines["main"] = tl;
+      tl.fromTo(".win", { opacity: 0, y: 40 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out", stagger: 0.1 }, 0);
+      tl.fromTo("#wave .b", { scaleY: 0, transformOrigin: "bottom" }, { scaleY: 1, duration: 0.3, ease: "power2.out", stagger: 0.004 }, 0.15);
+      tl.fromTo("#time", { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0.3);
+      // speaker A talks: coral ring, B dimmed; at 1.15 the second speaker answers (support ring), A dims
+      tl.fromTo("#rA", { opacity: 0 }, { opacity: 1, duration: 0.15 }, 0.3);
+      tl.fromTo("#wB", { filter: "brightness(1) saturate(1)" }, { filter: "brightness(.55) saturate(.4)", duration: 0.15 }, 0.3);
+      tl.to("#rA", { opacity: 0, duration: 0.15 }, 1.15);
+      tl.to("#wA", { filter: "brightness(.55) saturate(.4)", duration: 0.15 }, 1.15);
+      tl.to("#wB", { filter: "brightness(1) saturate(1)", duration: 0.15 }, 1.15);
+      tl.fromTo("#rB", { opacity: 0 }, { opacity: 1, duration: 0.15 }, 1.15);
+      // captions, 2-3 words per chunk
+      const cap = document.getElementById("cap");
+      [["So when did", 0.35], ["you start?", 0.75], ["Before I", 1.2], ["felt ready.", 1.6]].forEach(([w, t]) => tl.call(() => { cap.textContent = w; }, null, t));
+      tl.set(cap, { textContent: "" }, 0);
+      tl.fromTo(cap, { opacity: 0 }, { opacity: 1, duration: 0.15 }, 0.35);
+      // heads move a little while their owner talks (seeded, frame = f(t))
+      const hA = document.getElementById("headA"), hB = document.getElementById("headB");
+      const talk = { t: 0 };
+      tl.fromTo(talk, { t: 0 }, { t: DUR, duration: DUR, ease: "none", onUpdate: () => {
+        const t = talk.t, a = t < 1.15 ? 1 : 0;
+        hA.setAttribute("transform", `rotate(${a * 1.6 * Math.sin(t * 7)} 500 330) translate(0 ${a * 2 * Math.sin(t * 11)})`);
+        hB.setAttribute("transform", `rotate(${(1 - a) * 1.6 * Math.sin(t * 6 + 1)} 500 330) translate(0 ${(1 - a) * 2 * Math.sin(t * 9)})`);
+        const x = (t / DUR) * 1018;
+        document.getElementById("ph").style.left = (x - 2) + "px";
+        bars.forEach((b, i) => b.classList.toggle("on", i * 16 < x));
+      } }, 0);
+      // crossfade (0.3 s) into the pull-quote card
+      tl.to(["#wA", "#wB", "#rA", "#rB", "#cap"], { opacity: 0, duration: 0.3 }, Q);
+      tl.to("#quote", { opacity: 1, duration: 0.3 }, Q);
+      tl.fromTo("#qmark", { opacity: 0, y: 30 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, Q + 0.15);
+      tl.fromTo("#qtitle", { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.35, ease: "power3.out" }, Q + 0.05);
+      tl.to("#p1", { opacity: 1, duration: 0.25 }, Q + 0.35);
+      tl.to("#p2", { opacity: 1, duration: 0.25 }, Q + 0.75);
+      tl.to("#u2", { scaleX: 1, duration: 0.3, ease: "power2.out" }, Q + 0.9);
+      tl.to("#p3", { opacity: 1, duration: 0.25 }, Q + 1.25);
+      tl.to("#p4", { opacity: 1, duration: 0.25 }, Q + 1.6);
+      tl.to("#u4", { scaleX: 1, duration: 0.3, ease: "power2.out" }, Q + 1.72);
+      tl.fromTo("#qwho", { opacity: 0 }, { opacity: 1, duration: 0.3 }, Q + 1.0);
+      tl.seek(0);
+    </script>
+  </body>
+</html>
