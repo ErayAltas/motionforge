@@ -1,0 +1,208 @@
+<!doctype html>
+<!--
+  motionforge template: bars-3d — a 3D column chart: bars rise with a stagger, values count up in HTML
+  labels that follow the bar tops, one bar in the accent colour, slow camera drift
+  © 2026 motionforge contributors, MIT
+  3D layer: three.js (MIT, from npm) + mf-three.js, copied into assets/vendor/ by new-scene.sh.
+  Contract: engines/hyperframes/three/README.md (hf-seek drives the 3D and the labels, GSAP the titles).
+  Honesty rule: real data needs a real source. Put it in "source"; the template shows it on screen.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script type="importmap">{ "imports": { "three": "./assets/vendor/three.module.min.js", "three/addons/": "./assets/vendor/three-addons/" } }</script>
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      #pool { position: absolute; inset: 0; background: radial-gradient(640px 380px at 50% 1420px, rgba(255, 255, 255, 0.07), transparent 70%); }
+      #gl { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      #eyebrow { top: 220px; }
+      #title { top: 280px; font-size: 92px; }
+      #labels { position: absolute; inset: 0; }
+      .val, .cat { position: absolute; left: 0; top: 0; white-space: nowrap; will-change: transform; }
+      .val { font: 800 46px/1 var(--mf-font-display); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+      .val .affix { font-size: 0.62em; letter-spacing: -0.01em; color: var(--mf-muted); }
+      .val.hi { font-size: 62px; color: var(--mf-accent); }
+      .val.hi .affix { color: var(--mf-accent); }
+      .light .val.hi { color: var(--mf-text-dark); }
+      .cat { font: 500 24px/1 var(--mf-font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--mf-muted); }
+      .cat.hi { color: var(--mf-text); font-weight: 700; }
+      .light .cat.hi { color: var(--mf-text-dark); }
+      #source { position: absolute; left: 110px; right: 110px; top: 1680px; text-align: center; font: 500 26px/1.3 var(--mf-font-mono); color: var(--mf-muted); }
+      #grain { position: absolute; inset: 0; z-index: 5; pointer-events: none; background-image: var(--mf-grain); opacity: 0.05; mix-blend-mode: overlay; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="6" data-width="1080" data-height="1920">
+      <div id="pool"></div>
+      <canvas id="gl" class="clip" width="1080" height="1920" data-start="0" data-duration="6" data-track-index="0"></canvas>
+      <div id="labels" class="clip" data-start="0" data-duration="6" data-track-index="1"></div>
+      <div id="eyebrow" class="eyebrow clip" data-start="0" data-duration="6" data-track-index="2"></div>
+      <h1 id="title" class="title clip" data-start="0" data-duration="6" data-track-index="3"></h1>
+      <div id="source" class="clip" data-start="0" data-duration="6" data-track-index="4"></div>
+      <div id="grain"></div>
+    </div>
+
+    <script id="params" type="application/json">
+{
+  "eyebrow": "Example data — replace",
+  "title": "Orders, {up} 3x in five months",
+  "bars": [
+    { "label": "Jan", "value": 12 },
+    { "label": "Feb", "value": 17 },
+    { "label": "Mar", "value": 21 },
+    { "label": "Apr", "value": 29 },
+    { "label": "May", "value": 38 }
+  ],
+  "highlight": 4,
+  "prefix": "",
+  "suffix": "k",
+  "decimals": 0,
+  "locale": "en-US",
+  "source": "Source: name of the dataset, year (required)",
+  "start": 0.7,
+  "stagger": 0.16,
+  "rise": 1.2,
+  "theme": "dark",
+  "lang": "en",
+  "duration": 6
+}
+    </script>
+
+    <script>
+      // ---- HTML layer: titles on the GSAP timeline ----
+      const P = MF.params();
+      document.documentElement.lang = P.lang;
+      if (P.theme === "light") document.getElementById("root").classList.add("light");
+      const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+      document.getElementById("eyebrow").textContent = P.eyebrow || "";
+      document.getElementById("title").innerHTML = esc(P.title || "").replace(/\{([^}]+)\}/g, '<span class="serif accent">$1</span>');
+      document.getElementById("source").textContent = P.source || "";
+      const title = document.getElementById("title");
+      MF.fit(title, 92, 56, 210);
+
+      const tl = MF.timeline("main", P.duration);
+      tl.fromTo("#eyebrow", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 0.15);
+      tl.fromTo("#title", { opacity: 0, y: 44, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, 0.25);
+      tl.fromTo("#source", { opacity: 0 }, { opacity: 1, duration: 0.4 }, P.start + 0.6);
+      MF.ready().then(() => MF.fit(title, 92, 56, 210));
+      tl.seek(0);
+    </script>
+
+    <script type="module">
+      import * as THREE from "three";
+      import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+      import { createStage, environment, lights, shadowCatcher, onSeek, ease, seg, lerp, project } from "./assets/vendor/mf-three.js";
+
+      const P = MF.params();
+      const css = getComputedStyle(document.getElementById("root"));
+      const ACCENT = css.getPropertyValue("--mf-accent").trim() || "#c8f53a";
+      const light = P.theme === "light";
+      const bars = (P.bars || []).slice(0, 7);
+      const n = bars.length;
+
+      const { renderer, scene, camera, render } = createStage({ fov: 24, far: 400, toneMapping: "neutral", exposure: 0.95 });
+      environment(renderer, scene, 0.5);
+      lights.studio(scene, { size: 9, target: [0, 2, 0] });
+      shadowCatcher(scene, { opacity: light ? 0.2 : 0.5, size: 60 });
+
+      // ---- geometry: bars on a low plinth, tallest bar = MAX_H units ----
+      const MAX_H = 6.2, PITCH = 1.3, W = 0.86;
+      const maxV = Math.max(...bars.map((b) => Math.abs(b.value)), 1e-6);
+      const span = (n - 1) * PITCH;
+      const plinth = new THREE.Mesh(
+        new RoundedBoxGeometry(span + W + 0.9, 0.16, W + 0.9, 3, 0.05),
+        new THREE.MeshStandardMaterial({ color: light ? "#d6d7d9" : "#111214", roughness: 0.7, metalness: 0.05, envMapIntensity: 0.4 })
+      );
+      plinth.position.y = 0.08;
+      plinth.receiveShadow = true;
+      plinth.castShadow = true;
+      scene.add(plinth);
+
+      const base = new THREE.MeshStandardMaterial({ color: light ? "#b9bdc4" : "#3a3d44", roughness: 0.38, metalness: 0.25 });
+      const hiMat = new THREE.MeshStandardMaterial({ color: ACCENT, roughness: 0.35, metalness: 0.05, emissive: ACCENT, emissiveIntensity: 0.18 });
+      const meshes = bars.map((b, i) => {
+        const h = Math.max(0.05, (Math.abs(b.value) / maxV) * MAX_H);
+        const geo = new RoundedBoxGeometry(W, h, W, 4, 0.06);
+        geo.translate(0, h / 2, 0); // pivot at the base, so scale.y grows the bar upwards
+        const m = new THREE.Mesh(geo, i === P.highlight ? hiMat : base);
+        m.position.set(-span / 2 + i * PITCH, 0.16, 0);
+        m.castShadow = true;
+        m.receiveShadow = true;
+        scene.add(m);
+        return { m, h };
+      });
+
+      // ---- HTML labels: value above each bar top, category under its base ----
+      const holder = document.getElementById("labels");
+      const fmt = (v) => Number(v).toLocaleString(P.locale, { minimumFractionDigits: P.decimals, maximumFractionDigits: P.decimals });
+      const labels = bars.map((b, i) => {
+        const hi = i === P.highlight;
+        const val = document.createElement("div");
+        val.className = "val" + (hi ? " hi" : "");
+        val.innerHTML = '<span class="affix pre"></span><span class="num"></span><span class="affix suf"></span>';
+        val.querySelector(".pre").textContent = P.prefix || "";
+        val.querySelector(".suf").textContent = P.suffix || "";
+        const cat = document.createElement("div");
+        cat.className = "cat" + (hi ? " hi" : "");
+        cat.textContent = b.label;
+        holder.append(val, cat);
+        return { val, num: val.querySelector(".num"), cat };
+      });
+
+      // ---- camera: fit the whole chart into a target box for the start and end pose ----
+      const corners = [];
+      for (const x of [-span / 2 - W, span / 2 + W]) for (const y of [0, MAX_H + 0.2]) for (const z of [-W, W]) corners.push(new THREE.Vector3(x, y, z));
+      const BOX = { left: 70, right: 1010, top: 620, bottom: 1560 };
+      // shift the projection so the chart centre sits at the box centre, not the frame centre
+      camera.setViewOffset(1080, 1920, 0, -((BOX.top + BOX.bottom) / 2 - 960), 1080, 1920);
+      const TARGET = new THREE.Vector3(0, MAX_H * 0.42, 0);
+      function pose(angleDeg, pitchDeg, dist) {
+        const a = (angleDeg * Math.PI) / 180, p = (pitchDeg * Math.PI) / 180;
+        camera.position.set(Math.sin(a) * Math.cos(p) * dist, TARGET.y + Math.sin(p) * dist, Math.cos(a) * Math.cos(p) * dist);
+        camera.lookAt(TARGET);
+        camera.updateMatrixWorld();
+      }
+      function fitDistance(angleDeg, pitchDeg) {
+        let lo = 3, hi = 200;
+        for (let k = 0; k < 30; k++) {
+          const mid = (lo + hi) / 2;
+          pose(angleDeg, pitchDeg, mid);
+          const ok = corners.every((c) => { const p = project(c, camera); return p.x > BOX.left && p.x < BOX.right && p.y > BOX.top && p.y < BOX.bottom; });
+          if (ok) hi = mid; else lo = mid;
+        }
+        return hi;
+      }
+      const A0 = -30, A1 = -16, T0 = 16, T1 = 11;
+      const D0 = fitDistance(A0, T0) * 1.02, D1 = fitDistance(A1, T1);
+
+      const tmp = new THREE.Vector3();
+      function draw(t) {
+        const k = ease.inOutSine(seg(t, 0, P.duration));
+        pose(lerp(A0, A1, k), lerp(T0, T1, k), lerp(D0, D1, k));
+        meshes.forEach(({ m }, i) => {
+          const r = ease.outCubic(seg(t, P.start + i * P.stagger, P.rise));
+          m.scale.y = Math.max(0.001, r);
+          m.visible = r > 0.001;
+        });
+        render();
+
+        labels.forEach((L, i) => {
+          const { m, h } = meshes[i];
+          const r = m.scale.y;
+          const top = project(tmp.set(m.position.x, m.position.y + h * r, 0), camera);
+          const bottom = project(tmp.set(m.position.x, 0, W * 0.5 + 0.45), camera);
+          L.num.textContent = fmt(bars[i].value * (r > 0.001 ? r : 0));
+          const on = seg(t, P.start + i * P.stagger, 0.25);
+          L.val.style.opacity = on;
+          L.val.style.transform = `translate(${top.x}px, ${top.y - 22}px) translate(-50%, -100%)`;
+          L.cat.style.opacity = ease.outCubic(seg(t, P.start - 0.2 + i * P.stagger, 0.4));
+          L.cat.style.transform = `translate(${bottom.x}px, ${bottom.y + 26}px) translate(-50%, 0)`;
+        });
+      }
+      onSeek(draw);
+    </script>
+  </body>
+</html>

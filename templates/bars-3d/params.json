@@ -1,0 +1,27 @@
+{
+  "id": "bars-3d",
+  "title": "3D bar chart",
+  "description": "A 3D column chart (4-7 bars): bars rise with a stagger, values count up in HTML labels that follow the bar tops, one bar in the accent colour, slow camera drift. Shows its source on screen.",
+  "engine": "hyperframes",
+  "layers": ["three.js (hf-seek)", "HTML + GSAP"],
+  "size": [1080, 1920],
+  "usage": "engines/hyperframes/scripts/new-scene.sh <name> --template bars-3d --params values.json",
+  "parameters": {
+    "eyebrow": {"type": "string", "default": "Example data — replace", "description": "Small label above the title."},
+    "title": {"type": "string", "default": "Orders, {up} 3x in five months", "description": "Headline (one or two lines); wrap one word in {braces} for the italic serif accent."},
+    "bars": {"type": "array", "default": [{"label": "Jan", "value": 12}, {"label": "Feb", "value": 17}], "description": "4-7 items {label, value}. Heights are relative to the largest value. Keep labels short (3-6 characters)."},
+    "highlight": {"type": "integer", "default": 4, "description": "Index (0-based) of the bar drawn in the accent colour; -1 for none."},
+    "prefix": {"type": "string", "default": "", "description": "Text before each value (e.g. $)."},
+    "suffix": {"type": "string", "default": "k", "description": "Text after each value (e.g. %, k, M)."},
+    "decimals": {"type": "integer", "default": 0, "description": "Digits after the decimal point."},
+    "locale": {"type": "string", "default": "en-US", "description": "Number formatting locale (en-US, de-DE, tr-TR ...)."},
+    "source": {"type": "string", "default": "Source: name of the dataset, year (required)", "description": "Where the numbers come from. Shown on screen; never leave the placeholder."},
+    "start": {"type": "number", "default": 0.7, "description": "Second the first bar starts rising."},
+    "stagger": {"type": "number", "default": 0.16, "description": "Delay between bars in seconds."},
+    "rise": {"type": "number", "default": 1.2, "description": "Seconds each bar takes to rise (values count with it)."},
+    "theme": {"type": "string", "enum": ["dark", "light"], "default": "dark", "description": "Backdrop variant from base.css (bars and plinth follow it)."},
+    "lang": {"type": "string", "default": "en", "description": "Language of the copy (BCP 47). Sets <html lang>."},
+    "duration": {"type": "number", "default": 6, "description": "Scene length in seconds. new-scene.sh --params also rewrites data-duration to match."}
+  },
+  "checks": ["the source line names a real source", "value labels do not overlap at 7 bars", "readcheck: title readable"]
+}

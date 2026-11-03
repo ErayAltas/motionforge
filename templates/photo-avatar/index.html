@@ -1,0 +1,502 @@
+<!doctype html>
+<!--
+  motionforge template: photo-avatar — a cut-out photo or illustration animated as a talking 2.5D puppet
+  © 2026 motionforge contributors, MIT
+  3D layer: three.js (MIT, from npm) + mf-three.js, copied into assets/vendor/ by new-scene.sh.
+  How it moves (all a function of t, nothing runs on its own):
+    - the image is a finely subdivided plane; the row of vertices on the lip line is split in two
+      between the mouth corners, so when the jaw region below it drops the mesh opens a gap;
+    - behind the gap sits a second small mesh: the inner mouth (dark) with a hint of teeth and tongue;
+    - the mouth opening comes from a mouth curve (tools/mouth_curve.py), its width/rounding from "shape";
+    - the head region (an ellipse round head and hair) tilts, sways, turns a little (the centre of the
+      face moves more than its outline) and nods with the speech; the body moves less (parallax) and breathes;
+    - blinks: inside each eye the strip of skin above the eye is stretched down over it, so the lash
+      line itself becomes the edge of the closing lid.
+  Consent: only animate a picture of a real person who agreed to it in writing. The sample is an
+  original illustration (sample/avatar.svg), not a real person.
+-->
+<html lang="en" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1920" />
+    <script type="importmap">{ "imports": { "three": "./assets/vendor/three.module.min.js", "three/addons/": "./assets/vendor/three-addons/" } }</script>
+    <script src="assets/vendor/gsap.min.js"></script>
+    <script src="assets/mf-runtime.js"></script>
+    <link rel="stylesheet" href="assets/base.css" />
+    <style>
+      #card { position: absolute; left: 60px; right: 60px; top: 1056px; bottom: 60px; border-radius: 48px; overflow: hidden;
+        background: radial-gradient(700px 520px at 50% 0%, color-mix(in srgb, var(--mf-glow) 80%, #ffffff 6%), transparent 75%), var(--mf-card);
+        border: 2px solid var(--mf-line); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45); }
+      #card::after { content: ""; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 120%, rgba(0, 0, 0, 0.35), transparent 60%); }
+      .light #card { background: radial-gradient(700px 520px at 50% 0%, #ffffff, transparent 75%), #dfe2e6; border-color: #d0d4da; box-shadow: 0 30px 70px rgba(0, 0, 0, 0.14); }
+      .full #card { display: none; }
+      #gl { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+      /* lower-card: the avatar is cut by the card's sides and rounded bottom, never by its top edge (pop-out) */
+      .card-layout #gl { clip-path: inset(0px 60px 60px 60px round 0px 0px 48px 48px); }
+      #eyebrow { top: 300px; }
+      #title { top: 370px; font-size: 112px; }
+      .full #eyebrow { top: 210px; }
+      .full #title { top: 270px; font-size: 92px; }
+      #grain { position: absolute; inset: 0; z-index: 5; pointer-events: none; background-image: var(--mf-grain); opacity: 0.05; mix-blend-mode: overlay; }
+    </style>
+  </head>
+  <body>
+    <div id="root" class="mf-stage" data-composition-id="main" data-start="0" data-duration="5" data-width="1080" data-height="1920">
+      <div id="card" class="clip" data-start="0" data-duration="5" data-track-index="0"></div>
+      <canvas id="gl" class="clip" width="1080" height="1920" data-start="0" data-duration="5" data-track-index="1"></canvas>
+      <div id="eyebrow" class="eyebrow clip" data-start="0" data-duration="5" data-track-index="2"></div>
+      <h1 id="title" class="title clip" data-start="0" data-duration="5" data-track-index="3"></h1>
+      <div id="grain"></div>
+    </div>
+
+    <script id="params" type="application/json">
+{
+  "image": "sample/avatar.png",
+  "landmarks": {
+    "mouth": { "x": 500, "y": 662, "w": 120, "curve": 0 },
+    "eyes": [ { "x": 420, "y": 505, "w": 96, "h": 40 }, { "x": 580, "y": 505, "w": 96, "h": 40 } ],
+    "chin": { "x": 500, "y": 778 },
+    "head": null
+  },
+  "mouthCurve": "",
+  "voiceOffset": 0,
+  "jaw": 0,
+  "openGain": 1,
+  "upperLip": 0.18,
+  "teeth": 0.75,
+  "innerColor": "#2a0d10",
+  "teethColor": "#ece3d8",
+  "motion": 1,
+  "blinks": true,
+  "seed": "juno",
+  "layout": "lower-card",
+  "avatarScale": 1,
+  "avatarOffset": [0, 0],
+  "eyebrow": "Faceless · demo",
+  "title": "Your {avatar} talks.",
+  "theme": "dark",
+  "lang": "en",
+  "duration": 5
+}
+    </script>
+
+    <script>
+      // ---- HTML layer: card, title, GSAP timeline (the avatar has its own hf-seek handler below) ----
+      const P = MF.params();
+      document.documentElement.lang = P.lang;
+      const root = document.getElementById("root");
+      if (P.theme === "light") root.classList.add("light");
+      root.classList.add(P.layout === "full" ? "full" : "card-layout");
+      const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+      document.getElementById("eyebrow").textContent = P.eyebrow || "";
+      document.getElementById("title").innerHTML = esc(P.title || "").replace(/\{([^}]+)\}/g, '<span class="serif accent">$1</span>');
+
+      const tl = MF.timeline("main", P.duration);
+      if (P.layout !== "full") tl.fromTo("#card", { opacity: 0, y: 60, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "power3.out" }, 0);
+      tl.fromTo("#eyebrow", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.35, ease: "power2.out" }, 0.3);
+      tl.fromTo("#title", { opacity: 0, y: 44, filter: "blur(12px)" }, { opacity: 1, y: 0, filter: "blur(0px)", duration: 0.55, ease: "power3.out" }, 0.4);
+      MF.ready();
+      tl.seek(0);
+    </script>
+
+    <script type="module">
+      import * as THREE from "three";
+      import { onSeek, ease, seg, lerp, clamp01, rng } from "./assets/vendor/mf-three.js";
+
+      const P = MF.params();
+      const LM = P.landmarks || {};
+      const FULL = P.layout === "full";
+
+      // ---------------------------------------------------------------- renderer (no camera maths: the
+      // vertex shader maps image pixels straight to clip space)
+      const canvas = document.getElementById("gl");
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, premultipliedAlpha: true, preserveDrawingBuffer: true });
+      renderer.setPixelRatio(1);
+      renderer.setSize(1080, 1920, false);
+      renderer.outputColorSpace = THREE.LinearSRGBColorSpace; // pass texture colours through unchanged
+      renderer.setClearColor(0x000000, 0);
+      const scene = new THREE.Scene();
+      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 2);
+
+      // ---------------------------------------------------------------- mouth curve
+      // tools/mouth_curve.py format: {version, fps, duration, open[], shape[], source}
+      function demoCurve(seed, seconds, fps = 30) {
+        // syllable-like openings in phrases with pauses: for layout checks only, not synced to audio
+        const r = rng(seed + ":mouth");
+        const n = Math.ceil(seconds * fps) + 1;
+        const target = new Float32Array(n), shapes = new Array(n).fill("closed");
+        let t = 0.55;
+        while (t < seconds - 0.3) {
+          const phraseEnd = t + r.range(1.4, 2.6);
+          while (t < phraseEnd && t < seconds - 0.3) {
+            const len = r.range(0.13, 0.26), peak = r.range(0.35, 1), shape = r.pick(["open", "open", "wide", "round"]);
+            for (let f = Math.floor(t * fps); f < Math.min(n, (t + len) * fps); f++) {
+              const k = (f / fps - t) / len;
+              target[f] = Math.max(target[f], peak * Math.sin(Math.PI * Math.min(1, k * 1.15)));
+              shapes[f] = shape;
+            }
+            t += len + r.range(0.0, 0.06);
+          }
+          t += r.range(0.35, 0.7);
+        }
+        // fast attack, slower release (like mouth_curve.py)
+        const open = [];
+        let y = 0;
+        for (let f = 0; f < n; f++) { const a = target[f] > y ? 0.65 : 0.35; y += (target[f] - y) * a; open.push(+y.toFixed(3)); if (y < 0.06) shapes[f] = "closed"; }
+        return { version: 1, fps, duration: seconds, open, shape: shapes, source: "demo" };
+      }
+
+      let curve = null;
+      const curveAt = (t) => {
+        // linear interpolation of "open" at voice time t; shape weights averaged over +-2 frames so the mouth morphs, not snaps
+        const f = Math.max(0, t * curve.fps), i = Math.floor(f), k = f - i, o = curve.open, last = o.length - 1;
+        const a = o[Math.min(i, last)] || 0, b = o[Math.min(i + 1, last)] || 0;
+        const w = { wide: 0, round: 0 };
+        let sum = 0;
+        for (let d = -2; d <= 2; d++) {
+          const j = Math.min(Math.max(i + d, 0), last), wt = 3 - Math.abs(d);
+          const s = curve.shape[j];
+          if (s === "wide") w.wide += wt;
+          if (s === "round") w.round += wt;
+          sum += wt;
+        }
+        return { open: lerp(a, b, k), wide: w.wide / sum, round: w.round / sum };
+      };
+      // mean opening over the last `span` seconds: drives the small speech nod
+      const energyAt = (t, span) => {
+        let s = 0, n = 0;
+        for (let x = t - span; x <= t; x += 1 / curve.fps) { if (x >= 0) { s += curveAt(x).open; n++; } }
+        return n ? s / n : 0;
+      };
+
+      // ---------------------------------------------------------------- shaders
+      const COMMON = /* glsl */ `
+        uniform vec4 uPlace;      // screen x, y of image (0,0), scale, entrance alpha
+        uniform vec3 uMouth;      // centre x, y (image px), half width
+        uniform vec4 uJawShape;   // chin y, jaw half width, neck fall, mouth-line curve px
+        uniform vec4 uOpenParams; // open 0..1, jaw px, upper-lip share, (unused)
+        uniform vec2 uShape;      // wide, round weights
+        uniform vec4 uHead;       // ellipse centre x, y, rx, ry
+        uniform vec4 uHeadMove;   // rotation rad, tx, ty, yaw px
+        uniform vec2 uPivot;
+        uniform vec4 uBody;       // tx, ty, breath (scale), image height
+        float G(float u) { return 1.0 - smoothstep(0.0, 1.0, u); }
+        float lineY(float x) {
+          float u = clamp((x - uMouth.x) / uMouth.z, -1.0, 1.0);
+          return uMouth.y - uJawShape.w * u * u;
+        }
+        float lipHalf() { return uMouth.z * (1.0 - 0.22 * uShape.y); }
+        // upward displacement (negative y) of the upper lip at x
+        float upperLift(float x) {
+          float drop = uOpenParams.x * uOpenParams.y;
+          return -drop * uOpenParams.z * G(abs(x - uMouth.x) / lipHalf());
+        }
+        // downward displacement of the lower lip / jaw at a point below the lip line
+        float lowerDrop(vec2 p) {
+          float drop = uOpenParams.x * uOpenParams.y;
+          float below = max(p.y - lineY(p.x), 0.0);
+          float k = smoothstep(0.0, max(1.0, (uJawShape.x - uMouth.y) * 0.6), below);
+          float hw = mix(lipHalf(), uJawShape.y, k);
+          float u = abs(p.x - uMouth.x) / hw;
+          float gx = mix(G(u), sqrt(G(u)), uShape.y);       // rounder opening for "round"
+          float fy = 1.0 - smoothstep(uJawShape.x, uJawShape.x + uJawShape.z, p.y);
+          return drop * gx * fy * (1.0 - 0.18 * uShape.x); // "wide" opens a little less, stretches more
+        }
+        // corners move out for "wide", in for "round"
+        float cornerShift(vec2 p) {
+          float dx = p.x - uMouth.x, mh = uMouth.z;
+          float rel = p.y - lineY(p.x);
+          float bump = exp(-pow((abs(dx) - mh * 0.8) / (mh * 0.6), 2.0)) * exp(-pow(rel / (mh * 0.55), 2.0));
+          float amt = smoothstep(0.04, 0.3, uOpenParams.x) * (0.12 * uShape.x - 0.2 * uShape.y);
+          return sign(dx) * bump * mh * amt;
+        }
+        float headWeight(vec2 p) {
+          vec2 q = (p - uHead.xy) / uHead.zw;
+          return 1.0 - smoothstep(1.0, 1.38, length(q));
+        }
+        // head / body / breath: rest image px -> moved image px
+        vec2 moveFigure(vec2 p) {
+          float w = headWeight(p);
+          float a = uHeadMove.x * w;
+          vec2 r = p - uPivot;
+          vec2 o = uPivot + vec2(cos(a) * r.x - sin(a) * r.y, sin(a) * r.x + cos(a) * r.y);
+          vec2 q = (p - uHead.xy) / uHead.zw;
+          o.x += uHeadMove.w * max(0.0, 1.0 - dot(q, q)) * w;   // pseudo turn: the face centre moves more than its outline
+          o += uHeadMove.yz * w;                                  // head moves more than the body (parallax)
+          o.y -= (uBody.w - min(p.y, uPivot.y)) * uBody.z;        // breathing: the chest rises, the head rides on it
+          o += uBody.xy;
+          return o;
+        }
+        vec4 toClip(vec2 p, float z) {
+          vec2 s = uPlace.xy + p * uPlace.z;
+          return vec4(s.x / 540.0 - 1.0, 1.0 - s.y / 960.0, z, 1.0);
+        }
+      `;
+
+      const faceVert = /* glsl */ `
+        ${COMMON}
+        attribute float aSide;   // -1: decide by position, 0: upper copy of the lip line, 1: lower copy
+        varying vec2 vUv;
+        varying vec2 vRest;
+        void main() {
+          vec2 p = position.xy;
+          vUv = uv;
+          vRest = p;
+          bool lower = aSide > 0.5 || (aSide < -0.5 && p.y > lineY(p.x) + 0.01);
+          vec2 d = vec2(cornerShift(p), lower ? lowerDrop(p) : 0.0);
+          if (!lower) {
+            float above = max(lineY(p.x) - p.y, 0.0);
+            d.y = upperLift(p.x) * (1.0 - smoothstep(0.0, uMouth.z * 0.9, above));
+          }
+          gl_Position = toClip(moveFigure(p + d), 0.0);
+        }
+      `;
+      const faceFrag = /* glsl */ `
+        uniform sampler2D uTex;
+        uniform vec2 uImg;
+        uniform vec4 uEyeA;   // x, y, half width, half height
+        uniform vec4 uEyeB;
+        uniform float uBlink;
+        uniform float uAlpha;
+        varying vec2 vUv;
+        varying vec2 vRest;
+        vec2 lid(vec2 p, vec4 e, vec2 src) {
+          vec2 q = (p - e.xy) / e.zw;
+          float ax = abs(q.x);
+          if (uBlink <= 0.001 || ax >= 1.0) return src;
+          float span = sqrt(1.0 - ax * ax);
+          float contour = e.y - span * e.w;                    // upper eye contour (lash line)
+          float margin = 0.75 * e.w + 2.0;                     // skin strip above it that becomes the lid
+          float top = contour - margin;
+          float edge = mix(contour, e.y + 0.85 * span * e.w, uBlink);
+          if (p.y < top || p.y > edge) return src;
+          float t = (p.y - top) / max(edge - top, 1e-3);
+          float g = max(1.0, (edge - top) / margin);            // keeps the lash line its own thickness at the edge
+          return vec2(p.x, top + margin * pow(t, g));
+        }
+        void main() {
+          vec2 p = vRest;
+          vec2 s = lid(p, uEyeA, p);
+          s = lid(p, uEyeB, s);
+          vec2 uv = (s == p) ? vUv : vec2(s.x / uImg.x, 1.0 - s.y / uImg.y);
+          vec4 c = texture2D(uTex, uv);    // premultiplied
+          gl_FragColor = c * uAlpha;
+        }
+      `;
+      const mouthVert = /* glsl */ `
+        ${COMMON}
+        varying vec2 vRest;
+        void main() {
+          vRest = position.xy;
+          gl_Position = toClip(moveFigure(position.xy), 0.0);
+        }
+      `;
+      const mouthFrag = /* glsl */ `
+        ${COMMON}
+        uniform vec3 uInner;
+        uniform vec3 uTeethCol;
+        uniform float uTeeth;
+        uniform float uAlpha;
+        varying vec2 vRest;
+        void main() {
+          vec2 p = vRest;
+          float yU = lineY(p.x) + upperLift(p.x);
+          float yL = lineY(p.x) + lowerDrop(vec2(p.x, lineY(p.x) + 0.5));
+          float gap = max(yL - yU, 0.001);
+          float v = (p.y - yU) / gap;                         // 0 at the upper lip, 1 at the lower lip
+          float u = (p.x - uMouth.x) / uMouth.z;              // -1..1 corner to corner
+          vec3 col = uInner * (0.75 + 0.35 * (1.0 - abs(u)));
+          col = mix(col, uInner * 0.55, smoothstep(0.55, 1.0, abs(u)));      // corners in shadow
+          // tongue: a soft darker-red mound at the bottom
+          float tongue = smoothstep(0.62, 0.95, v) * (1.0 - smoothstep(0.45, 0.85, abs(u)));
+          col = mix(col, vec3(0.50, 0.20, 0.21), tongue * 0.55 * smoothstep(0.25, 0.6, uOpenParams.x));
+          // upper teeth: a band hanging from the upper lip, height grows with the gap, rounded ends
+          float teethH = min(gap * 0.32, uMouth.z * 0.16);
+          float inBand = (1.0 - smoothstep(teethH * 0.75, teethH, p.y - yU)) * (1.0 - smoothstep(0.5, 0.7, abs(u)));
+          float show = uTeeth * smoothstep(0.22, 0.55, uOpenParams.x);
+          float shade = 0.82 + 0.18 * (1.0 - abs(u) / 0.7);
+          col = mix(col, uTeethCol * shade, inBand * show * 0.9);
+          // thin dark line just under the upper lip so the teeth do not touch it
+          col *= 1.0 - 0.45 * (1.0 - smoothstep(0.0, 2.0, p.y - yU));
+          gl_FragColor = vec4(col * uAlpha, uAlpha);
+        }
+      `;
+
+      // ---------------------------------------------------------------- geometry
+      // A plane in image px (y down). The row nearest the lip line is snapped onto it; between the
+      // mouth corners its vertices exist twice (upper and lower copy) so the mouth can open.
+      function buildFace(W, H, M) {
+        const nx = 160, ny = Math.round(nx * H / W);
+        const xs = Array.from({ length: nx + 1 }, (_, i) => (W * i) / nx);
+        const ys = Array.from({ length: ny + 1 }, (_, j) => (H * j) / ny);
+        const snap = (arr, v) => { let b = 1; for (let i = 1; i < arr.length - 1; i++) if (Math.abs(arr[i] - v) < Math.abs(arr[b] - v)) b = i; arr[b] = v; return b; };
+        snap(xs, M.x - M.half); snap(xs, M.x + M.half); snap(xs, M.x);
+        const j0 = snap(ys, M.y);
+        const step = H / ny;
+        const lineY = (x) => { const u = Math.max(-1, Math.min(1, (x - M.x) / M.half)); return M.y - M.curve * u * u; };
+        const pos = [], uv = [], side = [], index = [];
+        const id = [];
+        for (let j = 0; j <= ny; j++) {
+          id.push([]);
+          for (let i = 0; i <= nx; i++) {
+            const x = xs[i];
+            // rows near the lip line follow its curve so the split lies exactly on the lips
+            const fall = Math.max(0, 1 - Math.abs(ys[j] - M.y) / (2.5 * step));
+            const y = ys[j] + (lineY(x) - M.y) * fall;
+            id[j].push(pos.length / 3);
+            pos.push(x, y, 0); uv.push(x / W, 1 - y / H); side.push(j === j0 ? 0 : -1);
+          }
+        }
+        const lowerCopy = {};
+        for (let i = 0; i <= nx; i++) {
+          if (Math.abs(xs[i] - M.x) < M.half - 1e-6) {
+            const k = id[j0][i];
+            lowerCopy[i] = pos.length / 3;
+            pos.push(pos[k * 3], pos[k * 3 + 1], 0); uv.push(uv[k * 2], uv[k * 2 + 1]); side.push(1);
+          }
+        }
+        // shared lip-line vertices outside the slit decide by position
+        for (let i = 0; i <= nx; i++) if (!(i in lowerCopy)) side[id[j0][i]] = -1;
+        for (let j = 0; j < ny; j++) {
+          for (let i = 0; i < nx; i++) {
+            let a = id[j][i], b = id[j][i + 1];
+            const c = id[j + 1][i], d = id[j + 1][i + 1];
+            if (j === j0) { if (i in lowerCopy) a = lowerCopy[i]; if ((i + 1) in lowerCopy) b = lowerCopy[i + 1]; }
+            index.push(a, c, b, b, c, d);
+          }
+        }
+        const g = new THREE.BufferGeometry();
+        g.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+        g.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
+        g.setAttribute("aSide", new THREE.Float32BufferAttribute(side, 1));
+        g.setIndex(index);
+        return g;
+      }
+
+      // ---------------------------------------------------------------- setup (after the image loads)
+      const U = {
+        uPlace: { value: new THREE.Vector4() }, uMouth: { value: new THREE.Vector3() }, uJawShape: { value: new THREE.Vector4() },
+        uOpenParams: { value: new THREE.Vector4() }, uShape: { value: new THREE.Vector2() }, uHead: { value: new THREE.Vector4() },
+        uHeadMove: { value: new THREE.Vector4() }, uPivot: { value: new THREE.Vector2() }, uBody: { value: new THREE.Vector4() },
+        uAlpha: { value: 1 },
+      };
+      const hex = (h) => new THREE.Color(h).toArray().slice(0, 3);
+      let W = 1, H = 1, M, chinY, faceH;
+
+      async function setup() {
+        const tex = await new THREE.TextureLoader().loadAsync(P.image);
+        tex.colorSpace = THREE.NoColorSpace;
+        tex.premultiplyAlpha = true;
+        tex.anisotropy = 4;
+        tex.minFilter = THREE.LinearMipmapLinearFilter;
+        W = tex.image.width; H = tex.image.height;
+
+        const m = LM.mouth || { x: W / 2, y: H * 0.55, w: W * 0.12 };
+        M = { x: m.x, y: m.y, half: m.w / 2, curve: m.curve || 0 };
+        const eyes = (LM.eyes || []).slice(0, 2);
+        const eyeY = eyes.length ? eyes.reduce((s, e) => s + e.y, 0) / eyes.length : M.y - m.w * 1.3;
+        const eyeX = eyes.length ? eyes.reduce((s, e) => s + e.x, 0) / eyes.length : M.x;
+        chinY = LM.chin ? LM.chin.y : M.y + m.w;
+        faceH = chinY - eyeY;
+        const eyeSpan = eyes.length === 2 ? Math.abs(eyes[1].x - eyes[0].x) : m.w * 1.4;
+        const head = LM.head || { x: eyeX, y: eyeY - faceH * 0.05, rx: Math.max(eyeSpan * 1.25, m.w * 1.7), ry: faceH * 1.7 };
+
+        const jaw = P.jaw > 0 ? P.jaw : 0.3 * m.w;
+        U.uMouth.value.set(M.x, M.y, M.half);
+        U.uJawShape.value.set(chinY, Math.max(M.half * 1.5, eyeSpan * 0.55), faceH * 0.55, M.curve);
+        U.uOpenParams.value.set(0, jaw, P.upperLip ?? 0.18, 0);
+        U.uHead.value.set(head.x, head.y, head.rx, head.ry);
+        U.uPivot.value.set(LM.chin ? LM.chin.x : M.x, chinY + faceH * 0.45);
+
+        // placement: lower-card -> image as wide as the card, bottom 7 % below the card's bottom edge;
+        // full -> image as wide as the frame, standing on the bottom edge
+        const s = P.avatarScale || 1, off = P.avatarOffset || [0, 0];
+        let scale, x0, y0;
+        if (FULL) { scale = (1080 * s) / W; x0 = (1080 - W * scale) / 2; y0 = 1920 - H * scale + H * scale * 0.04; }
+        else { scale = (960 * s) / W; x0 = 540 - (W * scale) / 2; y0 = 1860 + H * scale * 0.07 - H * scale; }
+        U.uPlace.value.set(x0 + off[0], y0 + off[1], scale, 1);
+        U.uBody.value.set(0, 0, 0, H);
+
+        // inner mouth: a quad just larger than the biggest possible gap
+        const mg = new THREE.PlaneGeometry(m.w + 8, jaw * (1.25 + (P.upperLip ?? 0.18)) + 16, 24, 8);
+        mg.translate(M.x, M.y + jaw * 0.5 - M.curve * 0.5, 0);
+        const mouthMat = new THREE.ShaderMaterial({
+          vertexShader: mouthVert, fragmentShader: mouthFrag, transparent: true, premultipliedAlpha: true, depthTest: false, depthWrite: false,
+          uniforms: { ...U, uInner: { value: new THREE.Vector3(...hex(P.innerColor || "#2a0d10")) }, uTeethCol: { value: new THREE.Vector3(...hex(P.teethColor || "#ece3d8")) }, uTeeth: { value: P.teeth ?? 0.75 } },
+        });
+        const mouthMesh = new THREE.Mesh(mg, mouthMat);
+        mouthMesh.frustumCulled = false;
+        mouthMesh.renderOrder = 0;
+
+        const eyeVec = (e) => new THREE.Vector4(e ? e.x : -1e5, e ? e.y : -1e5, e ? e.w / 2 : 1, e ? e.h / 2 : 1);
+        const faceMat = new THREE.ShaderMaterial({
+          vertexShader: faceVert, fragmentShader: faceFrag, transparent: true, premultipliedAlpha: true, depthTest: false, depthWrite: false,
+          uniforms: { ...U, uTex: { value: tex }, uImg: { value: new THREE.Vector2(W, H) }, uEyeA: { value: eyeVec(eyes[0]) }, uEyeB: { value: eyeVec(eyes[1]) }, uBlink: { value: 0 } },
+        });
+        const faceMesh = new THREE.Mesh(buildFace(W, H, M), faceMat);
+        faceMesh.frustumCulled = false;
+        faceMesh.renderOrder = 1;
+        scene.add(mouthMesh, faceMesh);
+        U.uBlink = faceMat.uniforms.uBlink;
+
+        if (P.mouthCurve) {
+          const res = await fetch(P.mouthCurve);
+          if (!res.ok) throw new Error("photo-avatar: cannot load mouthCurve " + P.mouthCurve);
+          curve = await res.json();
+          if (!curve.open || !curve.shape || !curve.fps) throw new Error("photo-avatar: mouthCurve is not in the mouth_curve.py format");
+        } else {
+          curve = demoCurve(P.seed, (P.voiceOffset || 0) + P.duration + 1);
+        }
+      }
+
+      // ---------------------------------------------------------------- motion signals (pure functions of t)
+      const R = rng(P.seed + ":motion");
+      const waves = Array.from({ length: 5 }, () => [0, 1, 2].map(() => [R.range(0.09, 0.42), R.range(0, Math.PI * 2)]));
+      const wave = (n, t) => waves[n].reduce((s, [f, ph], i) => s + Math.sin(2 * Math.PI * f * t + ph) / (i + 1), 0) / 1.83;
+      const blinkTimes = (() => {
+        const r = rng(P.seed + ":blink"), out = [];
+        let t = r.range(0.9, 1.6);
+        while (t < P.duration + 1) { out.push(t); t += r.range(2.4, 4.8); if (r() < 0.12) out.push(t - r.range(2.0, 2.2) + 0.35); }
+        return out;
+      })();
+      const blinkAt = (t) => {
+        let k = 0;
+        for (const b of blinkTimes) {
+          const d = t - b;
+          if (d < 0 || d > 0.22) continue;
+          k = Math.max(k, d < 0.07 ? ease.inOutSine(d / 0.07) : d < 0.1 ? 1 : 1 - ease.inOutSine((d - 0.1) / 0.12));
+        }
+        return k;
+      };
+
+      function draw(t) {
+        const vt = t + (P.voiceOffset || 0);
+        const c = curveAt(vt);
+        const open = clamp01(c.open * (P.openGain ?? 1));
+        U.uOpenParams.value.x = open;
+        U.uShape.value.set(c.wide, c.round);
+
+        const mo = P.motion ?? 1, unit = faceH / 300;   // motion scaled to the face size in the image
+        const talk = energyAt(vt, 0.35);
+        U.uHeadMove.value.set(
+          mo * (0.028 * wave(0, t) + 0.012 * (talk - 0.3) * wave(4, t * 1.7)),   // tilt (rad)
+          mo * unit * 7 * wave(1, t),                                              // sway x
+          mo * unit * (3.5 * wave(2, t) + 7 * talk),                              // bob + speech nod (down)
+          mo * unit * 9 * wave(3, t)                                               // turn
+        );
+        U.uBody.value.x = mo * unit * 2.5 * wave(1, t - 0.25);                     // body follows the head, less
+        U.uBody.value.z = 0.0035 * (0.5 + 0.5 * Math.sin((2 * Math.PI * t) / 3.8 - 1));
+        U.uBlink.value = P.blinks === false ? 0 : blinkAt(t);
+
+        // entrance: rise in with the card
+        const kin = ease.outCubic(seg(t, 0.05, 0.55));
+        U.uAlpha.value = kin;
+        U.uPlace.value.w = kin;
+        if (!U._y0) U._y0 = U.uPlace.value.y;
+        U.uPlace.value.y = U._y0 + lerp(70, 0, kin);
+        renderer.render(scene, camera);
+      }
+      onSeek(draw, setup());
+    </script>
+  </body>
+</html>

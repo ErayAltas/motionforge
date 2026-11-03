@@ -3,13 +3,14 @@
 # © 2026 motionforge contributors, MIT
 #
 # usage:
-#   engines/hyperframes/scripts/new-scene.sh <name> [--dest DIR] [--template SLUG] [--params values.json]
+#   engines/hyperframes/scripts/new-scene.sh <name> [--dest DIR] [--template SLUG] [--params values.json] [--three]
 #
 #   <name>              folder name of the new scene (letters, digits, - and _)
 #   --dest DIR          parent folder (default: ./scenes)
 #   --template SLUG     start from templates/<SLUG>/ instead of engines/hyperframes/starter/
 #   --params FILE       JSON object merged into the scene's <script id="params"> block
 #                       (templates only; keys are checked against the template's params.json)
+#   --three             add the three.js layer (automatic for templates that use it, e.g. *-3d)
 #
 # What it does:
 #   1. copies the starter/template into DIR/<name>/
@@ -19,6 +20,11 @@
 #   4. copies the Fontsource .woff2 files that base.css references into assets/fonts/, from
 #      $MF_FONTS_DIR (a folder of .woff2 files) or from node_modules/@fontsource/{inter,
 #      instrument-serif,jetbrains-mono}/files/ (npm i @fontsource/inter ...)
+#   5. with --three: copies three.js from npm (build/three.module.min.js + the addons
+#      RoundedBoxGeometry, RoomEnvironment, GLTFLoader, BufferGeometryUtils) and mf-three.js into
+#      assets/vendor/, and writes an import map into index.html if it has none
+#      -> run `npm i three@0.170.0` once; world-atlas + topojson-client are copied too when the
+#         scene uses them (globe-arcs-3d: npm i world-atlas@2.0.2 topojson-client@3.1.0)
 #
 # Then:  cd DIR/<name> && npx hyperframes lint && npx hyperframes render -o renders/<name>.mp4
 set -euo pipefail
@@ -33,18 +39,20 @@ NAME=""
 DEST="./scenes"
 TEMPLATE=""
 PARAMS=""
+THREE=0
 while [ $# -gt 0 ]; do
   case "$1" in
     --dest) DEST="${2:?--dest needs a folder}"; shift 2 ;;
     --template) TEMPLATE="${2:?--template needs a slug}"; shift 2 ;;
     --params) PARAMS="${2:?--params needs a JSON file}"; shift 2 ;;
-    -h|--help) sed -n '2,22p' "$0"; exit 0 ;;
+    --three) THREE=1; shift ;;
+    -h|--help) sed -n '2,29p' "$0"; exit 0 ;;
     -*) die "unknown option $1" ;;
     *) [ -z "$NAME" ] || die "only one scene name, got '$NAME' and '$1'"; NAME="$1"; shift ;;
   esac
 done
 
-[ -n "$NAME" ] || die "usage: new-scene.sh <name> [--dest DIR] [--template SLUG] [--params values.json]"
+[ -n "$NAME" ] || die "usage: new-scene.sh <name> [--dest DIR] [--template SLUG] [--params values.json] [--three]"
 case "$NAME" in *[!A-Za-z0-9_-]*) die "scene name may only use letters, digits, - and _" ;; esac
 
 if [ -n "$TEMPLATE" ]; then
@@ -101,6 +109,50 @@ if [ "$missing" -gt 0 ]; then
   echo "fonts: $missing .woff2 file(s) missing. Install them with:" >&2
   echo "       npm i @fontsource/inter @fontsource/instrument-serif @fontsource/jetbrains-mono" >&2
   echo "       and run this script again (or copy the files into $OUT/assets/fonts/)." >&2
+fi
+
+# --- three.js layer (optional) ----------------------------------------------------
+# 3D templates reference three.module.min.js in their import map: turn the layer on for them.
+if grep -q 'three.module.min.js' "$OUT/index.html"; then THREE=1; fi
+if [ "$THREE" = 1 ]; then
+  # resolve an npm file from the current project or from the motionforge checkout
+  npm_file() {
+    command -v node >/dev/null 2>&1 || return 0
+    node -e 'const [spec, file, root] = process.argv.slice(1);
+      try { const p = require("path"); let d = p.dirname(require.resolve(spec, { paths: [process.cwd(), root] }));
+        while (!require("fs").existsSync(p.join(d, "package.json"))) d = p.dirname(d);
+        const f = p.join(d, file); if (require("fs").existsSync(f)) console.log(f); } catch (e) {}' "$1" "$2" "$MF_ROOT" || true
+  }
+  VENDOR="$OUT/assets/vendor"
+  THREE_MIN="$(npm_file three build/three.module.min.js)"
+  if [ -n "$THREE_MIN" ]; then
+    THREE_PKG="$(dirname "$(dirname "$THREE_MIN")")"
+    cp "$THREE_MIN" "$VENDOR/three.module.min.js"
+    for rel in geometries/RoundedBoxGeometry.js environments/RoomEnvironment.js loaders/GLTFLoader.js utils/BufferGeometryUtils.js; do
+      mkdir -p "$VENDOR/three-addons/$(dirname "$rel")"
+      cp "$THREE_PKG/examples/jsm/$rel" "$VENDOR/three-addons/$rel"
+    done
+    echo "three: copied from $THREE_PKG"
+  else
+    echo "three: NOT FOUND. Run 'npm i three@0.170.0' in your project and create the scene again." >&2
+  fi
+  cp "$ENGINE_DIR/three/mf-three.js" "$VENDOR/mf-three.js"
+  # map data for globe scenes: world-atlas (ISC, Natural Earth data) + topojson-client (ISC)
+  if grep -q 'land-50m.json' "$OUT/index.html"; then
+    f="$(npm_file world-atlas/land-50m.json land-50m.json)"
+    if [ -n "$f" ]; then cp "$f" "$VENDOR/land-50m.json"; else echo "world-atlas: NOT FOUND. Run 'npm i world-atlas@2.0.2'" >&2; fi
+  fi
+  if grep -q 'topojson-client' "$OUT/index.html"; then
+    f="$(npm_file topojson-client dist/topojson-client.min.js)"
+    if [ -n "$f" ]; then cp "$f" "$VENDOR/topojson-client.min.js"; else echo "topojson-client: NOT FOUND. Run 'npm i topojson-client@3.1.0'" >&2; fi
+  fi
+  # import map: "three" and "three/addons/" resolve to the local copies (must come before any module script)
+  if ! grep -q 'type="importmap"' "$OUT/index.html"; then
+    MAP='    <script type="importmap">{ "imports": { "three": "./assets/vendor/three.module.min.js", "three/addons/": "./assets/vendor/three-addons/" } }</script>'
+    awk -v map="$MAP" '!done && (/<script/ || /<\/head>/) { print map; done = 1 } { print }' "$OUT/index.html" > "$OUT/index.html.tmp"
+    mv "$OUT/index.html.tmp" "$OUT/index.html"
+    echo "three: import map written into index.html (add a <canvas id=\"gl\" class=\"clip\"> and a module script; see engines/hyperframes/three/README.md)"
+  fi
 fi
 
 # --- template parameters ------------------------------------------------------------

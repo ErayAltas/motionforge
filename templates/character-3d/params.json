@@ -1,0 +1,51 @@
+{
+  "id": "character-3d",
+  "title": "3D presenter character",
+  "description": "A stylised 3D presenter built from code (three.js): a big-headed character at a desk in a warm, dim room with soft bokeh. Blinks, breathes, nods, switches expressions and gestures on time cues, and moves its mouth from a voice-over curve (tools/mouth_curve.py). Full-frame or in a rounded lower card for the split layout.",
+  "engine": "hyperframes",
+  "size": [1080, 1920],
+  "usage": "engines/hyperframes/scripts/new-scene.sh <name> --template character-3d --params values.json   (needs: npm i three@0.170.0 gsap; mouth curve: python3 tools/mouth_curve.py voice.mp3 -o scenes/<name>/mouth.json --fps 30)",
+  "presets": {
+    "creator": "warm skin, short messy hair, stubble, headphones, orange hoodie",
+    "teacher": "grey side-part hair, round glasses, moustache, brown jacket over a light shirt",
+    "chef": "deep skin, buzz cut, full beard, chef's hat, white shirt with a red neckerchief",
+    "coach": "curly hair, broad build, coral t-shirt, cap",
+    "analyst": "auburn bun, square glasses, slim build, navy jacket over a white shirt"
+  },
+  "parameters": {
+    "preset": {"type": "string", "enum": ["creator", "teacher", "chef", "coach", "analyst", "custom"], "default": "creator", "description": "One-word character choice. \"custom\" starts from neutral defaults; either way, keys in \"character\" override the preset."},
+    "character": {"type": "object", "default": {}, "description": "Overrides for the preset. Keys: skin (light|fair|medium|tan|brown|deep or #hex), hair (messy|sidepart|bun|buzz|curly|long|bald), hairColor (black|darkbrown|brown|auburn|ginger|blonde|grey|white or #hex), brows (soft|thick|thin|arched), eyes (round|almond|sleepy|dot), eyeColor (#hex), nose (button|round|long|pointed), beard (none|stubble|moustache|full), beardColor (#hex, default hairColor), glasses (none|round|square), glassesColor, outfit (hoodie|tshirt|shirt|jacket), outfitColor, outfitColor2 (inner shirt / trims), build (slim|average|broad), headphones (true|false), headphonesColor, hat (none|cap|beanie|toque), hatColor, blush (true|false)."},
+    "framing": {"type": "string", "enum": ["close", "medium", "wide"], "default": "medium", "description": "close = head and shoulders (best for lower-card), medium = upper body and desk, wide = whole desk and room."},
+    "layout": {"type": "string", "enum": ["full", "lower-card"], "default": "full", "description": "full = the room fills 1080x1920 with title/caption on top; lower-card = backdrop with title on top, character in a rounded card in the bottom ~45 % (the split layout)."},
+    "subjectY": {"type": "number", "default": 0.6, "description": "full layout: where the character's centre sits vertically (0 top .. 1 bottom); raise it to leave more room for the title."},
+    "pushIn": {"type": "number", "default": 0.08, "description": "Camera push-in over the scene, as a fraction of the distance (0 = static)."},
+    "drift": {"type": "number", "default": 1, "description": "Gentle sideways camera drift (0 = none, 1 = default)."},
+    "expression": {"type": "string", "enum": ["neutral", "smile", "surprised", "thinking"], "default": "smile", "description": "Expression at the start (cues change it later)."},
+    "gesture": {"type": "string", "enum": ["rest", "typing", "explain"], "default": "explain", "description": "Default hand pose when no timed gesture is running."},
+    "cues": {"type": "array", "default": [{"t": 0.2, "gesture": "wave", "duration": 1.8}, {"t": 2.9, "expression": "thinking", "gesture": "chin", "duration": 1.1}, {"t": 4.0, "expression": "surprised"}, {"t": 4.45, "expression": "smile", "gesture": "point", "duration": 1.6}], "description": "Timed changes, in scene seconds: {t, expression?, gesture?, duration?, look?, emphasis?}. expression: neutral|smile|surprised|thinking (holds until the next one). gesture: wave|point|chin|explain|typing|rest (wave/point/chin return to \"gesture\" after duration; defaults 1.8/1.6/2). look: camera|left|right|up|down. emphasis: true raises the brows and nods."},
+    "mouthCurve": {"type": "string", "default": "", "description": "\"mouth.json\": path next to index.html, written by tools/mouth_curve.py (you can also paste the JSON object itself into the params block of index.html). Empty: a seeded talking pattern for previews."},
+    "mouthOffset": {"type": "number", "default": 0, "description": "Second of the voice-over at which this scene starts (when the scene is a slice of a longer voice-over)."},
+    "talk": {"type": "string", "enum": ["auto", "off"], "default": "auto", "description": "auto = follow mouthCurve (or the seeded pattern when it is empty); off = mouth closed (listening)."},
+    "autoEmphasis": {"type": "boolean", "default": true, "description": "Brow raise + small nod on the loudest syllables of the curve."},
+    "seed": {"type": "string", "default": "mf-character", "description": "Seed for blinks, eye darts, hair tufts, bokeh and the preview talking pattern."},
+    "palette": {"type": "string", "enum": ["teal-amber", "charcoal-amber", "forest-amber"], "default": "teal-amber", "description": "Room colours: deep teal, charcoal or dark green wall, all with amber practical lights."},
+    "wallColor": {"type": "string", "default": "", "description": "Override the wall colour (#hex). Never purple."},
+    "lightColor": {"type": "string", "default": "", "description": "Override the warm practical light colour (#hex)."},
+    "accentColor": {"type": "string", "default": "#c8f53a", "description": "Small accent (one key, mug stripe, headphone ring)."},
+    "props": {"type": "object", "default": {"keyboard": true, "mug": true, "lamp": true, "plant": true, "notebook": true}, "description": "Desk props to show."},
+    "eyebrow": {"type": "string", "default": "Example — replace", "description": "Small label above the title (empty hides it)."},
+    "title": {"type": "string", "default": "Your topic here", "description": "Title slot (empty hides it). One short line or one word works best."},
+    "caption": {"type": "string", "default": "", "description": "Caption slot near the bottom (empty hides it). For word-synced captions, layer templates/word-captions on top instead."},
+    "titleStart": {"type": "number", "default": 0.3, "description": "Second the title animates in."},
+    "theme": {"type": "string", "enum": ["dark", "light"], "default": "dark", "description": "Backdrop variant from base.css behind the card (lower-card layout)."},
+    "exposure": {"type": "number", "default": 1.05, "description": "Tone-mapping exposure of the 3D render."},
+    "shadows": {"type": "boolean", "default": true, "description": "Soft shadows from the key light (turn off for faster drafts)."},
+    "lang": {"type": "string", "default": "en", "description": "Language of the copy (BCP 47). Sets <html lang>."},
+    "duration": {"type": "number", "default": 6, "description": "Scene length in seconds. new-scene.sh --params also rewrites data-duration to match."}
+  },
+  "checks": [
+    "look at 4-5 stills: face readable, no z-fighting or holes, hands not through the desk",
+    "with a voice-over: render 3 s and check the mouth opens on syllables and closes in pauses",
+    "the voice-over audio sits in the scene as an <audio> clip (or in the final edit), never only in mouth.json"
+  ]
+}

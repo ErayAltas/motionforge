@@ -1,0 +1,24 @@
+{
+  "id": "product-turntable-3d",
+  "title": "Product turntable (3D)",
+  "description": "A product on a lit pedestal: it lowers in with a quarter turn, the camera orbits slowly and 2-3 spec callouts draw leader lines to points on the object. Default product is an original speaker built from primitives; set model to show your own GLB.",
+  "engine": "hyperframes",
+  "layers": ["three.js (hf-seek)", "HTML + GSAP"],
+  "size": [1080, 1920],
+  "usage": "engines/hyperframes/scripts/new-scene.sh <name> --template product-turntable-3d --params values.json",
+  "parameters": {
+    "eyebrow": {"type": "string", "default": "Studio series · S2", "description": "Small label above the title."},
+    "title": {"type": "string", "default": "Small box. {Big} room.", "description": "Headline; wrap one word in {braces} for the italic serif accent."},
+    "subline": {"type": "string", "default": "Model S2 · <b>Chalk</b> · example product", "description": "Line under the pedestal. Simple HTML allowed (<b> = accent)."},
+    "model": {"type": "string", "default": "", "description": "Path to a local .glb/.gltf inside the scene (e.g. assets/models/product.glb). Empty = the built-in speaker. Record the model's licence in assets/CREDITS.md."},
+    "modelHeight": {"type": "number", "default": 2.1, "description": "Height of the product in scene units (the pedestal is 2.64 wide). A GLB is scaled so its largest side has this size."},
+    "productColor": {"type": "string", "default": "#e4e0d8", "description": "Shell colour of the built-in speaker."},
+    "callouts": {"type": "array", "default": [{"value": "28 mm", "detail": "silk-dome tweeter", "point": [0, 0.5, 1], "side": "left"}], "description": "2-3 items {value, detail, point, side}. point = [x, y, z] inside the product's bounding box, -1..1 per axis (y 1 = top, z 1 = front face). side = left | right (label column)."},
+    "calloutStart": {"type": "number", "default": 1.6, "description": "Second the first callout appears; the others follow every 0.45 s."},
+    "orbitDegrees": {"type": "number", "default": 55, "description": "How far the camera travels around the product over the scene. Keep it under ~70 so front callouts stay visible."},
+    "theme": {"type": "string", "enum": ["dark", "light"], "default": "dark", "description": "Backdrop variant from base.css (the pedestal follows it)."},
+    "lang": {"type": "string", "default": "en", "description": "Language of the copy (BCP 47). Sets <html lang>."},
+    "duration": {"type": "number", "default": 6, "description": "Scene length in seconds. new-scene.sh --params also rewrites data-duration to match."}
+  },
+  "checks": ["callout dots sit on the product in every still", "labels do not overlap the product", "real product specs only (or mark the product as an example)"]
+}

@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1250" viewBox="0 0 1000 1250">
+  <!-- "Juno": an original illustrated presenter for motionforge previews and tests. © 2026 motionforge contributors, MIT -->
+  <defs>
+    <radialGradient id="skin" cx="46%" cy="40%" r="62%">
+      <stop offset="0" stop-color="#f1c09a"/><stop offset="0.7" stop-color="#e2a57c"/><stop offset="1" stop-color="#c98760"/>
+    </radialGradient>
+    <linearGradient id="neck" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a86a48"/><stop offset="0.45" stop-color="#d3936c"/><stop offset="1" stop-color="#dba07a"/>
+    </linearGradient>
+    <linearGradient id="hair" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3b2418"/><stop offset="1" stop-color="#1f130d"/>
+    </linearGradient>
+    <linearGradient id="hairhi" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#6b4430" stop-opacity="0"/><stop offset="0.5" stop-color="#7a503a" stop-opacity="0.75"/><stop offset="1" stop-color="#6b4430" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="top" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3c7f80"/><stop offset="1" stop-color="#245457"/>
+    </linearGradient>
+    <radialGradient id="blush" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#e57f73" stop-opacity="0.45"/><stop offset="1" stop-color="#e57f73" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="iris" cx="45%" cy="40%" r="60%">
+      <stop offset="0" stop-color="#8a5a34"/><stop offset="1" stop-color="#3d2414"/>
+    </radialGradient>
+    <linearGradient id="ulip" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b65a5b"/><stop offset="1" stop-color="#9c4448"/>
+    </linearGradient>
+    <linearGradient id="llip" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b9575a"/><stop offset="1" stop-color="#cf7472"/>
+    </linearGradient>
+  </defs>
+
+  <!-- back hair (bob) -->
+  <path d="M300 520 C 270 330 360 205 500 200 C 650 205 735 330 705 520 C 700 610 720 690 690 740 C 640 770 600 700 590 640 L 410 640 C 400 700 360 770 310 740 C 280 690 300 610 300 520 Z" fill="url(#hair)"/>
+
+  <!-- shoulders / top -->
+  <path d="M40 1250 C 50 1010 170 905 360 872 L 640 872 C 830 905 950 1010 960 1250 Z" fill="url(#top)"/>
+  <path d="M250 1250 C 258 1100 276 1010 296 950" stroke="#1e4648" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.5"/>
+  <path d="M750 1250 C 742 1100 724 1010 704 950" stroke="#1e4648" stroke-width="10" fill="none" stroke-linecap="round" opacity="0.5"/>
+
+  <!-- neck -->
+  <path d="M432 700 L 568 700 L 580 880 C 545 915 455 915 420 880 Z" fill="url(#neck)"/>
+  <!-- crew neck collar -->
+  <path d="M398 866 C 440 928 560 928 602 866 L 644 876 C 604 962 396 962 356 876 Z" fill="#1f4a4c"/>
+
+  <!-- ears -->
+  <ellipse cx="335" cy="525" rx="30" ry="50" fill="#d89670"/>
+  <ellipse cx="665" cy="525" rx="30" ry="50" fill="#d89670"/>
+  <path d="M330 500 C 318 515 320 545 336 556" stroke="#b97753" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M670 500 C 682 515 680 545 664 556" stroke="#b97753" stroke-width="7" fill="none" stroke-linecap="round"/>
+
+  <!-- face -->
+  <path d="M340 470 C 340 330 410 262 500 262 C 590 262 660 330 660 470 C 660 600 615 700 560 748 C 535 770 516 778 500 778 C 484 778 465 770 440 748 C 385 700 340 600 340 470 Z" fill="url(#skin)"/>
+  <!-- jaw shadow on the neck is drawn by the neck gradient; soft cheek blush -->
+  <ellipse cx="402" cy="598" rx="52" ry="34" fill="url(#blush)"/>
+  <ellipse cx="598" cy="598" rx="52" ry="34" fill="url(#blush)"/>
+
+  <!-- fringe -->
+  <path d="M332 470 C 318 330 400 232 520 236 C 630 240 690 320 676 455 C 650 380 610 340 560 330 C 520 360 450 380 380 390 C 360 410 345 440 332 470 Z" fill="url(#hair)"/>
+  <path d="M418 262 C 470 238 550 236 606 258" stroke="url(#hairhi)" stroke-width="10" fill="none" stroke-linecap="round"/>
+
+  <!-- brows -->
+  <path d="M372 448 C 395 432 430 430 458 440" stroke="#2c1a12" stroke-width="13" fill="none" stroke-linecap="round"/>
+  <path d="M542 440 C 570 430 605 432 628 448" stroke="#2c1a12" stroke-width="13" fill="none" stroke-linecap="round"/>
+
+  <!-- eyes -->
+  <g id="eyeL">
+    <path d="M378 506 C 398 484 442 484 462 506 C 442 524 398 524 378 506 Z" fill="#fbf6f0"/>
+    <circle cx="420" cy="505" r="16.5" fill="url(#iris)"/>
+    <circle cx="420" cy="505" r="7.5" fill="#140c08"/>
+    <circle cx="425" cy="499" r="4.5" fill="#ffffff"/>
+    <path d="M374 508 C 396 480 444 480 466 504" stroke="#24150e" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M392 519 C 408 526 432 526 450 519" stroke="#b07a5c" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.7"/>
+  </g>
+  <g id="eyeR">
+    <path d="M538 506 C 558 484 602 484 622 506 C 602 524 558 524 538 506 Z" fill="#fbf6f0"/>
+    <circle cx="580" cy="505" r="16.5" fill="url(#iris)"/>
+    <circle cx="580" cy="505" r="7.5" fill="#140c08"/>
+    <circle cx="585" cy="499" r="4.5" fill="#ffffff"/>
+    <path d="M534 504 C 556 480 604 480 626 508" stroke="#24150e" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M550 519 C 568 526 592 526 608 519" stroke="#b07a5c" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.7"/>
+  </g>
+
+  <!-- nose -->
+  <path d="M506 520 C 512 552 522 578 516 596 C 510 606 494 606 486 600" stroke="#b9764f" stroke-width="6" fill="none" stroke-linecap="round" opacity="0.8"/>
+  <ellipse cx="500" cy="598" rx="22" ry="8" fill="#c27f5a" opacity="0.35"/>
+
+  <!-- mouth (closed, relaxed) -->
+  <path d="M444 662 C 466 646 486 646 500 652 C 514 646 534 646 556 662 C 530 664 470 664 444 662 Z" fill="url(#ulip)"/>
+  <path d="M444 662 C 470 664 530 664 556 662 C 538 690 462 690 444 662 Z" fill="url(#llip)"/>
+  <path d="M470 674 C 486 680 514 680 530 674" stroke="#e79a92" stroke-width="4" fill="none" stroke-linecap="round" opacity="0.6"/>
+  <path d="M440 661 C 470 665 530 665 560 661" stroke="#6e2a2e" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <!-- chin shading -->
+  <path d="M470 742 C 486 752 514 752 530 742" stroke="#c98760" stroke-width="5" fill="none" stroke-linecap="round" opacity="0.5"/>
+</svg>
