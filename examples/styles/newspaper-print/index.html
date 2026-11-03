@@ -33,9 +33,8 @@
       #root { background: #2a2925; }
       #root::after { display: none; }
       #page { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; transform-origin: 0 0; color: var(--ink);
-        background: radial-gradient(ellipse at 50% 50%, #e6e2d7 55%, #d9d0b8 100%); }
-      /* newsprint fibre: a very faint static tile (strong grain on a moving camera makes every frame unique) */
-      #page::before { content: ""; position: absolute; inset: 0; background-image: var(--mf-grain); opacity: .04; mix-blend-mode: multiply; }
+        background: #e2ded2; box-shadow: inset 0 0 70px rgba(190,170,120,.45); }
+      /* newsprint stays flat here: grain and broad gradients under a moving camera make every GIF frame unique */
       #crease { position: absolute; left: 0; right: 0; top: 1240px; height: 2px; background: linear-gradient(rgba(255,255,255,.5), rgba(0,0,0,.12)); }
       #mast { position: absolute; left: 0; right: 0; top: 96px; text-align: center; font: 900 72px/1 "Playfair Display", Georgia; letter-spacing: -0.01em; }
       #dateline { position: absolute; left: 80px; right: 80px; top: 196px; padding: 10px 0; border-top: 1.5px solid var(--ink); border-bottom: 4px double var(--ink); display: flex; justify-content: space-between; font: 800 20px/1 "Libre Franklin", system-ui; letter-spacing: .12em; text-transform: uppercase; }
