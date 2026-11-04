@@ -7,13 +7,16 @@ import os from 'node:os';
 import crypto from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { createPublisher, loadDotEnv } from './publish.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const PUBLIC = path.join(__dirname, 'public');
-const DATA = path.join(__dirname, '.data', 'jobs');
+const DATA_ROOT = process.env.STUDIO_DATA || path.join(__dirname, '.data');
+const DATA = path.join(DATA_ROOT, 'jobs');
 const VIDEOS = path.join(ROOT, 'videos');
 const STYLES_DIR = path.join(ROOT, 'skills', 'style-library', 'styles');
+loadDotEnv(path.join(__dirname, '.env'));
 const PORT = Number(process.env.PORT || 4173);
 const HOST = process.env.HOST || '127.0.0.1';
 const CLAUDE_BIN = process.env.CLAUDE_BIN || 'claude';
@@ -116,14 +119,26 @@ function health() {
 const jobs = new Map();           // id -> job
 const procs = new Map();          // id -> ChildProcess
 const listeners = new Map();      // id -> Set<res>
+const channels = new Map();       // id -> channel
+const queue = [];                 // job ids waiting for a free slot
+const LIMIT = Math.max(1, Number(process.env.STUDIO_CONCURRENCY || 1));
+const CH_FILE = path.join(DATA_ROOT, 'channels.json');
+const IDEA_CWD = path.join(DATA_ROOT, 'ideas-cwd');
+fs.mkdirSync(IDEA_CWD, { recursive: true });
 
 const jobDir = (id) => path.join(DATA, id);
 const saveJob = (job) => fs.writeFileSync(path.join(jobDir(job.id), 'job.json'), JSON.stringify(job, null, 2));
+function loadChannels() {
+  try { for (const c of JSON.parse(fs.readFileSync(CH_FILE, 'utf8'))) channels.set(c.id, c); } catch { /* none yet */ }
+}
+const saveChannels = () => fs.writeFileSync(CH_FILE, JSON.stringify([...channels.values()], null, 2));
 function loadJobs() {
   for (const id of fs.readdirSync(DATA)) {
+    if (id === 'ideas-cwd' || !exists(path.join(DATA, id, 'job.json'))) continue;
     try {
       const job = JSON.parse(fs.readFileSync(path.join(DATA, id, 'job.json'), 'utf8'));
-      if (job.status === 'running' || job.status === 'queued') { job.status = 'stopped'; job.note = 'Sunucu yeniden başlatıldı; çalışma yarıda kaldı.'; saveJob(job); }
+      if (job.status === 'queued' && job.pending) queue.push(job.id);
+      else if (job.status === 'running' || job.status === 'queued') { job.status = 'stopped'; job.note = 'Sunucu yeniden başlatıldı; çalışma yarıda kaldı.'; saveJob(job); }
       jobs.set(id, job);
     } catch { /* ignore broken job */ }
   }
@@ -139,7 +154,24 @@ function broadcast(id, name, data) {
   const msg = `event: ${name}\ndata: ${JSON.stringify(data)}\n\n`;
   for (const res of set) res.write(msg);
 }
-const publicJob = (job) => ({ ...job, stages: stagesOf(job), outputs: outputsOf(job), running: procs.has(job.id) });
+const publicJob = (job) => ({ ...job, pending: undefined, stages: stagesOf(job), outputs: outputsOf(job), running: procs.has(job.id),
+  queuePos: queue.indexOf(job.id) + 1 });
+
+function enqueue(job, prompt) {
+  job.status = 'queued'; job.pending = prompt; saveJob(job);
+  if (!queue.includes(job.id)) queue.push(job.id);
+  broadcast(job.id, 'job', publicJob(job));
+  pump();
+}
+function pump() {
+  while (procs.size < LIMIT && queue.length) {
+    const job = jobs.get(queue.shift());
+    if (!job || job.status !== 'queued') continue;
+    const prompt = job.pending; delete job.pending;
+    runClaude(job, prompt);
+  }
+  for (const id of queue) { const j = jobs.get(id); if (j) broadcast(id, 'job', publicJob(j)); }
+}
 
 // Stage detection comes from the files the agent leaves behind, not from parsing its prose.
 const STAGES = [
@@ -187,6 +219,18 @@ function buildPrompt(job, firstTurn) {
   lines.push(`Make a video with the motionforge toolkit in this repository. Read and follow skills/motion-director/SKILL.md.`);
   lines.push('');
   lines.push(`TOPIC: ${job.topic}`);
+  const ch = job.channelId && channels.get(job.channelId);
+  if (ch) {
+    lines.push('');
+    lines.push('CHANNEL CONTEXT (this video belongs to a recurring channel; keep one consistent series identity, voice and look across its videos):');
+    lines.push(`- Channel: ${ch.name}`);
+    if (ch.niche) lines.push(`- Niche and promise: ${ch.niche}`);
+    if (ch.audience) lines.push(`- Audience: ${ch.audience}`);
+    if (ch.tone) lines.push(`- Tone: ${ch.tone}`);
+    if (ch.rules) lines.push(`- Channel rules (always follow): ${ch.rules}`);
+    const prev = [...jobs.values()].filter((j) => j.channelId === ch.id && j.id !== job.id).sort((a, b) => b.createdAt - a.createdAt).slice(0, 8).map((j) => j.topic);
+    if (prev.length) lines.push(`- Recent videos on this channel (do not repeat them; vary the hook type): ${prev.join(' | ')}`);
+  }
   lines.push('');
   lines.push('Brief decided in the studio UI (treat as the confirmed brief, do not ask for these again):');
   lines.push(`- Video language: ${lang} (${s.language}). Write script, on-screen text and captions in it.`);
@@ -257,6 +301,7 @@ function runClaude(job, prompt) {
     else job.status = finalVideos(job).length ? 'done' : 'waiting';
     job.finishedAt = Date.now();
     saveJob(job); broadcast(job.id, 'job', publicJob(job));
+    pump();
   });
 }
 function describeTool(c) {
@@ -272,11 +317,22 @@ function describeTool(c) {
   }
 }
 
+function pickChannelStyle(ch) {
+  const list = (ch.styles || []).filter((x) => /^[a-z0-9-]+$/.test(x));
+  if (!list.length) return 'auto';
+  if (list.length === 1) return list[0];
+  const used = [...jobs.values()].filter((j) => j.channelId === ch.id).sort((a, b) => b.createdAt - a.createdAt);
+  const last = new Map(); used.forEach((j, i) => { if (!last.has(j.settings.style)) last.set(j.settings.style, i); });
+  // rotate: the style used longest ago (never used = first)
+  return list.slice().sort((a, b) => (last.has(b) ? last.get(b) : 1e9) - (last.has(a) ? last.get(a) : 1e9))[0];
+}
 function createJob(body) {
   const topic = String(body.topic || '').trim();
   if (topic.length < 3) throw new Error('Konu çok kısa.');
   if (topic.length > 2000) throw new Error('Konu çok uzun.');
-  const st = body.settings || {};
+  const ch = body.channelId ? channels.get(String(body.channelId)) : null;
+  if (body.channelId && !ch) throw new Error('Kanal bulunamadı.');
+  const st = { ...(ch ? { language: ch.language, duration: ch.duration, format: ch.format, voice: ch.voice, mode: ch.mode, style: pickChannelStyle(ch), notes: '' } : {}), ...(body.settings || {}) };
   const settings = {
     language: LANGS[st.language] ? st.language : 'tr',
     duration: Math.min(120, Math.max(10, Number(st.duration) || 35)),
@@ -291,12 +347,99 @@ function createJob(body) {
   let slug = slugify(topic), n = 2;
   while (exists(path.join(VIDEOS, slug))) slug = `${slugify(topic)}-${n++}`;
   const job = { id, topic, slug, settings, status: 'queued', createdAt: Date.now(), events: 0, cost: 0, turns: 0 };
+  if (ch) job.channelId = ch.id;
   fs.mkdirSync(jobDir(id), { recursive: true });
   jobs.set(id, job); saveJob(job);
   pushEvent(job, { kind: 'status', text: 'İş kuyruğa alındı.' });
-  runClaude(job, buildPrompt(job, true));
+  if (ch && body.ideaId) {
+    const idea = ch.ideas.find((i) => i.id === body.ideaId);
+    if (idea) { idea.status = 'used'; idea.jobId = job.id; saveChannels(); }
+  }
+  enqueue(job, buildPrompt(job, true));
   return job;
 }
+
+// ---------- channels ----------
+const str = (v, n) => String(v ?? '').trim().slice(0, n);
+function sanitizeChannel(b) {
+  const name = str(b.name, 60);
+  if (name.length < 2) throw new Error('Kanal adı gerekli.');
+  return {
+    name, emoji: [...str(b.emoji, 8)][0] || '🎬', niche: str(b.niche, 800), audience: str(b.audience, 300), tone: str(b.tone, 300), rules: str(b.rules, 1200),
+    styles: (Array.isArray(b.styles) ? b.styles : []).filter((x) => typeof x === 'string' && /^[a-z0-9-]+$/.test(x)).slice(0, 12),
+    language: LANGS[b.language] ? b.language : 'tr',
+    duration: Math.min(120, Math.max(10, Number(b.duration) || 35)),
+    format: FORMATS[b.format] ? b.format : '9:16',
+    voice: ['local', 'none', 'paid'].includes(b.voice) ? b.voice : 'local',
+    mode: b.mode === 'steps' ? 'steps' : 'auto',
+  };
+}
+function channelSummary(c) {
+  const js = [...jobs.values()].filter((j) => j.channelId === c.id);
+  return { ...c, ideas: undefined, ideaCount: c.ideas.filter((i) => i.status === 'new').length,
+    videos: js.filter((j) => finalVideos(j).length).length, jobs: js.length, running: js.filter((j) => j.status === 'running' || j.status === 'queued').length,
+    lastAt: js.reduce((a, j) => Math.max(a, j.createdAt), 0), generating: !!c.generating };
+}
+function runOneShot(prompt, timeoutMs = 180000) {
+  return new Promise((resolve, reject) => {
+    const args = ['-p', '--output-format', 'json', '--tools', ''];
+    if (process.env.STUDIO_IDEA_MODEL || MODEL) args.push('--model', process.env.STUDIO_IDEA_MODEL || MODEL);
+    const child = spawn(CLAUDE_BIN, args, { cwd: IDEA_CWD, env: process.env, stdio: ['pipe', 'pipe', 'pipe'] });
+    let out = '', err = '';
+    const timer = setTimeout(() => { child.kill('SIGTERM'); reject(new Error('Zaman aşımı: fikir üretimi çok uzun sürdü.')); }, timeoutMs);
+    child.stdout.on('data', (d) => { out += d; }); child.stderr.on('data', (d) => { err = (err + d).slice(-1500); });
+    child.on('error', (e) => { clearTimeout(timer); reject(new Error(`claude başlatılamadı: ${e.message}`)); });
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      try { const j = JSON.parse(out); if (j.is_error) return reject(new Error(String(j.result || 'claude hatası').slice(0, 300))); return resolve(String(j.result || '')); }
+      catch { return reject(new Error((err.trim() || `claude çıkış kodu ${code}`).slice(-300))); }
+    });
+    child.stdin.end(prompt);
+  });
+}
+async function generateIdeas(ch, { count, angle }) {
+  count = Math.min(15, Math.max(3, count));
+  const used = [...jobs.values()].filter((j) => j.channelId === ch.id).map((j) => j.topic);
+  const banked = ch.ideas.map((i) => i.title);
+  const avoid = [...new Set([...used, ...banked])].slice(-80);
+  const lang = LANGS[ch.language] || ch.language;
+  const prompt = [
+    `You generate video topic ideas for a short-video channel. Reply with ONLY a JSON array, no prose, no code fence.`,
+    ``,
+    `Channel: ${ch.name}`,
+    ch.niche && `Niche and promise: ${ch.niche}`,
+    ch.audience && `Audience: ${ch.audience}`,
+    ch.tone && `Tone: ${ch.tone}`,
+    ch.rules && `Channel rules: ${ch.rules}`,
+    `Format: ${ch.format}, about ${ch.duration} seconds, language of the videos: ${lang}.`,
+    angle && `Focus of this batch (from the owner): ${angle}`,
+    ``,
+    `Give exactly ${count} ideas. Each is an object with these string fields, written in ${lang}:`,
+    `- "title": the topic exactly as the owner would type it into the video tool (a question or a clear promise, max 90 characters, no quotes, no clickbait lies)`,
+    `- "hook": a suggested first spoken sentence (max 140 characters) that stops the scroll`,
+    `- "angle": one short sentence on why a viewer would watch to the end`,
+    ``,
+    `Rules: topics must be answerable accurately in ${ch.duration} seconds; evergreen over news; mix easy and surprising topics; never invent facts, statistics or quotes; vary the structure of the titles; no two ideas about the same thing.`,
+    avoid.length && `Do NOT repeat or closely paraphrase any of these existing topics: ${avoid.join(' | ')}`,
+  ].filter(Boolean).join('\n');
+  const text = await runOneShot(prompt);
+  const a = text.indexOf('['), b = text.lastIndexOf(']');
+  let arr; try { arr = JSON.parse(text.slice(a, b + 1)); } catch { throw new Error('Fikirler okunamadı; tekrar dene.'); }
+  const seen = new Set(avoid.map((x) => x.toLowerCase()));
+  const added = [];
+  for (const it of Array.isArray(arr) ? arr : []) {
+    const title = str(it?.title, 140); if (title.length < 6 || seen.has(title.toLowerCase())) continue;
+    seen.add(title.toLowerCase());
+    const idea = { id: crypto.randomBytes(4).toString('hex'), title, hook: str(it.hook, 220), angle: str(it.angle, 260), status: 'new', createdAt: Date.now() };
+    ch.ideas.unshift(idea); added.push(idea.id);
+  }
+  if (!added.length) throw new Error('Yeni fikir çıkmadı; yöne bir not ekleyip tekrar dene.');
+  saveChannels();
+  return added;
+}
+
+const publisher = createPublisher({ dataDir: DATA_ROOT, origin: `http://127.0.0.1:${PORT}`, jobs, channels, saveJob, broadcast, publicJob, pushEvent,
+  videosDir: VIDEOS, readBody, json, runOneShot });
 
 // ---------- HTTP ----------
 const server = http.createServer(async (req, res) => {
@@ -308,17 +451,49 @@ const server = http.createServer(async (req, res) => {
     if (!['localhost', '127.0.0.1', '[::1]'].includes(host) && HOST === '127.0.0.1') { res.writeHead(403); return res.end('forbidden'); }
     if (req.method !== 'GET' && req.headers.origin && new URL(req.headers.origin).host !== req.headers.host) { res.writeHead(403); return res.end('forbidden'); }
 
+    if ((p.startsWith('/api/publish') || p.startsWith('/oauth/') || /^\/api\/jobs\/[a-z0-9]+\/publish(-meta)?$/.test(p)) && await publisher.handle(req, res, url, p)) return;
     if (p === '/api/health') return json(res, 200, health());
     if (p === '/api/config') return json(res, 200, { languages: LANGS, formats: Object.keys(FORMATS), styles: loadStyles() });
     if (p === '/api/jobs' && req.method === 'GET') {
       return json(res, 200, [...jobs.values()].sort((a, b) => b.createdAt - a.createdAt).map((j) => ({
         id: j.id, topic: j.topic, status: j.status, createdAt: j.createdAt, settings: j.settings, cost: j.cost,
-        hasVideo: finalVideos(j).length > 0, running: procs.has(j.id),
+        channelId: j.channelId || null, hasVideo: finalVideos(j).length > 0, running: procs.has(j.id), queuePos: queue.indexOf(j.id) + 1,
+        video: (outputsOf(j).find((o) => o.kind === 'video') || {}).url || null,
+        progress: stagesOf(j).filter((x) => x.done).length / STAGES.length,
       })));
     }
     if (p === '/api/jobs' && req.method === 'POST') {
       const body = await readBody(req);
       try { return json(res, 201, publicJob(createJob(body))); } catch (e) { return json(res, 400, { error: e.message }); }
+    }
+    if (p === '/api/channels' && req.method === 'GET') return json(res, 200, [...channels.values()].map(channelSummary));
+    if (p === '/api/channels' && req.method === 'POST') {
+      try { const c = sanitizeChannel(await readBody(req)); c.id = 'c' + Date.now().toString(36) + crypto.randomBytes(2).toString('hex'); c.createdAt = Date.now(); c.ideas = [];
+        channels.set(c.id, c); saveChannels(); return json(res, 201, c); } catch (e) { return json(res, 400, { error: e.message }); }
+    }
+    let cm = /^\/api\/channels\/(c[a-z0-9]+)(?:\/ideas(?:\/([a-z0-9]+))?)?$/.exec(p);
+    if (cm) {
+      const ch = channels.get(cm[1]); if (!ch) return json(res, 404, { error: 'Kanal bulunamadı.' });
+      const isIdeas = p.includes('/ideas');
+      if (!isIdeas && req.method === 'GET') return json(res, 200, ch);
+      if (!isIdeas && req.method === 'PUT') {
+        try { Object.assign(ch, sanitizeChannel(await readBody(req))); saveChannels(); return json(res, 200, ch); } catch (e) { return json(res, 400, { error: e.message }); }
+      }
+      if (!isIdeas && req.method === 'DELETE') { channels.delete(ch.id); saveChannels(); return json(res, 200, { ok: true }); }
+      if (isIdeas && !cm[2] && req.method === 'POST') {
+        if (ch.generating) return json(res, 409, { error: 'Fikirler zaten üretiliyor.' });
+        const body = await readBody(req);
+        ch.generating = true;
+        try { const added = await generateIdeas(ch, { count: Number(body.count) || 8, angle: String(body.angle || '').slice(0, 300) }); return json(res, 200, { added, channel: ch }); }
+        catch (e) { return json(res, 502, { error: e.message }); }
+        finally { delete ch.generating; }
+      }
+      if (isIdeas && cm[2]) {
+        const idea = ch.ideas.find((i) => i.id === cm[2]); if (!idea) return json(res, 404, { error: 'Fikir bulunamadı.' });
+        if (req.method === 'DELETE') { ch.ideas = ch.ideas.filter((i) => i !== idea); saveChannels(); return json(res, 200, ch); }
+        if (req.method === 'PATCH') { const b = await readBody(req); if (['new', 'dismissed'].includes(b.status)) idea.status = b.status; saveChannels(); return json(res, 200, ch); }
+      }
+      return json(res, 405, { error: 'method not allowed' });
     }
     let m = /^\/api\/jobs\/([a-z0-9]+)(?:\/(events|reply|stop|script|brief|history))?$/.exec(p);
     if (m) {
@@ -327,6 +502,7 @@ const server = http.createServer(async (req, res) => {
       if (!sub && req.method === 'GET') return json(res, 200, publicJob(job));
       if (!sub && req.method === 'DELETE') {
         if (procs.has(job.id)) { job.stopRequested = true; try { process.kill(-procs.get(job.id).pid, 'SIGTERM'); } catch {} }
+        const qi = queue.indexOf(job.id); if (qi >= 0) queue.splice(qi, 1);
         jobs.delete(job.id); fs.rmSync(jobDir(job.id), { recursive: true, force: true });
         return json(res, 200, { ok: true });
       }
@@ -349,17 +525,22 @@ const server = http.createServer(async (req, res) => {
         return;
       }
       if (sub === 'reply' && req.method === 'POST') {
-        if (procs.has(job.id)) return json(res, 409, { error: 'Ajan şu an çalışıyor.' });
+        if (procs.has(job.id) || job.status === 'queued') return json(res, 409, { error: 'Ajan şu an çalışıyor veya sırada.' });
         if (!job.sessionId) return json(res, 409, { error: 'Oturum bulunamadı; yeni bir video başlatın.' });
         const body = await readBody(req);
         const text = String(body.text || '').trim().slice(0, 4000);
         if (!text) return json(res, 400, { error: 'Mesaj boş.' });
         pushEvent(job, { kind: 'user', text });
-        runClaude(job, text);
+        enqueue(job, text);
         return json(res, 200, publicJob(job));
       }
       if (sub === 'stop' && req.method === 'POST') {
         const child = procs.get(job.id);
+        if (!child && job.status === 'queued') {
+          const qi = queue.indexOf(job.id); if (qi >= 0) queue.splice(qi, 1);
+          job.status = 'stopped'; delete job.pending; saveJob(job); pushEvent(job, { kind: 'status', text: 'Sıradan çıkarıldı.' });
+          broadcast(job.id, 'job', publicJob(job)); return json(res, 200, { ok: true });
+        }
         if (!child) return json(res, 409, { error: 'Çalışan iş yok.' });
         job.stopRequested = true;
         try { process.kill(-child.pid, 'SIGTERM'); } catch { child.kill('SIGTERM'); }
@@ -388,8 +569,9 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-loadJobs();
+loadChannels(); loadJobs(); publisher.recover();
 server.listen(PORT, HOST, () => {
+  pump();
   const h = health();
   console.log(`\n  motionforge studio  →  http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}\n`);
   console.log(`  claude: ${h.claude ? 'ok' : 'NOT FOUND'}   ffmpeg: ${h.ffmpeg ? 'ok' : 'NOT FOUND'}   node: ${h.node}\n`);
