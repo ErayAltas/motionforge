@@ -146,6 +146,7 @@ function loadJobs() {
 }
 function pushEvent(job, ev) {
   ev.t = Date.now();
+  trackStages(job, ev.t);
   ev.i = job.events = (job.events || 0) + 1;
   fs.appendFileSync(path.join(jobDir(job.id), 'events.jsonl'), JSON.stringify(ev) + '\n');
   broadcast(job.id, 'event', ev);
@@ -201,7 +202,27 @@ function stagesOf(job) {
   };
   let current = null;
   for (const [k] of STAGES) if (!done[k]) { current = k; break; }
-  return STAGES.map(([k, label]) => ({ key: k, label, done: done[k], current: k === current && job.status === 'running' }));
+  // Timing: doneAt is stamped by trackStages when a stage's files first appear. A stage runs from the
+  // previous stage's doneAt (or the job start) until its own doneAt; the current one runs until now.
+  const times = job.stageTimes || {};
+  const legacy = !job.stageTimes;   // jobs run before timing existed have no real stage times; show none rather than guess
+  let from = job.createdAt;
+  return STAGES.map(([k, label]) => {
+    const isCur = k === current && job.status === 'running';
+    let doneAt = done[k] ? times[k] : undefined;
+    if (doneAt) doneAt = Math.max(doneAt, from);
+    const ms = legacy ? undefined : doneAt ? doneAt - from : isCur ? Math.max(0, Date.now() - from) : undefined;
+    const startedAt = from;
+    if (doneAt) from = doneAt;
+    return { key: k, label, done: done[k], current: isCur, ms, startedAt: isCur ? startedAt : undefined };
+  });
+}
+// Stamp the first moment each stage is seen done. Called on every agent event, so resolution is a few seconds.
+function trackStages(job, now = Date.now()) {
+  const times = job.stageTimes || (job.stageTimes = {});
+  let changed = false;
+  for (const st of stagesOf(job)) if (st.done && !times[st.key]) { times[st.key] = now; changed = true; }
+  if (changed) saveJob(job);
 }
 function outputsOf(job) {
   const d = path.join(VIDEOS, job.slug, 'renders');
@@ -254,6 +275,8 @@ function buildPrompt(job, firstTurn) {
     lines.push('STEP-BY-STEP MODE: honour the gates. Stop and wait for the user at G1 (brief read-back), G2 (hooks, script, claim list) and G4 (style choice) — present each concisely and end your message with the exact question. After approval, continue to the end without extra questions. Keep messages short and in the user\'s UI language (Turkish unless the video language differs and the user wrote otherwise).');
   }
   lines.push('');
+  lines.push('Apply the "Channel defaults" section of skills/motion-director/SKILL.md (ending with takeaway, CTA and sign-off, CTA look, top label, card size, ASR check of every TTS line).');
+  lines.push('');
   lines.push('Reply to the user in Turkish. Keep intermediate messages to one or two lines; the UI shows them as a live activity feed.');
   return firstTurn ? lines.join('\n') : '';
 }
@@ -301,6 +324,7 @@ function runClaude(job, prompt) {
     else if (job.lastResultError) job.status = 'failed';
     else job.status = finalVideos(job).length ? 'done' : 'waiting';
     job.finishedAt = Date.now();
+    trackStages(job, job.finishedAt);
     saveJob(job); broadcast(job.id, 'job', publicJob(job));
     pump();
   });

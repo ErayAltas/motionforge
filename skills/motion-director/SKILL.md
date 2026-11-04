@@ -134,6 +134,15 @@ Social target −14 LUFS integrated, true peak ≤ −1 dBTP (−16 LUFS for pla
 ### 15. Deliver
 Follow [delivery](references/delivery.md): MP4 + contact sheet + cover + caption/description, and an honest note (what is mock, what stayed WARN, who approved the look, whether the critic ran, what you could not verify, such as how the mix sounds). Revisions come by timestamp: find the scene, fix, re-check only that scene, re-render as `-v2`.
 
+## Channel defaults (apply unless the user says otherwise)
+Learned from reviewing the first Bilim Merak videos; they hold for every short explainer.
+1. **Ending.** Never cut right after the call to action. Spoken order: last content line → a one-sentence takeaway ("X bir … değil, … yöntemidir" style, no new facts) → CTA ("Merak eden birine gönder.") → a short sign-off ("Bir sonraki merakta görüşürüz." in Turkish; translate for other languages). The sign-off is shown as a second line under the CTA, not as a caption. Keep the end card about 0.9 s after the last word, never longer, and keep the gap between CTA and sign-off about 0.3 s (trim the leading silence of every TTS line; a TTS file often starts with 0.3-0.4 s of silence).
+2. **CTA look.** The key word ("gönder") in the accent colour with an underline. The CTA text sits clear of the picture, never overlapping a card or illustration. The end picture is a recognisable paper plane (two wings meeting at a crease, dotted trail), not an abstract zigzag.
+3. **Top label.** Channel name only ("Bilim Merak"). No style names or jargon such as "saha defteri".
+4. **Layout.** The main picture card fills the width (about 1000 px of 1080); two-line titles must clear the card and its tape. Hand-written labels never sit on top of drawing lines.
+5. **Check every TTS line with ASR** (the tool's line_asr.json) and retake with another `--seed` when a word is wrong, especially channel names and sign-offs.
+6. **Record timing.** Note how long TTS, mix and render took in the decisions log of brief.md.
+
 ## Always
 - Deterministic frames: seeded randomness, no wall clock.
 - Paid steps only after a stated cost and an explicit yes. Keys come from environment variables (`ELEVENLABS_API_KEY`, `OPENAI_API_KEY`, …) and never appear in files, commands echoed to the user, logs or commits.

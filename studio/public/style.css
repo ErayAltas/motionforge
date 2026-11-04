@@ -256,3 +256,6 @@ input[type=text]:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix
 .pubstatus:empty{display:none}.pubstatus{border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:13px;display:flex;flex-direction:column;gap:6px}
 .pubstatus a{color:var(--accent)}.pubstatus .bad{color:var(--bad)}.pubstatus .ok{color:var(--ok)}
 .pubstatus .pbar{height:4px;background:var(--line);border-radius:4px;overflow:hidden}.pubstatus .pbar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+
+.stages li .lbl{display:flex;flex-direction:column;gap:2px;line-height:1.15}.stages li .dur{color:var(--mute);font-size:11px;font-variant-numeric:tabular-nums}.stages li.current .dur{color:var(--accent)}
+.stages-note{margin:-12px 0 16px;color:var(--mute);font-size:12px}

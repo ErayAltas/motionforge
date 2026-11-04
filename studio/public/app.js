@@ -482,11 +482,22 @@ function renderJob(j) {
   const feed = $('#feed'); const th = $('.thinking', feed);
   if (j.running && !th) feed.append(thinking()); else if (!j.running && th) th.remove();
   const ol = $('#stages'); ol.textContent = '';
-  for (const st of j.stages) ol.append(el('li', { className: (st.done ? 'done ' : '') + (st.current ? 'current' : '') }, el('i'), st.label));
+  for (const st of j.stages) ol.append(el('li', { className: (st.done ? 'done ' : '') + (st.current ? 'current' : '') },
+    el('i'), el('span', { className: 'lbl' }, st.label, st.ms != null ? durEl(st) : '')));
+  const total = j.stages.reduce((a, st) => a + (st.done && st.ms ? st.ms : 0), 0);
+  ol.title = total ? `Tamamlanan aşamaların toplamı: ${fmtDur(total)}` : '';
+  let note = $('#stagesNote');
+  if (!note) { note = el('div', { id: 'stagesNote', className: 'stages-note' }); ol.after(note); }
+  const timed = j.stages.some((st) => st.ms != null);
+  note.textContent = timed ? (total ? `Toplam (biten aşamalar): ${fmtDur(total)}` : '') : 'Bu iş süre kaydı tutulmadan önce çalıştı; süreler yeni işlerde görünür.';
   renderOutputs(j); loadDoc(); renderPublish(j);
   const row = state.jobs.find((x) => x.id === j.id);
   if (!row || row.status !== j.status) refreshAll();
 }
+function durEl(st) { const n = el('small', { className: 'dur', textContent: fmtDur(st.ms) }); if (st.current) n.dataset.since = st.startedAt; return n; }
+function fmtDur(ms) { const s = Math.round(ms / 1000); return s < 60 ? `${s} sn` : `${Math.floor(s / 60)} dk ${String(s % 60).padStart(2, '0')} sn`; }
+// the running stage's counter ticks every second without waiting for a server event
+setInterval(() => { for (const n of document.querySelectorAll('#stages .dur[data-since]')) n.textContent = fmtDur(Date.now() - Number(n.dataset.since)); }, 1000);
 function renderOutputs(j) {
   const vids = j.outputs.filter((o) => o.kind !== 'file');
   const key = JSON.stringify(vids.map((o) => [o.name, o.mtime])) + state.picked + j.running;
