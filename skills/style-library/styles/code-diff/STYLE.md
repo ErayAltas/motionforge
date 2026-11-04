@@ -14,7 +14,7 @@
 
 ## 2. Use it for / avoid it for
 - Use for: bug fixes, refactors, security patches, performance changes, comparing human vs AI-written code, language feature tours.
-- Avoid for: whole files (show hunks), non-developer audiences without a plain-language caption. Code comes from the user's real repository or PR; illustrative snippets are labelled "example". Blur tokens, keys, emails and internal hostnames.
+- Avoid for: whole files (show hunks), non-developer audiences without a plain-language caption. Code comes from the user's real repository or PR; Blur tokens, keys, emails and internal hostnames.
 
 ## 3. Palette
 | Token | Hex | Job |

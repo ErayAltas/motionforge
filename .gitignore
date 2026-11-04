@@ -15,3 +15,8 @@ renders/
 
 studio/.data/
 videos/
+
+# tts-lab: local model environments, downloaded voices, logs
+tools/tts-lab/.venv*/
+tools/tts-lab/voices/
+tools/tts-lab/*.log

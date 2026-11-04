@@ -1,6 +1,6 @@
 ---
 name: voice-and-timing
-description: Produce the voice-over (bring-your-own-key TTS such as ElevenLabs or OpenAI, local Kokoro or Piper, or the user's own recording) behind a mandatory consent and cost gate, then time every word, build captions, and mix voice, music, effects and footage audio to a loudness target. Use when a video needs narration, word-synced animation or captions, or when audio levels need fixing.
+description: Produce the voice-over (bring-your-own-key TTS such as ElevenLabs or OpenAI, local Chatterbox (default), Kokoro or Piper, or the user's own recording) behind a mandatory consent and cost gate, then time every word, build captions, and mix voice, music, effects and footage audio to a loudness target. Use when a video needs narration, word-synced animation or captions, or when audio levels need fixing.
 license: MIT
 ---
 
@@ -16,6 +16,7 @@ Files (in `videos/<slug>/audio/`): `lines/NN.wav` (one file per script paragraph
 |---|---|---|
 | No voice | free | on-screen type carries the story; captions become the script |
 | User's own recording | free | best authenticity; go to step 4 |
+| Local TTS: Chatterbox (`tools/tts-lab/speak.sh`) | free | **default local voice**; MIT; all ten motionforge languages incl. tr; slow (20-60 s per sentence on an M2); output carries an inaudible PerTh AI watermark; optional `--ref` own-voice clone (consent rules below) |
 | Local TTS: Kokoro | free | runs on CPU; good in en, es, fr, hi, it, ja, pt-BR, zh; no Turkish/German/Korean voices |
 | Local TTS: Piper | free | many languages incl. tr, de; each voice model has its own license, read its model card before commercial use |
 | ElevenLabs API | paid per character | strong multilingual voices; the user's own key |
@@ -49,6 +50,13 @@ curl -sS https://api.openai.com/v1/audio/speech -H "Authorization: Bearer $OPENA
   -H "Content-Type: application/json" -d @audio/lines/01.json -o audio/lines/01.wav
 # 01.json: {"model": "<tts model>", "voice": "<voice>", "input": "...", "response_format": "wav"}
 ```
+**Chatterbox (default local voice)**
+```bash
+tools/tts-lab/speak.sh audio/tts.txt --lang <code> --out-dir audio/lines   # tts.txt: one paragraph per line -> lines/01.wav, 02.wav ...
+tools/tts-lab/speak.sh audio/tts.txt --lang <code> --out-dir audio/lines --only 3 --seed 1   # retake one line
+```
+`speak.sh` also cuts Chatterbox's 1-2 s trailing noise after each line (needs `tools/tts-lab/.venv-whisper`; it writes `lines/line_asr.json` with per-line word times, use those for step 4 instead of Whisper on the joined voice). Listen to or ASR-check every line against the script; retake bad ones with `--only N --seed M`. Exit code 3 means the model is not installed (`tools/tts-lab/README.md`); say so and use a scratch voice. Outputs are 24 kHz mono; the join in the next list resamples to 48 kHz. Write numbers and abbreviations as spoken in `tts.txt`.
+
 **Kokoro** (`pip install kokoro soundfile`) or **Piper** (`piper --model <voice>.onnx --output_file audio/lines/01.wav < audio/lines/01.txt`).
 
 Then:

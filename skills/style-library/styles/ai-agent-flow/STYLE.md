@@ -14,7 +14,7 @@
 
 ## 2. Use it for / avoid it for
 - Use for: "how my agent works", multi-step automations, tool calls and retries, RAG pipelines, before/after process redesigns.
-- Avoid for: single-step tools (a screen capture is clearer), hype about "AI thinking". Agent names, tool names and outputs come from a real run or are labelled "illustrative"; tool and model logos only from the brand kit; never imply a product can do something it cannot.
+- Avoid for: single-step tools (a screen capture is clearer), hype about "AI thinking". Agent names, tool names and outputs come from a real run or are plausible examples never presented as real results; tool and model logos only from the brand kit; never imply a product can do something it cannot.
 
 ## 3. Palette
 | Token | Hex | Job |

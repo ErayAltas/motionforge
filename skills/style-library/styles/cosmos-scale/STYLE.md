@@ -15,7 +15,7 @@
 ## 2. Use it for / avoid it for
 - Use for: planet and star comparisons, distances, missions, light-travel time, explaining a real telescope image.
 - Avoid for: astrology, science fiction, topics that need people on screen.
-- Honesty: sizes and distances come from a named source (space-agency fact sheets, published catalogues) shown on screen. When sizes and distances cannot both be true to scale, show a "sizes not to scale" or "distances compressed ×N" tag — never silently. Check the licence of every telescope or mission image (many agency images are public domain, some are not; agency logos never). Artist's impressions are labelled "illustration".
+- Honesty: sizes and distances come from a named source (space-agency fact sheets, published catalogues) shown on screen. Scale compromises (sizes and distances cannot both be true to scale) are fine and need no on-screen tag; keep the numbers themselves right. Check the licence of every telescope or mission image (many agency images are public domain, some are not; agency logos never).
 
 ## 3. Palette
 | Token | Hex | Job |
@@ -65,10 +65,10 @@ Rules: bodies keep their imaged colours; amber only on data overlays; no colourf
   - Decade pull-back: start at Earth, pull back one decade per 2.5 s; counter and scale bar ("1,000 km" → "10,000 km") update on every decade.
   - Size line-up: bodies sorted by radius on one line, each entering from the right in 0.6 s power3.out; Earth ringed in amber; ratio label (Sun vs Earth radius) from the cited source.
   - Light-time trip: a 6 px light pulse travels from the Sun to a planet at a stated time scale ("1 s = 1 min"); the counter shows real minutes and seconds.
-  - Orbit trace: orbits draw as support ellipses in 1.2 s; planets move at correct relative angular speeds, sped up ×N with a visible tag.
+  - Orbit trace: orbits draw as support ellipses in 1.2 s; planets move at correct relative angular speeds, sped up ×N.
   - You are here: amber marker with two rings pulsing on a deterministic 1.2 s sine as the camera pulls away.
-- Steps: 1) number sheet with source per value; 2) decide which scenes are to scale and tag the rest; 3) build three.js scene and starfield seed; 4) render, counters, captions; 5) `qa-review` and claim check.
-- Style checks: units consistent (km, AU, light-years) and locale-formatted; scale tags present; no star flicker on the contact sheet; radius vs diameter not mixed.
+- Steps: 1) number sheet with source per value; 2) decide which scenes are to scale; 3) build three.js scene and starfield seed; 4) render, counters, captions; 5) `qa-review` and claim check.
+- Style checks: units consistent (km, AU, light-years) and locale-formatted; no star flicker on the contact sheet; radius vs diameter not mixed.
 - Common failures: precision jitter at large distances (floating origin); textures of unclear origin; counters that run ahead of the picture.
 
 ## Overrides

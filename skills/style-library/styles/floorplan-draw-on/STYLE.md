@@ -15,7 +15,7 @@
 ## 2. Use it for / avoid it for
 - Use for: listing layouts, off-plan apartments, renovations (removed walls dashed), "does a sofa fit", room-by-room explainers.
 - Avoid for: machine or product anatomy (use `blueprint-schematic`), lifestyle-led premium homes (use `luxury-estate`), plans the user has no right to publish.
-- Honesty: room names, dimensions and areas come from the user's plan or survey and say whether m² are net (usable) or gross; traced figures are marked "approx."; scale bar and north arrow are taken from the real plan; furniture that is not to scale is labelled "illustrative". Architects' drawings are protected work: use the user's own or redraw from their measurements with permission.
+- Honesty: room names, dimensions and areas come from the user's plan or survey and say whether m² are net (usable) or gross; traced figures are marked "approx."; scale bar and north arrow are taken from the real plan. Architects' drawings are protected work: use the user's own or redraw from their measurements with permission.
 
 ## 3. Palette
 | Token | Hex | Job |

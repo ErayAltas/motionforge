@@ -1,0 +1,100 @@
+"""Local TTS for motionforge: Chatterbox Multilingual (MIT), free, runs on this machine.
+
+One paragraph per non-empty line of the input file -> one NN.wav per paragraph, so a retake of a
+single line is cheap (`--only 3`). Run it through speak.sh, which picks the right Python.
+
+    tools/tts-lab/speak.sh videos/<slug>/audio/tts.txt --lang tr --out-dir videos/<slug>/audio/lines
+
+Reference voice (`--ref voice.wav`, about 10 s of clean speech) clones that voice. Use only your own
+voice or one whose owner gave written consent. Without --ref the model's default voice is used.
+Every output carries Resemble's inaudible PerTh watermark; this cannot be switched off from here.
+"""
+import argparse, re, sys, time
+from pathlib import Path
+
+import numpy as np
+import soundfile as sf
+import torch
+
+# Chatterbox checkpoints are saved on CUDA; remap them when loading on MPS/CPU.
+_orig_load = torch.load
+torch.load = lambda *a, **k: _orig_load(*a, **{**k, "map_location": torch.device("cpu")})
+
+from chatterbox.mtl_tts import SUPPORTED_LANGUAGES, ChatterboxMultilingualTTS
+
+MAX_CHUNK = 220          # characters; longer paragraphs are generated sentence group by sentence group
+PAUSE_WITHIN = 0.18      # seconds of silence between chunks of one paragraph
+
+
+def language_id(code):
+    base = code.lower().split("-")[0]
+    if base not in SUPPORTED_LANGUAGES:
+        sys.exit(f"language '{code}' is not supported by Chatterbox: {', '.join(SUPPORTED_LANGUAGES)}")
+    return base
+
+
+def chunks(text):
+    if len(text) <= MAX_CHUNK:
+        return [text]
+    out, cur = [], ""
+    for sent in re.split(r"(?<=[.!?…])\s+", text):
+        if cur and len(cur) + 1 + len(sent) > MAX_CHUNK:
+            out.append(cur)
+            cur = sent
+        else:
+            cur = f"{cur} {sent}".strip()
+    if cur:
+        out.append(cur)
+    return out
+
+
+def load(device):
+    order = [device] if device != "auto" else (["mps"] if torch.backends.mps.is_available() else []) + ["cpu"]
+    for dev in order:
+        try:
+            return ChatterboxMultilingualTTS.from_pretrained(device=dev), dev
+        except Exception as e:  # MPS can fail on some ops; CPU is slower but works
+            print(f"device {dev} failed: {e}", file=sys.stderr)
+    sys.exit("could not load Chatterbox on any device")
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("text_file", help="UTF-8 file, one paragraph per line")
+    ap.add_argument("--lang", required=True, help="en, tr, es, pt-BR, fr, de, zh-CN, ja, ko, hi ...")
+    ap.add_argument("--out-dir", required=True)
+    ap.add_argument("--ref", help="reference voice wav (own voice or written consent)")
+    ap.add_argument("--only", help="comma-separated 1-based line numbers to (re)generate")
+    ap.add_argument("--seed", type=int, default=0, help="change it for a retake of the same line")
+    ap.add_argument("--exaggeration", type=float, default=0.5, help="0.25 calm .. 0.8+ dramatic")
+    ap.add_argument("--cfg", type=float, default=0.5, help="lower = slower, more deliberate pacing")
+    ap.add_argument("--device", default="auto", choices=["auto", "mps", "cpu"])
+    a = ap.parse_args()
+
+    lang = language_id(a.lang)
+    paras = [l.strip() for l in Path(a.text_file).read_text(encoding="utf-8").splitlines() if l.strip()]
+    wanted = {int(x) for x in a.only.split(",")} if a.only else set(range(1, len(paras) + 1))
+    out = Path(a.out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+
+    model, dev = load(a.device)
+    print(f"chatterbox on {dev}, {len(paras)} lines, lang {lang}", flush=True)
+    for i, para in enumerate(paras, 1):
+        if i not in wanted:
+            continue
+        t0 = time.time()
+        parts = []
+        for j, piece in enumerate(chunks(para)):
+            torch.manual_seed(a.seed + i * 100 + j)
+            wav = model.generate(piece, language_id=lang, audio_prompt_path=a.ref,
+                                 exaggeration=a.exaggeration, cfg_weight=a.cfg)
+            if parts:
+                parts.append(np.zeros(int(PAUSE_WITHIN * model.sr), dtype=np.float32))
+            parts.append(wav.squeeze().cpu().numpy())
+        audio = np.concatenate(parts)
+        sf.write(out / f"{i:02d}.wav", audio, model.sr)
+        print(f"{i:02d}.wav  {len(audio) / model.sr:.1f}s audio in {time.time() - t0:.0f}s", flush=True)
+
+
+if __name__ == "__main__":
+    main()

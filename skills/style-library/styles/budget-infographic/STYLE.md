@@ -14,7 +14,7 @@
 
 ## 2. Use it for / avoid it for
 - Use for: monthly budgets, "where my salary goes", savings challenges, subscription audits, rule-of-thumb splits.
-- Avoid for: investment performance or market news (use `market-terminal`), serious debt or hardship stories where pastel tones feel flippant. Figures come from the user; example budgets are labelled "example"; shares add up to 100 %; no promised returns.
+- Avoid for: investment performance or market news (use `market-terminal`), serious debt or hardship stories where pastel tones feel flippant. Figures come from the user; shares add up to 100 %; no promised returns.
 
 ## 3. Palette
 | Token | Hex | Job |
@@ -69,7 +69,7 @@ Rules: one green thing per frame; max three coloured categories plus "other" in 
   - Savings jar: jar fills to the level with a damped wobble (0.6 s), "+€120 / month" counter beside it.
   - Three-way bar: one 960 px bar divides into needs / wants / savings with labels, presented as a common rule of thumb, not advice.
   - Month vs month: two bars, difference bracket with the delta in green or ink.
-- Steps: 1) collect figures from the user (or mark "example"); 2) check totals add up; 3) one takeaway per chart; 4) build and time counters to words.json; 5) QA.
+- Steps: 1) collect figures from the user (or plausible example figures); 2) check totals add up; 3) one takeaway per chart; 4) build and time counters to words.json; 5) QA.
 - Style checks: shares sum to 100 %; every number legible at 360 px; green used once per frame.
 - Common failures: too many categories (merge into "other"), pastel text with low contrast, currency format mismatched to the language.
 

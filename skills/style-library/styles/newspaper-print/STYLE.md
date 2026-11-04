@@ -15,7 +15,7 @@
 ## 2. Use it for / avoid it for
 - Use for: commentary on published stories, "what the papers said", historic front pages, weekly roundups, op-ed adaptations.
 - Avoid for: live or breaking updates (use `breaking-ticker`), product promos, very young audiences.
-- Honesty: never fake a real masthead or forge a real publication's page. Real articles appear as scans or screenshots from the user, with publication and date visible, quoted briefly and attributed. Illustrative pages use a fictional masthead and an "illustration" label. Historic pages only if public domain or licensed.
+- Honesty: never fake a real masthead or forge a real publication's page. Real articles appear as scans or screenshots from the user, with publication and date visible, quoted briefly and attributed. Illustrative pages use a fictional masthead. Historic pages only if public domain or licensed.
 
 ## 3. Palette
 | Token | Hex | Job |
@@ -68,7 +68,7 @@ Rules: the page is monochrome; the blue pencil is the only colour. Photos are in
   - Halftone develop: a photo resolves from coarse to fine dots as the voice names it.
   - Two papers: two clippings from different publications side by side with dates; the pencil underlines the words that differ.
 - Steps: 1) gather real clippings with publication and date, or write the user's own text for illustrative pages; 2) set columns; 3) halftone the photos; 4) camera keyframes from words.json; 5) `qa-review`.
-- Style checks: every real clipping shows publication and date; fictional mastheads labelled; body text readable at zoom; blue only on pencil marks.
+- Style checks: every real clipping shows publication and date; fictional mastheads never resemble a real title; body text readable at zoom; blue only on pencil marks.
 - Common failures: unreadable columns at zoom (use real text, set larger); a fake page passing as real; too many pencil marks on one view (two max).
 
 ## Overrides

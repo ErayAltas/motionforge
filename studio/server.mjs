@@ -108,7 +108,8 @@ function health() {
   return {
     claude: !!claude, node: process.version, ffmpeg: !!which('ffmpeg'),
     python: fs.existsSync(venvPy) || !!which('python3'),
-    tts: { local: process.platform === 'darwin' ? !!which('say') : !!which('piper'),
+    tts: { chatterbox: fs.existsSync(path.join(ROOT, 'tools', 'tts-lab', '.venv-chatterbox', 'bin', 'python')),
+      local: fs.existsSync(path.join(ROOT, 'tools', 'tts-lab', '.venv-chatterbox', 'bin', 'python')) || (process.platform === 'darwin' ? !!which('say') : !!which('piper')),
       elevenlabs: !!env.ELEVENLABS_API_KEY, openai: !!env.OPENAI_API_KEY },
     keys: { fal: !!env.FAL_KEY, wiro: !!env.WIRO_API_KEY },
     platform: process.platform,
@@ -238,7 +239,7 @@ function buildPrompt(job, firstTurn) {
   lines.push(`- Length: about ${s.duration} seconds.`);
   lines.push(`- Style: ${s.style && s.style !== 'auto' ? `use the style-library style "${s.style}"` : 'choose the best fitting style from the style library yourself and say which one and why'}.`);
   const voice = {
-    local: 'free local voice only (no paid TTS). Use macOS `say` or another local TTS, then tools/word_timings.py for word timings.',
+    local: 'free local voice only (no paid TTS). Write one paragraph per line to audio/tts.txt and generate it with `tools/tts-lab/speak.sh audio/tts.txt --lang <code> --out-dir audio/lines` (Chatterbox, free, natural; about 20-60 s per sentence, so generate once and retake single lines with --only). Only if that exits with code 3 (not installed) fall back to macOS `say`. Then follow skills/voice-and-timing step 3 onward (join lines, tools/word_timings.py for word timings).',
     none: 'no voice-over. Music-free silent video with burned-in captions and on-screen text only.',
     paid: 'a paid TTS voice is allowed ONLY after you state the characters and the estimated cost and the user says yes (G3). Until then use a free local scratch voice.',
   }[s.voice] || 'free local voice only';
