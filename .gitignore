@@ -12,3 +12,6 @@ renders/
 .env
 .env.*
 .mf-cache/
+
+studio/.data/
+videos/

@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>motionforge studio</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23111317'/%3E%3Cpath d='M10 9l13 7-13 7z' fill='%23C8F53A'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <span class="logo"><svg viewBox="0 0 32 32" width="26" height="26"><rect width="32" height="32" rx="8" fill="#C8F53A"/><path d="M11 9l12 7-12 7z" fill="#111317"/></svg></span>
+      <div><b>motionforge</b><small>studio</small></div>
+    </div>
+    <button id="newBtn" class="btn primary block"><span>＋</span> Yeni video</button>
+    <div class="side-label">Videolar</div>
+    <nav id="jobList" class="joblist"></nav>
+    <div class="side-foot" id="health"></div>
+  </aside>
+
+  <main class="main">
+    <!-- composer -->
+    <section id="viewNew" class="view">
+      <div class="hero">
+        <h1>Ne hakkında bir video yapalım?</h1>
+        <p>Konuyu yaz; senaryo, ses, sahneler ve render'ı ajan hazırlasın.</p>
+      </div>
+      <form id="form" class="card composer" autocomplete="off">
+        <textarea id="topic" rows="3" maxlength="2000" placeholder="Örn. Sonbaharda yapraklar neden sararır?" required></textarea>
+        <div class="chips" id="examples"></div>
+
+        <div class="grid">
+          <div class="field">
+            <label>Format</label>
+            <div class="seg" id="formatSeg">
+              <button type="button" data-v="9:16" class="on"><i class="ratio r916"></i>9:16<small>Reels · Shorts</small></button>
+              <button type="button" data-v="1:1"><i class="ratio r11"></i>1:1<small>Kare</small></button>
+              <button type="button" data-v="16:9"><i class="ratio r169"></i>16:9<small>YouTube</small></button>
+            </div>
+          </div>
+          <div class="field">
+            <label>Süre <output id="durOut">35 sn</output></label>
+            <input type="range" id="duration" min="15" max="90" step="5" value="35">
+            <div class="ticks"><span>15</span><span>30</span><span>45</span><span>60</span><span>90</span></div>
+          </div>
+          <div class="field">
+            <label for="language">Video dili</label>
+            <select id="language"></select>
+          </div>
+          <div class="field">
+            <label for="voice">Ses</label>
+            <select id="voice">
+              <option value="local">Yerel ses (ücretsiz)</option>
+              <option value="none">Sessiz · yalnızca altyazı</option>
+              <option value="paid">Ücretli TTS (maliyet onayıyla)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Stil</label>
+          <button type="button" id="styleBtn" class="styleBtn"><span id="styleLabel">Otomatik · konuya göre seç</span><em>Değiştir ›</em></button>
+        </div>
+
+        <div class="field">
+          <label>Çalışma modu</label>
+          <div class="seg two" id="modeSeg">
+            <button type="button" data-v="auto" class="on"><b>Otopilot</b><small>Tüm kararları ajan verir, sonunda videoyu teslim eder</small></button>
+            <button type="button" data-v="steps"><b>Adım adım</b><small>Senaryo ve stil için sana sorar, onayınla ilerler</small></button>
+          </div>
+        </div>
+
+        <details class="field more">
+          <summary>Ek notlar</summary>
+          <textarea id="notes" rows="3" maxlength="1500" placeholder="Ton, hedef kitle, mutlaka geçmesi gereken şeyler, kaçınılacaklar…"></textarea>
+        </details>
+
+        <div class="submitRow">
+          <div class="hint" id="costHint">Ücretli çağrı yapılmaz; yerel ses ve yerel render kullanılır.</div>
+          <button class="btn primary lg" id="goBtn" type="submit">Videoyu üret</button>
+        </div>
+        <div class="err" id="formErr" hidden></div>
+      </form>
+    </section>
+
+    <!-- job -->
+    <section id="viewJob" class="view" hidden>
+      <header class="jobhead">
+        <div class="jt">
+          <h2 id="jTitle"></h2>
+          <div class="meta" id="jMeta"></div>
+        </div>
+        <div class="jactions">
+          <span class="badge" id="jBadge"></span>
+          <button class="btn ghost" id="stopBtn" hidden>Durdur</button>
+          <button class="btn ghost danger" id="delBtn">Sil</button>
+        </div>
+      </header>
+      <ol class="stages" id="stages"></ol>
+
+      <div class="cols">
+        <div class="card feedCard">
+          <div class="cardhead"><b>Canlı akış</b><label class="tog"><input type="checkbox" id="showTools" checked> Araç adımları</label></div>
+          <div class="feed" id="feed"></div>
+          <form class="reply" id="reply" hidden>
+            <textarea id="replyText" rows="1" placeholder="Yanıtla veya değişiklik iste…"></textarea>
+            <button class="btn primary" type="submit">Gönder</button>
+          </form>
+          <div class="quick" id="quick" hidden></div>
+        </div>
+
+        <div class="right">
+          <div class="card player" id="playerCard">
+            <div class="stage" id="stage"><div class="empty"><div class="spin"></div><p>Video hazırlanıyor…</p></div></div>
+            <div class="outs" id="outs"></div>
+          </div>
+          <div class="card doc">
+            <div class="tabs"><button class="on" data-t="script">Senaryo</button><button data-t="brief">Brief</button></div>
+            <pre id="docBody" class="docbody">Henüz yok.</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- style picker -->
+<dialog id="styleDlg">
+  <div class="dlghead">
+    <b>Stil seç</b>
+    <input id="styleQ" type="search" placeholder="Ara: kategori, görünüm, kullanım…">
+    <button class="btn ghost" id="styleClose" type="button">Kapat</button>
+  </div>
+  <div class="cats" id="styleCats"></div>
+  <div class="stylegrid" id="styleGrid"></div>
+</dialog>
+
+<dialog id="zoomDlg"><div id="zoomBody" class="zoom-body"></div></dialog>
+
+<script src="/app.js" type="module"></script>
+</body>
+</html>
