@@ -8,13 +8,14 @@ import crypto from 'node:crypto';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { createPublisher, loadDotEnv } from './publish.mjs';
+import { openDb } from './db.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
 const PUBLIC = path.join(__dirname, 'public');
 const DATA_ROOT = process.env.STUDIO_DATA || path.join(__dirname, '.data');
 const DATA = path.join(DATA_ROOT, 'jobs');
-const VIDEOS = path.join(ROOT, 'videos');
+const VIDEOS = process.env.STUDIO_VIDEOS || path.join(ROOT, 'videos');
 const STYLES_DIR = path.join(ROOT, 'skills', 'style-library', 'styles');
 loadDotEnv(path.join(__dirname, '.env'));
 const PORT = Number(process.env.PORT || 4173);
@@ -24,6 +25,11 @@ const MODEL = process.env.STUDIO_MODEL || '';
 
 fs.mkdirSync(DATA, { recursive: true });
 fs.mkdirSync(VIDEOS, { recursive: true });
+// Optional shared archive of finished renders (point it at a synced folder). Sources/scenes are NOT archived.
+const home = (p) => p.replace(/^~(?=$|\/)/, os.homedir());
+const RENDERS = process.env.STUDIO_RENDERS ? path.resolve(home(process.env.STUDIO_RENDERS)) : '';
+if (RENDERS) fs.mkdirSync(RENDERS, { recursive: true });
+const db = openDb(process.env.STUDIO_DB ? home(process.env.STUDIO_DB) : path.join(DATA_ROOT, 'studio.db'));
 
 const LANGS = {
   tr: 'Türkçe', en: 'English', es: 'Español', 'pt-BR': 'Português (BR)', fr: 'Français',
@@ -127,20 +133,32 @@ const CH_FILE = path.join(DATA_ROOT, 'channels.json');
 const IDEA_CWD = path.join(DATA_ROOT, 'ideas-cwd');
 fs.mkdirSync(IDEA_CWD, { recursive: true });
 
-const jobDir = (id) => path.join(DATA, id);
-const saveJob = (job) => fs.writeFileSync(path.join(jobDir(job.id), 'job.json'), JSON.stringify(job, null, 2));
-function loadChannels() {
-  try { for (const c of JSON.parse(fs.readFileSync(CH_FILE, 'utf8'))) channels.set(c.id, c); } catch { /* none yet */ }
+const saveJob = (job) => db.saveJob(job);
+function loadChannels() { for (const c of db.loadChannels()) channels.set(c.id, c); }
+const saveChannels = () => db.saveChannels([...channels.values()]);
+const KEEP = /\.(mp4|mov|webm|png|jpe?g)$/i;
+function syncRenders(slug, from, to) {   // copy files missing (or older) in `to`; keeps mtimes (the UI filters by them)
+  let n = 0;
+  for (const f of listDir(from)) {
+    if (!KEEP.test(f) || /^tmp|silent|draft/i.test(f)) continue;
+    const a = path.join(from, f), b = path.join(to, f), sa = exists(a);
+    if (!sa || !sa.isFile()) continue;
+    const sb = exists(b); if (sb && sb.size === sa.size && sb.mtimeMs >= sa.mtimeMs - 1000) continue;
+    try { fs.mkdirSync(to, { recursive: true }); const tmp = b + '.part'; fs.copyFileSync(a, tmp); fs.utimesSync(tmp, sa.atime, sa.mtime); fs.renameSync(tmp, b); n++; } catch (e) { console.error(`  render copy failed (${slug}/${f}): ${e.message}`); }
+  }
+  return n;
 }
-const saveChannels = () => fs.writeFileSync(CH_FILE, JSON.stringify([...channels.values()], null, 2));
+const archiveRenders = (job) => { if (RENDERS) syncRenders(job.slug, path.join(VIDEOS, job.slug, 'renders'), path.join(RENDERS, job.slug)); };
+const restoreRenders = (job) => RENDERS ? syncRenders(job.slug, path.join(RENDERS, job.slug), path.join(VIDEOS, job.slug, 'renders')) : 0;
 function loadJobs() {
-  for (const id of fs.readdirSync(DATA)) {
-    if (id === 'ideas-cwd' || !exists(path.join(DATA, id, 'job.json'))) continue;
+  const imported = db.importLegacy({ jobsDir: DATA, channelsFile: CH_FILE });
+  if (imported) console.log(`  imported ${imported} job(s) from the old file layout into ${db.file}`);
+  for (const job of db.loadJobs()) {
+    const id = job.id;
     try {
-      const job = JSON.parse(fs.readFileSync(path.join(DATA, id, 'job.json'), 'utf8'));
       if (job.status === 'queued' && job.pending) queue.push(job.id);
       else if (job.status === 'running' || job.status === 'queued') { job.status = 'stopped'; job.note = 'Sunucu yeniden başlatıldı; çalışma yarıda kaldı.'; saveJob(job); }
-      jobs.set(id, job);
+      jobs.set(id, job); restoreRenders(job);
     } catch { /* ignore broken job */ }
   }
 }
@@ -148,7 +166,7 @@ function pushEvent(job, ev) {
   ev.t = Date.now();
   trackStages(job, ev.t);
   ev.i = job.events = (job.events || 0) + 1;
-  fs.appendFileSync(path.join(jobDir(job.id), 'events.jsonl'), JSON.stringify(ev) + '\n');
+  db.addEvent(job.id, ev);
   broadcast(job.id, 'event', ev);
 }
 function broadcast(id, name, data) {
@@ -324,6 +342,7 @@ function runClaude(job, prompt) {
     else if (job.lastResultError) job.status = 'failed';
     else job.status = finalVideos(job).length ? 'done' : 'waiting';
     job.finishedAt = Date.now();
+    try { archiveRenders(job); } catch (e) { console.error('archive failed:', e.message); }
     trackStages(job, job.finishedAt);
     saveJob(job); broadcast(job.id, 'job', publicJob(job));
     pump();
@@ -373,7 +392,6 @@ function createJob(body) {
   while (exists(path.join(VIDEOS, slug))) slug = `${slugify(topic)}-${n++}`;
   const job = { id, topic, slug, settings, status: 'queued', createdAt: Date.now(), events: 0, cost: 0, turns: 0 };
   if (ch) job.channelId = ch.id;
-  fs.mkdirSync(jobDir(id), { recursive: true });
   jobs.set(id, job); saveJob(job);
   pushEvent(job, { kind: 'status', text: 'İş kuyruğa alındı.' });
   if (ch && body.ideaId) {
@@ -528,11 +546,11 @@ const server = http.createServer(async (req, res) => {
       if (!sub && req.method === 'DELETE') {
         if (procs.has(job.id)) { job.stopRequested = true; try { process.kill(-procs.get(job.id).pid, 'SIGTERM'); } catch {} }
         const qi = queue.indexOf(job.id); if (qi >= 0) queue.splice(qi, 1);
-        jobs.delete(job.id); fs.rmSync(jobDir(job.id), { recursive: true, force: true });
+        jobs.delete(job.id); db.deleteJob(job.id);
         return json(res, 200, { ok: true });
       }
       if (sub === 'history') {
-        let evs = []; try { evs = fs.readFileSync(path.join(jobDir(job.id), 'events.jsonl'), 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l)); } catch {}
+        const evs = db.events(job.id);
         return json(res, 200, evs);
       }
       if (sub === 'script' || sub === 'brief') {
@@ -599,6 +617,7 @@ server.listen(PORT, HOST, () => {
   pump();
   const h = health();
   console.log(`\n  motionforge studio  →  http://${HOST === '0.0.0.0' ? 'localhost' : HOST}:${PORT}\n`);
+  if (RENDERS) console.log(`  renders archive: ${RENDERS}`);
   console.log(`  claude: ${h.claude ? 'ok' : 'NOT FOUND'}   ffmpeg: ${h.ffmpeg ? 'ok' : 'NOT FOUND'}   node: ${h.node}\n`);
 });
 const shutdown = () => { for (const c of procs.values()) { try { process.kill(-c.pid, 'SIGTERM'); } catch {} } process.exit(0); };

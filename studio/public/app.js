@@ -74,7 +74,10 @@ async function boot() {
 function renderHealth(h) {
   const box = $('#health'); box.textContent = '';
   const pill = (ok, t) => box.append(el('span', { className: 'pill' + (ok ? '' : ' bad'), title: ok ? '' : 'Eksik' }, el('i'), t));
-  pill(h.claude, 'Claude Code'); pill(h.ffmpeg, 'ffmpeg'); pill(h.python, 'Python'); pill(h.tts.local, 'Yerel ses');
+  pill(h.claude, 'Claude Code'); pill(h.ffmpeg, 'ffmpeg'); pill(h.python, 'Python'); pill(h.tts.local, h.tts.chatterbox ? 'Chatterbox' : 'Yerel ses (say)');
+  // name the engine behind the "local" voice option
+  const lbl = h.tts.chatterbox ? 'Yerel · Chatterbox (ücretsiz)' : 'Yerel · sistem sesi (ücretsiz)';
+  document.querySelectorAll('#voice option[value="local"], #cVoice option[value="local"]').forEach((o) => { o.textContent = lbl; });
   if (!h.claude) { $('#formErr').textContent = '“claude” komutu bulunamadı. Claude Code kurulu ve PATH’te olmalı.'; $('#formErr').hidden = false; }
 }
 function parseRoute() {
