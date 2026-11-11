@@ -53,19 +53,21 @@ curl -sS https://api.openai.com/v1/audio/speech -H "Authorization: Bearer $OPENA
 **Chatterbox (default local voice)**
 ```bash
 tools/tts-lab/speak.sh audio/tts.txt --lang <code> --out-dir audio/lines   # tts.txt: one paragraph per line -> lines/01.wav, 02.wav ...
-tools/tts-lab/speak.sh audio/tts.txt --lang <code> --out-dir audio/lines --only 3 --seed 1   # retake one line
+tools/tts-lab/speak.sh audio/tts.txt --lang <code> --out-dir audio/lines --only 3 --seed 1   # manual retake of one line
 ```
-`speak.sh` also cuts Chatterbox's 1-2 s trailing noise after each line (needs `tools/tts-lab/.venv-whisper`; it writes `lines/line_asr.json` with per-line word times, use those for step 4 instead of Whisper on the joined voice). Listen to or ASR-check every line against the script; retake bad ones with `--only N --seed M`. Exit code 3 means the model is not installed (`tools/tts-lab/README.md`); say so and use a scratch voice. Outputs are 24 kHz mono; the join in the next list resamples to 48 kHz. Write numbers and abbreviations as spoken in `tts.txt`.
+**Run it once and wait for it.** It takes about 10-20 s per line, so start it with the Bash timeout at its maximum (600000 ms) or in the background, and wait for the exit. Never poll with `sleep N; ls lines` (every poll costs a model turn), never start a second copy while one runs, and do not try seeds in a loop by hand.
+`speak.sh` also cuts Chatterbox's 1-2 s trailing noise after each line (needs `tools/tts-lab/.venv-whisper`; it writes `lines/line_asr.json` with per-line word times, use those for step 4 instead of Whisper on the joined voice). A full run (no `--only`) also checks every line against the script with Whisper (`check_lines.py`) and **retakes the lines that do not match automatically**, up to `--auto-retake N` rounds (default 2, new seed each round, `0` = off); the score table is printed. Exit code 4 means some lines still do not match after the rounds (numbers in `lines/bad.txt`): change the spelling in `tts.txt` for those words (write them as spoken), then retake with `--only N`. Exit 0 means every line passed; you only need to listen to names and sign-offs. Exit code 3 means the model is not installed (`tools/tts-lab/README.md`); say so and use a scratch voice. Outputs are 24 kHz mono; the join in the next list resamples to 48 kHz. Write numbers and abbreviations as spoken in `tts.txt`.
 
 **Kokoro** (`pip install kokoro soundfile`) or **Piper** (`piper --model <voice>.onnx --output_file audio/lines/01.wav < audio/lines/01.txt`).
 
 Then:
 1. Check every file: duration > 0, plays to the end, the last words are present (the ASR in step 4 catches cut-offs).
-2. Join with deliberate pauses (0.25–0.45 s between sentences, longer before a reveal):
+2. **Chatterbox lines: `python3 tools/join_lines.py audio`** (`--gap 0.35`, `--gaps 2=1.3,7=0.3` for the gap before line n, `--over 3=try_s2` to take one line from another folder). It writes `voice.wav`, `words.json` and `segments.json` in one go, with the script's spelling and the timings from `lines/line_asr.json`, so **step 4 is skipped** (no Whisper run on the joined file). It lists lines where ASR and script words differ (digits, merged words); check those by ear. Do not write a one-off join script. For other voices, join with deliberate pauses (0.25–0.45 s between sentences, longer before a reveal):
    `ffmpeg -i 01.wav -i 02.wav -filter_complex "[0]apad=pad_dur=0.35[a];[a][1]concat=n=2:v=0:a=1" -ar 48000 audio/voice.wav` (extend for more lines).
 3. Let the user listen to `voice.wav` before you animate. A voice change later shifts every cue.
 
 ## 4. Word timings
+Skip this section when `tools/join_lines.py` already wrote `words.json` (Chatterbox lines). It is for voices without per-line ASR (ElevenLabs, OpenAI, a recorded file).
 ```bash
 python3 tools/word_timings.py audio/voice.wav --out audio/words.json --segments-out audio/segments.json \
   --language <iso> --model small --text audio/tts.txt

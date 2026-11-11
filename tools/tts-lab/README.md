@@ -21,11 +21,14 @@ tools/tts-lab/speak.sh tts.txt --lang tr --out-dir lines --ref my_voice.wav  # o
 ```
 One paragraph per line of `tts.txt`; writes `01.wav`, `02.wav`, ... (24 kHz). Then continue with step 3 of `skills/voice-and-timing`.
 
+A full run also trims the tails, checks every line with Whisper (`check_lines.py`, fuzzy word match, `--min 0.8`) and retakes mismatching lines with a new seed, `--auto-retake N` rounds (default 2, `0` = off). Exit 4 = lines still wrong (listed in `<out-dir>/bad.txt`). A run with `--only` skips the check. It is a long job: wait for it, do not poll.
+
 ## Things to know
 - **Trailing noise:** Chatterbox often adds 1-2 s of breath/murmur after the last word (7 of 8 lines in the black-hole video). `speak.sh` therefore recognises every line with faster-whisper (`trim_tails.py`) and cuts it right after the last word; originals stay in `<out-dir>/raw/`, per-line word times in `<out-dir>/line_asr.json`. Without `.venv-whisper` the lines are NOT trimmed and `speak.sh` warns.
 - For word timings, use `line_asr.json` plus each line's start offset in the joined voice. Do not spread a line's words over its whole file when the tail is untrimmed: the noise tail makes every word late by up to 2 s.
 - Check pronunciation with a per-line round trip (Whisper vs script); mispronounced lines (here `minicik`, `denir`, `kütleçekimini`) were fixed by retaking with `--seed N`, and `kütle çekimini` written with a space in the TTS text.
-- Speed on an M2 (MPS): roughly 20-60 s per sentence, slower than real time. Generate once, listen, retake only the lines that need it.
+- Speed on an M2 (MPS): roughly 10-20 s per short line, slower than real time; the model load adds a few seconds. Generate once, let the automatic check retake bad lines, listen only to names and sign-offs.
+- **Offline load:** once the model is in the Hugging Face cache, `speak.py` loads it with `HF_HUB_OFFLINE=1`, so a start no longer depends on the network (before, a read timeout while "Fetching 6 files" could stall or break it). If the cache is incomplete it retries online by itself; set `MF_TTS_ONLINE=1` to force online.
 - Every output carries Resemble's PerTh watermark, an inaudible marker that survives MP3 compression and lets detectors recognise the audio as AI-generated.
 - Turkish numbers, abbreviations and foreign names: safest to write them out as spoken in the script (`lexicon.json`); digit reading has not been tested.
 - `gen_chatterbox.py` + `sentences.json` are the audition set used to compare voices.

@@ -15,7 +15,7 @@ For any video, reel, short, animated explainer, motion graphics, 3D scene, talki
 | [`skills/qa-review`](skills/qa-review/SKILL.md) | contact sheets, text/safe-area/loudness checks, independent critic |
 | [`skills/faceless-ugc`](skills/faceless-ugc/SKILL.md) | faceless and UGC videos: no-face formats, 3D character, photo puppet, AI avatar; consent, honesty, cost gate, lip-sync QA |
 
-Engines: `engines/hyperframes` (default), `engines/remotion` (optional, license note in motion-director), `engines/canvas` (hand-drawn/procedural), 3D layer `engines/hyperframes/three` (three.js). Reusable scenes: `templates/` (2D, 3D, `character-3d`, `photo-avatar`). Helpers: `tools/` (`word_timings.py`, `cutout.py`, `loudness.sh`, `contact_sheet.py`, `textcheck.mjs`, `export.mjs`, `cover_safe_area.py`, `mouth_curve.py`, `avatar/` for AI or local lip-sync, landmarks and `sync_check.py`).
+Engines: `engines/hyperframes` (default), `engines/remotion` (optional, license note in motion-director), `engines/canvas` (hand-drawn/procedural), 3D layer `engines/hyperframes/three` (three.js). Reusable scenes: `templates/` (2D, 3D, `character-3d`, `photo-avatar`). Helpers: `tools/` (`join_lines.py` joins TTS lines into voice.wav + words.json, `word_timings.py`, `cutout.py`, `loudness.sh`, `contact_sheet.py`, `textcheck.mjs`, `export.mjs`, `cover_safe_area.py`, `mouth_curve.py`, `avatar/` for AI or local lip-sync, landmarks and `sync_check.py`).
 
 ## Rules that always apply
 1. **Reply in the user's language.** Write scripts, on-screen text and captions in the video's language. Skill files stay in English.

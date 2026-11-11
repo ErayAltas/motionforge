@@ -77,6 +77,7 @@ Use `script-and-hooks`: give 2–3 hook options of different types, name the typ
 ### 5. Script
 Use `script-and-hooks` to write the script in the video language, with a scene table (line → what is on screen) and the **claim list** (every number, date, name, quote that needs a source). Never invent statistics. Show all three. **G2.**
 Then `voice-and-timing`: pick a voice path. Paid TTS: state characters and estimated cost, wait for yes. **G3.** No paid audio exists until then; build with a scratch voice if needed.
+**Start the voice at once, do not wait for it.** The moment G2 passes (and G3 for a paid voice), write `audio/tts.txt` and start the voice **in the background** (local Chatterbox: `run_in_background`, one command, see `voice-and-timing`). It takes minutes, so carry on with steps 6-8 while it runs: the style choice (G4) and the storyboard (G5) wait on the user anyway. Write the scene files and layouts first; only the time windows and word cues need `audio/words.json`, so fill those in when the voice job reports done. Check the job once when you need the timings, never in a poll loop.
 
 ### 6. Style
 Open `skills/style-library/styles/README.md`, go to the category that matches the account (creator, shop, real estate, sports, documentary, …) and shortlist 2–3 styles that fit the subject and the format, one line each on why. Show their sample frames if present. User picks. **G4.**
@@ -140,7 +141,7 @@ Learned from reviewing the first Bilim Merak videos; they hold for every short e
 2. **CTA look.** The key word ("gönder") in the accent colour with an underline. The CTA text sits clear of the picture, never overlapping a card or illustration. The end picture is a recognisable paper plane (two wings meeting at a crease, dotted trail), not an abstract zigzag.
 3. **Top label.** Channel name only ("Bilim Merak"). No style names or jargon such as "saha defteri".
 4. **Layout.** The main picture card fills the width (about 1000 px of 1080); two-line titles must clear the card and its tape. Hand-written labels never sit on top of drawing lines.
-5. **Check every TTS line with ASR** (the tool's line_asr.json) and retake with another `--seed` when a word is wrong, especially channel names and sign-offs.
+5. **Check every TTS line with ASR.** `speak.sh` does it and retakes mismatching lines itself (exit 4 = some still wrong: respell them in `tts.txt` and use `--only`). Do not poll or hand-loop seeds; listen only to channel names and sign-offs.
 6. **Record timing.** Note how long TTS, mix and render took in the decisions log of brief.md.
 
 ## Always
