@@ -49,6 +49,7 @@ function toast(msg, bad) {
 }
 function avatar(ch, big) {
   const h = hue(ch.name);
+  if (ch.avatar) return el('div', { className: 'av img' + (big ? ' lg' : ''), style: 'border-color:transparent' }, el('img', { src: `/avatars/${ch.id}.png?v=${ch.avatar}`, alt: ch.name }));
   return el('div', { className: 'av' + (big ? ' lg' : ''), style: `background:hsl(${h} 45% 18%);border-color:hsl(${h} 55% 38%)`, textContent: ch.emoji || '🎬' });
 }
 
@@ -62,8 +63,10 @@ async function boot() {
   for (const ex of EXAMPLES) $('#examples').append(el('button', { type: 'button', className: 'chip', textContent: ex, onclick: () => { $('#topic').value = ex; $('#topic').focus(); } }));
   wireComposer(); wireStylePicker(); wireJobView(); wireChannel(); wireChannelDialog(); wirePublish();
   const q = new URLSearchParams(location.search);
-  if (q.has('connected') || q.has('connect_error')) {
-    q.has('connected') ? toast(`YouTube bağlandı: ${q.get('connected')}`) : toast(`Bağlantı başarısız: ${q.get('connect_error')}`, true);
+  const pickId = q.get('pick');
+  if (q.has('connected') || q.has('connect_error') || pickId) {
+    if (pickId) setTimeout(() => pickInstagram(pickId).then(() => pub.job && loadProviders(pub.job).then(() => renderPublish(pub.job))).catch((e) => toast(e.message, true)), 600);
+    else q.has('connected') ? toast(`${q.get('platform') === 'instagram' ? 'Instagram' : 'YouTube'} bağlandı: ${q.get('connected')}`) : toast(`Bağlantı başarısız: ${q.get('connect_error')}`, true);
     history.replaceState(null, '', location.pathname + location.hash);
   }
   await refreshAll();
@@ -539,26 +542,48 @@ function wirePublish() {
     b.disabled = false; b.textContent = '✦ Metni oluştur';
   });
   for (const id of ['#pubTitle', '#pubDesc', '#pubTags']) $(id).addEventListener('input', () => { pub.touched = true; });
+  for (const id of ['#pubYT', '#pubIG']) $(id).addEventListener('change', () => pub.job && renderPublish(pub.job));
   $('#pubDisc').addEventListener('click', async () => {
     if (!confirm('YouTube hesabının bağlantısı bu kanal için kaldırılsın mı?')) return;
     await api(`/api/publish/youtube?channel=${pub.job.channelId || ''}`, { method: 'DELETE' }); await loadProviders(pub.job); renderPublish(pub.job);
   });
+  $('#pubDiscIG').addEventListener('click', async () => {
+    if (!confirm('Instagram hesabının bağlantısı bu kanal için kaldırılsın mı?')) return;
+    await api(`/api/publish/instagram?channel=${pub.job.channelId || ''}`, { method: 'DELETE' }); await loadProviders(pub.job); renderPublish(pub.job);
+  });
+  $('#pubTokIG').addEventListener('click', async () => {
+    const token = prompt('Meta Graph API Explorer’dan aldığın kullanıcı erişim anahtarını yapıştır:'); if (!token) return;
+    try { const r = await api('/api/publish/instagram/token', { method: 'POST', body: { channel: pub.job.channelId || null, token } }); if (r.pick) await pickInstagram(r.pick); else toast(`Instagram bağlandı: ${r.title}`); await loadProviders(pub.job); renderPublish(pub.job); } catch (e) { toast(e.message, true); }
+  });
   $('#pubGo').addEventListener('click', async () => {
-    const j = pub.job, yt = pub.prov?.youtube;
-    if (!yt?.configured) { toast('YouTube istemci bilgileri eksik: studio/.env içine YOUTUBE_CLIENT_ID ve YOUTUBE_CLIENT_SECRET ekle.', true); return; }
-    if (!yt.connected) {
-      try { const r = await api('/api/publish/youtube/connect', { method: 'POST', body: { channel: j.channelId || null, ret: `#/j/${j.id}` } }); location.href = r.url; } catch (e) { toast(e.message, true); }
+    const j = pub.job, yt = pub.prov?.youtube, ig = pub.prov?.instagram;
+    const want = [$('#pubYT').checked && 'youtube', $('#pubIG').checked && 'instagram'].filter(Boolean);
+    if (!want.length) { toast('Bir platform seç.', true); return; }
+    // connect first whatever is selected but not connected yet
+    for (const [name, pr, env] of [['youtube', yt, 'YOUTUBE_CLIENT_ID ve YOUTUBE_CLIENT_SECRET'], ['instagram', ig, 'INSTAGRAM_APP_ID ve INSTAGRAM_APP_SECRET']]) {
+      if (!want.includes(name) || pr?.connected) continue;
+      if (!pr?.configured) { toast(`${name === 'youtube' ? 'YouTube' : 'Instagram'} bilgileri eksik: studio/.env içine ${env} ekle.`, true); return; }
+      try { const r = await api(`/api/publish/${name}/connect`, { method: 'POST', body: { channel: j.channelId || null, ret: `#/j/${j.id}` } }); location.href = r.url; } catch (e) { toast(e.message, true); }
       return;
     }
-    if (!$('#pubYT').checked) { toast('Bir platform seç.', true); return; }
     const title = $('#pubTitle').value.trim(), priv = $('#pubPriv').value;
     if (title.length < 3) { toast('Başlık gerekli.', true); return; }
     const label = { private: 'ÖZEL', unlisted: 'LİSTE DIŞI', public: 'HERKESE AÇIK' }[priv];
-    if (!confirm(`YouTube kanalına (${yt.title}) ${label} olarak yüklenecek:\n\n${title}\n\n${priv === 'public' ? 'Bu video herkese açık yayınlanır.\n\n' : ''}Devam edilsin mi?`)) return;
+    const lines = [];
+    if (want.includes('youtube')) lines.push(`YouTube (${yt.title}): ${label}`);
+    if (want.includes('instagram')) lines.push(`Instagram (${ig.title}): HERKESE AÇIK Reels`);
+    if (!confirm(`Şuraya yüklenecek:\n${lines.join('\n')}\n\n${title}\n\n${priv === 'public' || want.includes('instagram') ? 'Herkese açık yayınlanacak içerik var.\n\n' : ''}Devam edilsin mi?`)) return;
     try {
-      await api(`/api/jobs/${j.id}/publish`, { method: 'POST', body: { platforms: ['youtube'], title, description: $('#pubDesc').value, tags: $('#pubTags').value.split(',').map((t) => t.trim()).filter(Boolean), privacy: priv } });
+      await api(`/api/jobs/${j.id}/publish`, { method: 'POST', body: { platforms: want, title, description: $('#pubDesc').value, tags: $('#pubTags').value.split(',').map((t) => t.trim()).filter(Boolean), privacy: priv } });
     } catch (e) { toast(e.message, true); }
   });
+}
+async function pickInstagram(pick) {
+  const list = await api(`/api/publish/instagram/candidates?pick=${encodeURIComponent(pick)}`);
+  const n = Number(prompt(`Bu kanal için hangi Instagram hesabı?\n\n${list.map((c) => `${c.i + 1}) ${c.label}`).join('\n')}\n\nNumara yaz:`)) - 1;
+  if (!(n >= 0 && n < list.length)) { toast('Seçim yapılmadı; tekrar bağlan.', true); return; }
+  const r = await api('/api/publish/instagram/pick', { method: 'POST', body: { pick, index: n } });
+  toast(`Instagram bağlandı: ${r.title}`);
 }
 async function renderPublish(j) {
   const card = $('#pubCard'), has = j.outputs.some((o) => o.kind === 'video');
@@ -566,19 +591,28 @@ async function renderPublish(j) {
   if (pub.job?.id !== j.id) { pub.touched = false; $('#pubTitle').value = j.topic; $('#pubDesc').value = ''; $('#pubTags').value = ''; pub.prov = null; }
   pub.job = j;
   if (!pub.prov || pub.provKey !== pubKey(j)) await loadProviders(j);
-  const yt = pub.prov?.youtube, p = j.publications?.youtube;
-  $('#ytState').textContent = !yt ? '' : !yt.configured ? 'kurulum gerekli' : yt.connected ? `bağlı: ${yt.title}` : 'bağlı değil';
-  $('#platYT').classList.toggle('on', $('#pubYT').checked);
-  if (yt?.connected && !$('#pubYT').dataset.init) { $('#pubYT').checked = true; $('#pubYT').dataset.init = '1'; $('#platYT').classList.add('on'); }
-  $('#pubDisc').hidden = !yt?.connected;
-  $('#pubGo').textContent = !yt?.connected ? 'YouTube hesabını bağla' : p?.status === 'uploading' ? 'Yükleniyor…' : 'Yayınla…';
-  $('#pubGo').disabled = p?.status === 'uploading';
+  const yt = pub.prov?.youtube, ig = pub.prov?.instagram;
+  const stateTxt = (x) => !x ? '' : !x.configured ? 'kurulum gerekli' : x.connected ? `bağlı: ${x.title}` : 'bağlı değil';
+  $('#ytState').textContent = stateTxt(yt); $('#igState').textContent = stateTxt(ig);
+  for (const [box, lab, pr] of [['#pubYT', '#platYT', yt], ['#pubIG', '#platIG', ig]]) {
+    if (pr?.connected && !$(box).dataset.init) { $(box).checked = true; $(box).dataset.init = '1'; }
+    $(lab).classList.toggle('on', $(box).checked);
+  }
+  $('#pubDisc').hidden = !yt?.connected; $('#pubDiscIG').hidden = !ig?.connected; $('#pubTokIG').hidden = !ig || ig.connected;
+  $('#pubIGNote').hidden = !$('#pubIG').checked;
+  const busy = ['youtube', 'instagram'].some((k) => j.publications?.[k]?.status === 'uploading');
+  const need = [['youtube', yt, '#pubYT', 'YouTube'], ['instagram', ig, '#pubIG', 'Instagram']].find(([, pr, box]) => $(box).checked && !pr?.connected);
+  $('#pubGo').textContent = need ? `${need[3]} hesabını bağla` : busy ? 'Yükleniyor…' : 'Yayınla…';
+  $('#pubGo').disabled = busy;
   const st = $('#pubStatus'); st.textContent = '';
-  if (p) {
+  for (const [k, name] of [['youtube', 'YouTube'], ['instagram', 'Instagram']]) {
+    const p = j.publications?.[k]; if (!p) continue;
     const priv = { private: 'özel', unlisted: 'liste dışı', public: 'herkese açık' }[p.privacy] || '';
-    if (p.status === 'uploading') st.append(el('span', {}, 'YouTube’a yükleniyor…'), el('div', { className: 'pbar' }, el('i', { style: `width:${Math.round((p.progress || 0.05) * 100)}%` })));
-    else if (p.status === 'done') st.append(el('span', { className: 'ok' }, `YouTube’a yüklendi (${priv}).`), el('a', { href: p.url, target: '_blank', rel: 'noopener', textContent: p.url }));
-    else if (p.status === 'failed') st.append(el('span', { className: 'bad', textContent: p.error || 'Yükleme başarısız.' }));
+    const row = el('div', {});
+    if (p.status === 'uploading') row.append(el('span', {}, `${name}’a yükleniyor…`), el('div', { className: 'pbar' }, el('i', { style: `width:${Math.round((p.progress || 0.05) * 100)}%` })));
+    else if (p.status === 'done') row.append(el('span', { className: 'ok' }, `${name}’a yüklendi (${priv}). `), el('a', { href: p.url, target: '_blank', rel: 'noopener', textContent: p.url }));
+    else if (p.status === 'failed') row.append(el('span', { className: 'bad', textContent: `${name}: ${p.error || 'Yükleme başarısız.'}` }));
+    st.append(row);
   }
 }
 let docTimer = 0, docKey = '';

@@ -153,14 +153,15 @@
               <div class="plats">
                 <label class="plat" id="platYT"><input type="checkbox" id="pubYT"><span>YouTube Shorts</span><small id="ytState"></small></label>
                 <label class="plat off"><input type="checkbox" disabled><span>TikTok</span><small>yakında</small></label>
-                <label class="plat off"><input type="checkbox" disabled><span>Instagram Reels</span><small>yakında</small></label>
+                <label class="plat" id="platIG"><input type="checkbox" id="pubIG"><span>Instagram Reels</span><small id="igState"></small></label>
               </div>
               <div class="field"><label>Başlık <button type="button" class="linkbtn" id="pubGen">✦ Metni oluştur</button></label><input type="text" id="pubTitle" maxlength="100"></div>
               <div class="field"><label>Açıklama</label><textarea id="pubDesc" rows="3" maxlength="4000"></textarea></div>
               <div class="grid2"><div class="field"><label>Etiketler (virgülle)</label><input type="text" id="pubTags"></div>
                 <div class="field"><label>Gizlilik</label><select id="pubPriv"><option value="private">Özel (önerilen)</option><option value="unlisted">Liste dışı</option><option value="public">Herkese açık</option></select></div></div>
               <div id="pubStatus" class="pubstatus"></div>
-              <div class="pubfoot"><button type="button" class="linkbtn" id="pubDisc" hidden>Hesabı ayır</button><button class="btn primary" id="pubGo">Yayınla…</button></div>
+              <div class="hint" id="pubIGNote" hidden>Instagram'a yüklenen Reels her zaman herkese açık yayınlanır (gizlilik seçimi yalnızca YouTube içindir).</div>
+              <div class="pubfoot"><span><button type="button" class="linkbtn" id="pubDisc" hidden>YouTube hesabını ayır</button> <button type="button" class="linkbtn" id="pubDiscIG" hidden>Instagram hesabını ayır</button> <button type="button" class="linkbtn" id="pubTokIG" hidden>Instagram anahtarını elle gir</button></span><button class="btn primary" id="pubGo">Yayınla…</button></div>
             </div>
           </div>
           <div class="card doc">

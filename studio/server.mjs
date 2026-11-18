@@ -399,11 +399,13 @@ function sanitizeChannel(b) {
     mode: b.mode === 'steps' ? 'steps' : 'auto',
   };
 }
+const AVATARS = path.join(DATA_ROOT, 'avatars');
+function avatarVersion(id) { try { return Math.round(fs.statSync(path.join(AVATARS, `${id}.png`)).mtimeMs); } catch { return null; } }
 function channelSummary(c) {
   const js = [...jobs.values()].filter((j) => j.channelId === c.id);
   return { ...c, ideas: undefined, ideaCount: c.ideas.filter((i) => i.status === 'new').length,
     videos: js.filter((j) => finalVideos(j).length).length, jobs: js.length, running: js.filter((j) => j.status === 'running' || j.status === 'queued').length,
-    lastAt: js.reduce((a, j) => Math.max(a, j.createdAt), 0), generating: !!c.generating };
+    lastAt: js.reduce((a, j) => Math.max(a, j.createdAt), 0), generating: !!c.generating, avatar: avatarVersion(c.id) };
 }
 function runOneShot(prompt, timeoutMs = 180000) {
   return new Promise((resolve, reject) => {
@@ -583,6 +585,9 @@ const server = http.createServer(async (req, res) => {
     }
     m = /^\/styles\/([a-z0-9-]+)\/preview\.gif$/.exec(p);
     if (m) return serveFile(req, res, path.join(STYLES_DIR, m[1], 'preview.gif'));
+
+    m = /^\/avatars\/([a-z0-9]+)\.png$/.exec(p);
+    if (m) return serveFile(req, res, path.join(AVATARS, `${m[1]}.png`));
 
     // static UI
     const rel = p === '/' ? 'index.html' : p.slice(1);
