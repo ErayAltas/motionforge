@@ -59,7 +59,8 @@ export function createPublisher(ctx) {
     let desc = o.description;
     if (isShort && !/#shorts/i.test(`${o.title} ${desc}`)) desc = `${desc}\n\n#Shorts`.trim();
     const meta = { snippet: { title: o.title.slice(0, 100), description: desc.slice(0, 4900), tags: o.tags.slice(0, 15), categoryId: '27', defaultLanguage: job.settings.language.split('-')[0] },
-      status: { privacyStatus: o.privacy, selfDeclaredMadeForKids: false, embeddable: true } };
+      status: { privacyStatus: o.publishAt ? 'private' : o.privacy, selfDeclaredMadeForKids: false, embeddable: true } };
+    if (o.publishAt) meta.status.publishAt = o.publishAt; // YouTube flips a private video to public at this time
     const init = await fetch(`${YT_API}/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status`, { method: 'POST',
       headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json; charset=UTF-8', 'x-upload-content-length': String(buf.length), 'x-upload-content-type': 'video/mp4' },
       body: JSON.stringify(meta) });
@@ -70,7 +71,7 @@ export function createPublisher(ctx) {
     if (!up.ok) throw new Error(await ytError(up));
     const v = await up.json();
     progress(1);
-    return { id: v.id, url: isShort ? `https://youtube.com/shorts/${v.id}` : `https://youtu.be/${v.id}`, privacy: o.privacy };
+    return { id: v.id, url: isShort ? `https://youtube.com/shorts/${v.id}` : `https://youtu.be/${v.id}`, privacy: o.publishAt ? 'private' : o.privacy, publishAt: o.publishAt || null };
   }
   async function ytError(r) {
     const j = await r.json().catch(() => ({}));
@@ -263,6 +264,14 @@ export function createPublisher(ctx) {
       if (acc[k]?.instagram) { delete acc[k].instagram; writeAcc(acc); }
       return json(res, 200, { ok: true }), true;
     }
+    // manual "already posted" flag (for videos uploaded outside the studio)
+    if ((m = /^\/api\/jobs\/([a-z0-9]+)\/posted$/.exec(p)) && req.method === 'POST') {
+      const job = jobs.get(m[1]); if (!job) return json(res, 404, { error: 'not found' }), true;
+      const b = await readBody(req);
+      if (b.posted) job.posted = { at: Date.now(), note: clean(b.note, 200) }; else delete job.posted;
+      saveJob(job); broadcast(job.id, 'job', publicJob(job));
+      return json(res, 200, publicJob(job)), true;
+    }
     if ((m = /^\/api\/jobs\/([a-z0-9]+)\/(publish-meta|publish)$/.exec(p)) && req.method === 'POST') {
       const job = jobs.get(m[1]); if (!job) return json(res, 404, { error: 'not found' }), true;
       if (m[2] === 'publish-meta') {
@@ -276,6 +285,12 @@ export function createPublisher(ctx) {
       const title = clean(b.title, 100); if (title.length < 3) return json(res, 400, { error: 'Başlık gerekli.' }), true;
       const o = { file, title, description: clean(b.description, 4000), tags: (Array.isArray(b.tags) ? b.tags : []).map((t) => clean(t, 40)).filter(Boolean),
         privacy: ['private', 'unlisted', 'public'].includes(b.privacy) ? b.privacy : 'private' };
+      if (b.publishAt) {
+        const t = Date.parse(b.publishAt);
+        if (!Number.isFinite(t) || t < Date.now() + 5 * 60000) return json(res, 400, { error: 'Yayın zamanı en az 5 dakika sonrası olmalı.' }), true;
+        if (platforms.includes('instagram')) return json(res, 400, { error: 'Zamanlama sadece YouTube için; Instagram\'ı kapat.' }), true;
+        o.publishAt = new Date(t).toISOString();
+      }
       const accts = readAcc()[keyOf(job.channelId)] || {};
       for (const pl of platforms) {
         if (!accts[pl]) return json(res, 409, { error: `${pl === 'youtube' ? 'YouTube' : 'Instagram'} hesabı bağlı değil.` }), true;
@@ -284,7 +299,7 @@ export function createPublisher(ctx) {
       const names = { youtube: 'YouTube', instagram: 'Instagram' };
       for (const pl of platforms) {
         const priv = pl === 'instagram' ? 'public' : o.privacy;
-        setPub(job, pl, { status: 'uploading', progress: 0, error: null, title, privacy: priv, file, url: null });
+        setPub(job, pl, { status: 'uploading', progress: 0, error: null, title, privacy: o.publishAt ? 'private' : priv, publishAt: o.publishAt || null, file, url: null });
         pushEvent(job, { kind: 'status', text: `${names[pl]}'a yükleniyor (${priv}): ${title}` });
         const run = pl === 'youtube' ? ytUpload(job, accts.youtube, o, (pr) => setPub(job, pl, { progress: pr }))
           : igUpload(job, accts.instagram, o, (pr) => setPub(job, pl, { progress: pr }));

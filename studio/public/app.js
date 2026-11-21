@@ -125,7 +125,7 @@ function renderSide() {
     const ch = chById(j.channelId);
     jl.append(el('a', { className: 'job' + (state.route.v === 'job' && state.route.id === j.id ? ' on' : ''), href: `#/j/${j.id}` },
       el('span', { className: 'dot ' + j.status }),
-      el('span', {}, el('span', { className: 't', textContent: j.topic }),
+      el('span', {}, el('span', { className: 't', textContent: (j.posted ? '✓ ' : '') + j.topic }),
         el('span', { className: 's', textContent: `${ch ? ch.emoji + ' ' : ''}${STATUS[j.status] || j.status}${j.status === 'queued' && j.queuePos ? ` #${j.queuePos}` : ''} · ${ago(j.createdAt)}` }))));
   }
 }
@@ -138,7 +138,8 @@ function jobCard(j) {
   else thumb.append(el('div', { className: 'ph' }, el('span', { textContent: j.status === 'running' ? '⚙' : j.status === 'queued' ? '⏳' : '🎬' })));
   if (j.status === 'running' || j.status === 'queued') thumb.append(el('div', { className: 'bar' }, el('i', { style: `width:${Math.max(4, Math.round(j.progress * 100))}%` })));
   return el('a', { className: 'vcard', href: `#/j/${j.id}` }, thumb,
-    el('div', { className: 'vinfo' }, el('b', { textContent: j.topic }),
+    el('div', { className: 'vinfo' }, el('b', { textContent: (j.posted ? '✓ ' : '') + j.topic }),
+      j.posted ? el('span', { className: 'badge done', textContent: 'atıldı' }) : null,
       el('small', {}, el('span', { className: 'dot ' + j.status }), ` ${STATUS[j.status] || j.status}${j.status === 'queued' && j.queuePos ? ` #${j.queuePos}` : ''} · ${ago(j.createdAt)}`, ch ? ` · ${ch.emoji} ${ch.name}` : '')));
 }
 function renderHome() {
@@ -546,6 +547,10 @@ function wirePublish() {
   });
   for (const id of ['#pubTitle', '#pubDesc', '#pubTags']) $(id).addEventListener('input', () => { pub.touched = true; });
   for (const id of ['#pubYT', '#pubIG']) $(id).addEventListener('change', () => pub.job && renderPublish(pub.job));
+  $('#pubPosted').addEventListener('click', async () => {
+    if (!pub.job) return;
+    try { await api(`/api/jobs/${pub.job.id}/posted`, { method: 'POST', body: { posted: !pub.job.posted } }); await refreshAll(); if (state.current === pub.job.id) renderPublish(await api('/api/jobs/' + pub.job.id)); } catch (e) { toast(e.message, true); }
+  });
   $('#pubDisc').addEventListener('click', async () => {
     if (!confirm('YouTube hesabının bağlantısı bu kanal için kaldırılsın mı?')) return;
     await api(`/api/publish/youtube?channel=${pub.job.channelId || ''}`, { method: 'DELETE' }); await loadProviders(pub.job); renderPublish(pub.job);
@@ -571,13 +576,15 @@ function wirePublish() {
     }
     const title = $('#pubTitle').value.trim(), priv = $('#pubPriv').value;
     if (title.length < 3) { toast('Başlık gerekli.', true); return; }
-    const label = { private: 'ÖZEL', unlisted: 'LİSTE DIŞI', public: 'HERKESE AÇIK' }[priv];
+    const at = $('#pubAt').value ? new Date($('#pubAt').value) : null;
+    if (at && want.includes('instagram')) { toast('Zamanlama sadece YouTube için; Instagram\'ı kapat.', true); return; }
+    const label = at ? `ÖZEL yüklenip ${at.toLocaleString('tr-TR')} tarihinde HERKESE AÇILACAK` : { private: 'ÖZEL', unlisted: 'LİSTE DIŞI', public: 'HERKESE AÇIK' }[priv];
     const lines = [];
     if (want.includes('youtube')) lines.push(`YouTube (${yt.title}): ${label}`);
     if (want.includes('instagram')) lines.push(`Instagram (${ig.title}): HERKESE AÇIK Reels`);
     if (!confirm(`Şuraya yüklenecek:\n${lines.join('\n')}\n\n${title}\n\n${priv === 'public' || want.includes('instagram') ? 'Herkese açık yayınlanacak içerik var.\n\n' : ''}Devam edilsin mi?`)) return;
     try {
-      await api(`/api/jobs/${j.id}/publish`, { method: 'POST', body: { platforms: want, title, description: $('#pubDesc').value, tags: $('#pubTags').value.split(',').map((t) => t.trim()).filter(Boolean), privacy: priv } });
+      await api(`/api/jobs/${j.id}/publish`, { method: 'POST', body: { platforms: want, title, description: $('#pubDesc').value, tags: $('#pubTags').value.split(',').map((t) => t.trim()).filter(Boolean), privacy: priv, publishAt: at ? at.toISOString() : undefined } });
     } catch (e) { toast(e.message, true); }
   });
 }
@@ -601,6 +608,7 @@ async function renderPublish(j) {
     if (pr?.connected && !$(box).dataset.init) { $(box).checked = true; $(box).dataset.init = '1'; }
     $(lab).classList.toggle('on', $(box).checked);
   }
+  $('#pubPosted').textContent = j.posted ? '✓ Atıldı olarak işaretli (kaldır)' : 'Atıldı olarak işaretle';
   $('#pubDisc').hidden = !yt?.connected; $('#pubDiscIG').hidden = !ig?.connected; $('#pubTokIG').hidden = !ig || ig.connected;
   $('#pubIGNote').hidden = !$('#pubIG').checked;
   const busy = ['youtube', 'instagram'].some((k) => j.publications?.[k]?.status === 'uploading');
@@ -610,7 +618,7 @@ async function renderPublish(j) {
   const st = $('#pubStatus'); st.textContent = '';
   for (const [k, name] of [['youtube', 'YouTube'], ['instagram', 'Instagram']]) {
     const p = j.publications?.[k]; if (!p) continue;
-    const priv = { private: 'özel', unlisted: 'liste dışı', public: 'herkese açık' }[p.privacy] || '';
+    const priv = p.publishAt ? `özel, ${new Date(p.publishAt).toLocaleString('tr-TR')} tarihinde açılacak` : ({ private: 'özel', unlisted: 'liste dışı', public: 'herkese açık' }[p.privacy] || '');
     const row = el('div', {});
     if (p.status === 'uploading') row.append(el('span', {}, `${name}’a yükleniyor…`), el('div', { className: 'pbar' }, el('i', { style: `width:${Math.round((p.progress || 0.05) * 100)}%` })));
     else if (p.status === 'done') row.append(el('span', { className: 'ok' }, `${name}’a yüklendi (${priv}). `), el('a', { href: p.url, target: '_blank', rel: 'noopener', textContent: p.url }));

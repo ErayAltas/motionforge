@@ -134,7 +134,7 @@ const IDEA_CWD = path.join(DATA_ROOT, 'ideas-cwd');
 fs.mkdirSync(IDEA_CWD, { recursive: true });
 
 const saveJob = (job) => db.saveJob(job);
-function loadChannels() { for (const c of db.loadChannels()) channels.set(c.id, c); }
+function loadChannels() { for (const c of db.loadChannels()) { delete c.generating; /* idea generation cannot survive a restart */ channels.set(c.id, c); } }
 const saveChannels = () => db.saveChannels([...channels.values()]);
 const KEEP = /\.(mp4|mov|webm|png|jpe?g)$/i;
 function syncRenders(slug, from, to) {   // copy files missing (or older) in `to`; keeps mtimes (the UI filters by them)
@@ -496,13 +496,14 @@ const server = http.createServer(async (req, res) => {
     if (!['localhost', '127.0.0.1', '[::1]'].includes(host) && HOST === '127.0.0.1') { res.writeHead(403); return res.end('forbidden'); }
     if (req.method !== 'GET' && req.headers.origin && new URL(req.headers.origin).host !== req.headers.host) { res.writeHead(403); return res.end('forbidden'); }
 
-    if ((p.startsWith('/api/publish') || p.startsWith('/oauth/') || /^\/api\/jobs\/[a-z0-9]+\/publish(-meta)?$/.test(p)) && await publisher.handle(req, res, url, p)) return;
+    if ((p.startsWith('/api/publish') || p.startsWith('/oauth/') || /^\/api\/jobs\/[a-z0-9]+\/(publish(-meta)?|posted)$/.test(p)) && await publisher.handle(req, res, url, p)) return;
     if (p === '/api/health') return json(res, 200, health());
     if (p === '/api/config') return json(res, 200, { languages: LANGS, formats: Object.keys(FORMATS), styles: loadStyles() });
     if (p === '/api/jobs' && req.method === 'GET') {
       return json(res, 200, [...jobs.values()].sort((a, b) => b.createdAt - a.createdAt).map((j) => ({
         id: j.id, topic: j.topic, status: j.status, createdAt: j.createdAt, settings: j.settings, cost: j.cost,
         channelId: j.channelId || null, hasVideo: finalVideos(j).length > 0, running: procs.has(j.id), queuePos: queue.indexOf(j.id) + 1,
+        posted: !!j.posted || Object.values(j.publications || {}).some((v) => v.status === 'done'),
         video: (outputsOf(j).find((o) => o.kind === 'video') || {}).url || null,
         progress: stagesOf(j).filter((x) => x.done).length / STAGES.length,
       })));
